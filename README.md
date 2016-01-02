@@ -3,7 +3,7 @@
 ss, netstat in Go. ssn is an utility to investigate sockets.
 
 ```
-go get -v -u github.com/gyuho/ssn
+go get -v -u github.com/gyuho/ssn/...
 ```
 
 
