@@ -1,25 +1,9 @@
 package ss
 
-import "testing"
-
-/*
-   TCP: [`sl` `local_address` `rem_address` `st` `tx_queue` `rx_queue` `tr` `tm->when` `retrnsmt` `uid` `timeout` `inode`])
-   TCP: [`0:` `0101007F:0035` `00000000:0000` `0A` `00000000:00000000` `00:00000000` `00000000` `0` `0` `15913` `1` `0000000000000000 100 0 0 10 0`])
-   TCP: [`1:` `0100007F:0277` `00000000:0000` `0A` `00000000:00000000` `00:00000000` `00000000` `0` `0` `16193` `1` `0000000000000000 100 0 0 10 0`])
-   TCP: [`2:` `7A00000A:0BFE` `59FC1EC0:01BB` `01` `00000000:00000000` `02:00000DC0` `00000000` `1000` `0` `842611` `2` `0000000000000000 30 4 23 10 -1`])
-
-   TPC6: [`sl` `local_address` `remote_address` `st` `tx_queue` `rx_queue` `tr` `tm->when` `retrnsmt` `uid` `timeout` `inode`]
-   TPC6: [`0:` `00000000000000000000000001000000:0277` `00000000000000000000000000000000:0000` `0A` `00000000:00000000` `00:00000000` `00000000` `0` `0` `16192` `1` `0000000000000000 100 0 0 10 0`]
-   TPC6: [`1:` `4506012691A700C165EB1DE1F912918C:8BDA` `B0F8072602080540000000000F100000:01BB` `01` `00000000:00000000` `02:00000300` `00000000` `1000` `0` `858151` `2` `0000000000000000 22 4 9 10 2`]
-*/
-func TestReadProcNet(t *testing.T) {
-	if _, err := readProcNet(TCP); err != nil {
-		t.Error(err)
-	}
-	if _, err := readProcNet(TCP6); err != nil {
-		t.Error(err)
-	}
-}
+import (
+	"fmt"
+	"testing"
+)
 
 func TestParseLittleEndianIpv4(t *testing.T) {
 	var tests = map[string]string{
@@ -38,12 +22,13 @@ func TestParseLittleEndianIpv4(t *testing.T) {
 		"0100007F:B02D": "127.0.0.1:45101",
 	}
 	for k, v := range tests {
-		ip, err := parseLittleEndianIpv4(k)
+		host, port, err := parseLittleEndianIpv4(k)
 		if err != nil {
 			t.Error(err)
 		}
-		if ip != v {
-			t.Errorf("got = %s, want = %s", ip, v)
+		addr := host + port
+		if addr != v {
+			t.Errorf("got = %s, want = %s", addr, v)
 		}
 	}
 }
@@ -57,12 +42,38 @@ func TestParseLittleEndianIpv6(t *testing.T) {
 		"4506012691A700C165EB1DE1F912918C:4B82": "[8C91:12F9:E11D:EB65:C100:A791:2601:0645]:19330",
 	}
 	for k, v := range tests {
-		ip, err := parseLittleEndianIpv6(k)
+		host, port, err := parseLittleEndianIpv6(k)
 		if err != nil {
 			t.Error(err)
 		}
-		if ip != v {
-			t.Errorf("got = %s, want = %s", ip, v)
+		addr := "[" + host + "]" + port
+		if addr != v {
+			t.Errorf("got = %s, want = %s", addr, v)
 		}
+	}
+}
+
+func TestReadProcNetInternal(t *testing.T) {
+	if _, err := readProcNet(TCP); err != nil {
+		t.Error(err)
+	}
+	if _, err := readProcNet(TCP6); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestReadProcFdInternal(t *testing.T) {
+	if _, err := readProcFd(); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestReadProcNet(t *testing.T) {
+	ps, err := ReadProcNet(TCP)
+	if err != nil {
+		t.Error(err)
+	}
+	for _, p := range ps {
+		fmt.Println(p)
 	}
 }
