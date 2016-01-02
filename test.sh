@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Reference: 
+# Reference:
 # https://github.com/coreos/etcd/blob/master/test
 
 TEST=./...;
@@ -20,6 +20,13 @@ echo "Checking govet..."
 vetRes=$(go vet $TEST)
 if [ -n "${vetRes}" ]; then
 	echo -e "govet checking failed:\n${vetRes}"
+	exit 255
+fi
+
+echo "Checking govet -shadow..."
+vetRes=$(go tool vet -shadow *.go)
+if [ -n "${vetRes}" ]; then
+	echo -e "govet -shadow checking failed:\n${vetRes}"
 	exit 255
 fi
 
