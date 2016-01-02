@@ -1,3 +1,4 @@
+// ssn is an utility to investigate sockets.
 package main
 
 import (
