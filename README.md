@@ -1,6 +1,6 @@
 ## ssn [![Build Status](https://img.shields.io/travis/gyuho/ssn.svg?style=flat-square)](https://travis-ci.org/gyuho/ssn) [![Godoc](http://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/gyuho/ssn)
 
-ss, netstat in Go.
+ss, netstat in Go. ssn is an utility to investigate sockets.
 
 ```
 go get -v -u github.com/gyuho/ssn

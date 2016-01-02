@@ -1,4 +1,4 @@
-package ssn
+package ss
 
 import (
 	"fmt"

@@ -2,8 +2,8 @@
 # Reference:
 # https://github.com/coreos/etcd/blob/master/test
 
-TEST=./...;
-FMT="*.go"
+TEST=./ss;
+FMT="./ss/*.go"
 
 echo "Running tests...";
 go test -v -cover -cpu 1,2,4 $TEST;
@@ -24,7 +24,7 @@ if [ -n "${vetRes}" ]; then
 fi
 
 echo "Checking govet -shadow..."
-vetRes=$(go tool vet -shadow *.go)
+vetRes=$(go tool vet -shadow ./ss/*.go)
 if [ -n "${vetRes}" ]; then
 	echo -e "govet -shadow checking failed:\n${vetRes}"
 	exit 255
