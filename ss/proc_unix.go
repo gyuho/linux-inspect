@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -109,11 +110,35 @@ func ReadProcNet(opt TransportProtocol) ([]Process, error) {
 		return nil, err
 	}
 	procNets := fields[1:]
-	// procFds := readProcFd()
+	procFds, err := readProcFd()
+	if err != nil {
+		return nil, err
+	}
 
 	pChan, errChan := make(chan Process), make(chan error)
 	for _, sl := range procNets {
 		go func(sl []string) {
+
+			p := Process{}
+			p.Protocol = protocolToString[opt]
+
+			inode := sl[idx_inode]
+			for _, procPath := range procFds {
+				sym, _ := os.Readlink(procPath)
+				if !strings.Contains(sym, inode) {
+					continue
+				}
+				n, err := strconv.Atoi(strings.Split(procPath, "/")[2])
+				if err != nil {
+					errChan <- err
+					return
+				}
+				p.PID = n
+				break
+			}
+
+			pName, _ := os.Readlink(fmt.Sprintf("/proc/%d/exe", p.PID))
+			p.Program = pName
 
 			var parseFunc func(string) (string, string, error)
 			switch opt {
@@ -134,26 +159,19 @@ func ReadProcNet(opt TransportProtocol) ([]Process, error) {
 				return
 			}
 
+			p.LocalIP = lIP
+			p.LocalPort = lPort
+			p.RemoteIP = rIP
+			p.RemotePort = rPort
+
+			p.State = stToState[sl[idx_st]]
+
 			u, err := user.LookupId(sl[idx_uid])
 			if err != nil {
 				errChan <- err
 				return
 			}
 
-			p := Process{}
-			p.Protocol = protocolToString[opt]
-
-			// not implemented yet
-			rawInode := sl[idx_inode]
-			_ = rawInode
-			p.Program = ""
-			p.PID = 0
-
-			p.LocalIP = lIP
-			p.LocalPort = lPort
-			p.RemoteIP = rIP
-			p.RemotePort = rPort
-			p.State = stToState[sl[idx_st]]
 			p.User = *u
 
 			pChan <- p

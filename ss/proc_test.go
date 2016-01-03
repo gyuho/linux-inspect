@@ -69,11 +69,18 @@ func TestReadProcFdInternal(t *testing.T) {
 }
 
 func TestReadProcNet(t *testing.T) {
-	ps, err := ReadProcNet(TCP)
+	ps4, err := ReadProcNet(TCP)
 	if err != nil {
 		t.Error(err)
 	}
-	for _, p := range ps {
+	for _, p := range ps4 {
+		fmt.Println(p)
+	}
+	ps6, err := ReadProcNet(TCP6)
+	if err != nil {
+		t.Error(err)
+	}
+	for _, p := range ps6 {
 		fmt.Println(p)
 	}
 }

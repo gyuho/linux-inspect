@@ -47,7 +47,7 @@ type Process struct {
 
 // String describes Process type.
 func (p Process) String() string {
-	return fmt.Sprintf("Protocol: '%s' / Program: '%s' / PID: '%d' / LocalAddr: '%s%s' / RemoteAddr: '%s%s' / State: '%s' / User: '%+v'",
+	return fmt.Sprintf("Protocol: '%s' | Program: '%s' | PID: '%d' | LocalAddr: '%s%s' | RemoteAddr: '%s%s' | State: '%s' | User: '%+v'",
 		p.Protocol,
 		p.Program,
 		p.PID,
