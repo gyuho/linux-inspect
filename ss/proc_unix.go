@@ -103,8 +103,8 @@ func readProcFd() ([]string, error) {
 	return fs, nil
 }
 
-// listProcess parses raw data from readProcNet, readProcFd functions.
-func listProcess(opt TransportProtocol) ([]Process, error) {
+// list parses raw data from readProcNet, readProcFd functions.
+func list(opt TransportProtocol) ([]Process, error) {
 	fields, err := readProcNet(opt)
 	if err != nil {
 		return nil, err

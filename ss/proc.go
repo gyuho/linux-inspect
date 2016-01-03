@@ -79,12 +79,24 @@ func Kill(w io.Writer, ps ...Process) {
 			fmt.Fprintln(w, "[Kill - panic]", err)
 		}
 	}()
-	for _, v := range ps {
-		fmt.Fprintf(w, "[Kill] syscall.Kill -> %s\n", v)
-		if err := syscall.Kill(v.PID, syscall.SIGINT); err != nil {
+
+	pidToKill := make(map[int]string)
+	pids := []int{}
+	for _, p := range ps {
+		if _, ok := pidToKill[p.PID]; !ok {
+			pidToKill[p.PID] = p.Program
+			pids = append(pids, p.PID)
+		}
+	}
+	sort.Ints(pids)
+
+	for _, pid := range pids {
+		fmt.Fprintf(w, "[Kill] syscall.Kill [%d] for %s\n", pid, pidToKill[pid])
+		if err := syscall.Kill(pid, syscall.SIGINT); err != nil {
 			fmt.Fprintln(w, "[Kill - error]", err)
 		}
 	}
+
 	fmt.Fprintln(w, "[Kill] Done!")
 }
 
@@ -164,15 +176,45 @@ func parseLittleEndianIpv6(s string) (string, string, error) {
 	return ip, ":" + port, nil
 }
 
-// ListProcess lists all processes.
-func ListProcess(opt TransportProtocol) ([]Process, error) {
-	return listProcess(opt)
+// List lists all processes.
+func List(opt TransportProtocol) ([]Process, error) {
+	return list(opt)
+}
+
+// ListProgram lists all processes running a specific program.
+func ListProgram(opt TransportProtocol, program string) ([]Process, error) {
+	ps, err := list(opt)
+	if err != nil {
+		return nil, err
+	}
+	ns := []Process{}
+	for _, p := range ps {
+		if strings.HasSuffix(p.Program, program) {
+			ns = append(ns, p)
+		}
+	}
+	return ns, nil
+}
+
+// ListTcpPorts lists all TCP ports that are being used.
+func ListTcpPorts() map[string]struct{} {
+	ps4, _ := List(TCP)
+	ps6, _ := List(TCP6)
+	rm := make(map[string]struct{})
+	for _, p := range ps4 {
+		rm[p.LocalPort] = struct{}{}
+	}
+	for _, p := range ps6 {
+		rm[p.RemotePort] = struct{}{}
+	}
+	return rm
 }
 
 // WriteToTable writes slice of Processes to ASCII table.
 func WriteToTable(w io.Writer, ps ...Process) {
 	table := tablewriter.NewWriter(w)
 	table.SetHeader(processMembers)
+
 	rows := make([][]string, len(ps))
 	for i, p := range ps {
 		sl := make([]string, len(processMembers))
@@ -185,75 +227,17 @@ func WriteToTable(w io.Writer, ps ...Process) {
 		rows[i] = sl
 	}
 
-	// sort 2D string slice by PROGRAM, PID, LOCAL_ADDR, USER
 	by(
 		rows,
-		makeAscendingFunc(1),
-		makeAscendingFunc(2),
-		makeAscendingFunc(3),
-		makeAscendingFunc(5),
+		makeAscendingFunc(1), // PROGRAM
+		makeAscendingFunc(2), // PID
+		makeAscendingFunc(3), // LOCAL_ADDR
+		makeAscendingFunc(5), // USER
 	).Sort(rows)
+
 	for _, row := range rows {
 		table.Append(row)
 	}
 
 	table.Render()
-}
-
-// by returns a multiSorter that sorts using the less functions
-func by(rows [][]string, lesses ...lessFunc) *multiSorter {
-	return &multiSorter{
-		data: rows,
-		less: lesses,
-	}
-}
-
-// lessFunc compares between two string slices.
-type lessFunc func(p1, p2 *[]string) bool
-
-func makeAscendingFunc(idx int) func(row1, row2 *[]string) bool {
-	return func(row1, row2 *[]string) bool {
-		return (*row1)[idx] < (*row2)[idx]
-	}
-}
-
-// multiSorter implements the Sort interface,
-// sorting the two dimensional string slices within.
-type multiSorter struct {
-	data [][]string
-	less []lessFunc
-}
-
-// Sort sorts the rows according to lessFunc.
-func (ms *multiSorter) Sort(rows [][]string) {
-	sort.Sort(ms)
-}
-
-// Len is part of sort.Interface.
-func (ms *multiSorter) Len() int {
-	return len(ms.data)
-}
-
-// Swap is part of sort.Interface.
-func (ms *multiSorter) Swap(i, j int) {
-	ms.data[i], ms.data[j] = ms.data[j], ms.data[i]
-}
-
-// Less is part of sort.Interface.
-func (ms *multiSorter) Less(i, j int) bool {
-	p, q := &ms.data[i], &ms.data[j]
-	var k int
-	for k = 0; k < len(ms.less)-1; k++ {
-		less := ms.less[k]
-		switch {
-		case less(p, q):
-			// p < q
-			return true
-		case less(q, p):
-			// p > q
-			return false
-		}
-		// p == q; try next comparison
-	}
-	return ms.less[k](p, q)
 }

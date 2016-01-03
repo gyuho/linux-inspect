@@ -69,11 +69,11 @@ func TestReadProcFdInternal(t *testing.T) {
 	}
 }
 
-func TestListProcess(t *testing.T) {
-	if _, err := ListProcess(TCP); err != nil {
+func TestList(t *testing.T) {
+	if _, err := List(TCP); err != nil {
 		t.Error(err)
 	}
-	if _, err := ListProcess(TCP6); err != nil {
+	if _, err := List(TCP6); err != nil {
 		t.Error(err)
 	}
 }
@@ -81,7 +81,7 @@ func TestListProcess(t *testing.T) {
 func TestWriteToTable(t *testing.T) {
 	w := os.Stdout
 
-	ps4, err := ListProcess(TCP)
+	ps4, err := List(TCP)
 	if err != nil {
 		t.Error(err)
 	}
@@ -89,9 +89,23 @@ func TestWriteToTable(t *testing.T) {
 
 	fmt.Println()
 
-	ps6, err := ListProcess(TCP6)
+	ps6, err := List(TCP6)
 	if err != nil {
 		t.Error(err)
 	}
 	WriteToTable(w, ps6...)
+}
+
+func TestListProgram(t *testing.T) {
+	w := os.Stdout
+
+	ps4, err := ListProgram(TCP, "etcd")
+	if err != nil {
+		t.Error(err)
+	}
+	WriteToTable(w, ps4...)
+}
+
+func TestListTcpPorts(t *testing.T) {
+	fmt.Println("ListTcpPorts:", ListTcpPorts())
 }
