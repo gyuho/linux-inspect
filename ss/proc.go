@@ -76,7 +76,7 @@ func (p Process) String() string {
 func Kill(w io.Writer, ps ...Process) {
 	defer func() {
 		if err := recover(); err != nil {
-			fmt.Fprintln(w, "[Kill - panic]", err)
+			fmt.Fprintln(w, "Kill:", err)
 		}
 	}()
 
@@ -91,13 +91,11 @@ func Kill(w io.Writer, ps ...Process) {
 	sort.Ints(pids)
 
 	for _, pid := range pids {
-		fmt.Fprintf(w, "[Kill] syscall.Kill [%d] for %s\n", pid, pidToKill[pid])
+		fmt.Fprintf(w, "syscall.Kill: %s [PID: %d]\n", pidToKill[pid], pid)
 		if err := syscall.Kill(pid, syscall.SIGINT); err != nil {
-			fmt.Fprintln(w, "[Kill - error]", err)
+			fmt.Fprintln(w, "Kill:", err)
 		}
 	}
-
-	fmt.Fprintln(w, "[Kill] Done!")
 }
 
 // parseLittleEndianIpv4 parses hexadecimal ipv4 IP addresses.
