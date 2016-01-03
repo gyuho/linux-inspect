@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"io"
 	"os/user"
+	"sort"
 	"strconv"
 	"strings"
 	"syscall"
+
+	"github.com/olekukonko/tablewriter"
 )
 
 type TransportProtocol int
@@ -43,6 +46,15 @@ type Process struct {
 	State string
 
 	User user.User
+}
+
+var processMembers = []string{
+	"PROTOCOL",
+	"PROGRAM",
+	"PID",
+	"LOCAL_ADDR",
+	"REMOTE_ADDR",
+	"USER",
 }
 
 // String describes Process type.
@@ -155,4 +167,93 @@ func parseLittleEndianIpv6(s string) (string, string, error) {
 // ListProcess lists all processes.
 func ListProcess(opt TransportProtocol) ([]Process, error) {
 	return listProcess(opt)
+}
+
+// WriteToTable writes slice of Processes to ASCII table.
+func WriteToTable(w io.Writer, ps ...Process) {
+	table := tablewriter.NewWriter(w)
+	table.SetHeader(processMembers)
+	rows := make([][]string, len(ps))
+	for i, p := range ps {
+		sl := make([]string, len(processMembers))
+		sl[0] = p.Protocol
+		sl[1] = p.Program
+		sl[2] = strconv.Itoa(p.PID)
+		sl[3] = p.LocalIP + p.LocalPort
+		sl[4] = p.RemoteIP + p.RemotePort
+		sl[5] = p.User.Name
+		rows[i] = sl
+	}
+
+	// sort 2D string slice by PROGRAM, PID, LOCAL_ADDR, USER
+	by(
+		rows,
+		makeAscendingFunc(1),
+		makeAscendingFunc(2),
+		makeAscendingFunc(3),
+		makeAscendingFunc(5),
+	).Sort(rows)
+	for _, row := range rows {
+		table.Append(row)
+	}
+
+	table.Render()
+}
+
+// by returns a multiSorter that sorts using the less functions
+func by(rows [][]string, lesses ...lessFunc) *multiSorter {
+	return &multiSorter{
+		data: rows,
+		less: lesses,
+	}
+}
+
+// lessFunc compares between two string slices.
+type lessFunc func(p1, p2 *[]string) bool
+
+func makeAscendingFunc(idx int) func(row1, row2 *[]string) bool {
+	return func(row1, row2 *[]string) bool {
+		return (*row1)[idx] < (*row2)[idx]
+	}
+}
+
+// multiSorter implements the Sort interface,
+// sorting the two dimensional string slices within.
+type multiSorter struct {
+	data [][]string
+	less []lessFunc
+}
+
+// Sort sorts the rows according to lessFunc.
+func (ms *multiSorter) Sort(rows [][]string) {
+	sort.Sort(ms)
+}
+
+// Len is part of sort.Interface.
+func (ms *multiSorter) Len() int {
+	return len(ms.data)
+}
+
+// Swap is part of sort.Interface.
+func (ms *multiSorter) Swap(i, j int) {
+	ms.data[i], ms.data[j] = ms.data[j], ms.data[i]
+}
+
+// Less is part of sort.Interface.
+func (ms *multiSorter) Less(i, j int) bool {
+	p, q := &ms.data[i], &ms.data[j]
+	var k int
+	for k = 0; k < len(ms.less)-1; k++ {
+		less := ms.less[k]
+		switch {
+		case less(p, q):
+			// p < q
+			return true
+		case less(q, p):
+			// p > q
+			return false
+		}
+		// p == q; try next comparison
+	}
+	return ms.less[k](p, q)
 }

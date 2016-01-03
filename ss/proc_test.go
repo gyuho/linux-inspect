@@ -2,6 +2,7 @@ package ss
 
 import (
 	"fmt"
+	"os"
 	"testing"
 )
 
@@ -69,18 +70,28 @@ func TestReadProcFdInternal(t *testing.T) {
 }
 
 func TestListProcess(t *testing.T) {
+	if _, err := ListProcess(TCP); err != nil {
+		t.Error(err)
+	}
+	if _, err := ListProcess(TCP6); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestWriteToTable(t *testing.T) {
+	w := os.Stdout
+
 	ps4, err := ListProcess(TCP)
 	if err != nil {
 		t.Error(err)
 	}
-	for _, p := range ps4 {
-		fmt.Println(p)
-	}
+	WriteToTable(w, ps4...)
+
+	fmt.Println()
+
 	ps6, err := ListProcess(TCP6)
 	if err != nil {
 		t.Error(err)
 	}
-	for _, p := range ps6 {
-		fmt.Println(p)
-	}
+	WriteToTable(w, ps6...)
 }
