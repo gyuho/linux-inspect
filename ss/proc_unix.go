@@ -110,6 +110,7 @@ func listProcess(opt TransportProtocol) ([]Process, error) {
 		return nil, err
 	}
 	procNets := fields[1:]
+
 	procFds, err := readProcFd()
 	if err != nil {
 		return nil, err
@@ -117,6 +118,7 @@ func listProcess(opt TransportProtocol) ([]Process, error) {
 
 	pChan, errChan := make(chan Process), make(chan error)
 	for _, sl := range procNets {
+
 		go func(sl []string) {
 
 			p := Process{}
@@ -177,6 +179,7 @@ func listProcess(opt TransportProtocol) ([]Process, error) {
 			pChan <- p
 
 		}(sl)
+
 	}
 
 	ps := []Process{}
