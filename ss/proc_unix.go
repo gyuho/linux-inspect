@@ -51,7 +51,7 @@ var (
 	}
 )
 
-// readProcNet reads '/proc/net/*' in OS.
+// readProcNet reads '/proc/net/*'.
 func readProcNet(opt TransportProtocol) ([][]string, error) {
 	f, err := os.OpenFile(protocolToPath[opt], os.O_RDONLY, 0444)
 	if err != nil {
@@ -103,8 +103,8 @@ func readProcFd() ([]string, error) {
 	return fs, nil
 }
 
-// ReadProcNet parses raw data from readProcNet, readProcFd functions.
-func ReadProcNet(opt TransportProtocol) ([]Process, error) {
+// listProcess parses raw data from readProcNet, readProcFd functions.
+func listProcess(opt TransportProtocol) ([]Process, error) {
 	fields, err := readProcNet(opt)
 	if err != nil {
 		return nil, err

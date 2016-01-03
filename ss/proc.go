@@ -151,3 +151,8 @@ func parseLittleEndianIpv6(s string) (string, string, error) {
 
 	return ip, ":" + port, nil
 }
+
+// ListProcess lists all processes.
+func ListProcess(opt TransportProtocol) ([]Process, error) {
+	return listProcess(opt)
+}

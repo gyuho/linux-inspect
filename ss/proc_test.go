@@ -68,15 +68,15 @@ func TestReadProcFdInternal(t *testing.T) {
 	}
 }
 
-func TestReadProcNet(t *testing.T) {
-	ps4, err := ReadProcNet(TCP)
+func TestListProcess(t *testing.T) {
+	ps4, err := ListProcess(TCP)
 	if err != nil {
 		t.Error(err)
 	}
 	for _, p := range ps4 {
 		fmt.Println(p)
 	}
-	ps6, err := ReadProcNet(TCP6)
+	ps6, err := ListProcess(TCP6)
 	if err != nil {
 		t.Error(err)
 	}
