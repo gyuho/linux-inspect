@@ -70,42 +70,79 @@ func TestReadProcFdInternal(t *testing.T) {
 }
 
 func TestList(t *testing.T) {
-	if _, err := List(TCP); err != nil {
+	if _, err := List(nil); err != nil {
 		t.Error(err)
 	}
-	if _, err := List(TCP6); err != nil {
+	if _, err := List(nil, TCP, TCP6); err != nil {
 		t.Error(err)
 	}
 }
 
 func TestWriteToTable(t *testing.T) {
-	w := os.Stdout
-
-	ps4, err := List(TCP)
+	ps, err := List(nil, TCP, TCP6)
 	if err != nil {
 		t.Error(err)
 	}
-	WriteToTable(w, ps4...)
-
-	fmt.Println()
-
-	ps6, err := List(TCP6)
-	if err != nil {
-		t.Error(err)
-	}
-	WriteToTable(w, ps6...)
+	WriteToTable(os.Stdout, ps...)
 }
 
-func TestListProgram(t *testing.T) {
-	w := os.Stdout
+func TestFilterMatch(t *testing.T) {
+	filter := Process{}
+	filter.Program = "etcd"
+	filter.PID = 1000
+	p := Process{}
+	p.Program = "etcd"
+	p.PID = 1000
+	if !filter.Match(p) {
+		t.Errorf("got = false, want = true for %s", p)
+	}
+}
 
-	ps4, err := ListProgram(TCP, "etcd")
+func TestListFilter(t *testing.T) {
+	filter := &Process{}
+	filter.Program = "etcd"
+	ps, err := List(filter, TCP, TCP6)
 	if err != nil {
 		t.Error(err)
 	}
-	WriteToTable(w, ps4...)
+	WriteToTable(os.Stdout, ps...)
 }
 
-func TestListTcpPorts(t *testing.T) {
-	fmt.Println("ListTcpPorts:", ListTcpPorts())
+func TestListPorts(t *testing.T) {
+	pm := ListPorts(nil, TCP, TCP6)
+	for pt := range pm {
+		fmt.Printf("%9s is being used...\n", pt)
+	}
+}
+
+func TestExistAddFree(t *testing.T) {
+	ports := NewPorts()
+	tp := ":1000"
+	ports.Add(tp)
+	if _, ok := ports.beingUsed[tp]; !ok {
+		t.Errorf("%s should have been 'beingUsed'", tp)
+	}
+	if !ports.Exist(tp) {
+		t.Errorf("%s should exist", tp)
+	}
+	ports.Free(tp)
+	if _, ok := ports.beingUsed[tp]; ok {
+		t.Errorf("%s should have been not 'beingUsed'", tp)
+	}
+}
+
+func TestGetFreePort(t *testing.T) {
+	pt, err := getFreePort(TCP, TCP6)
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Printf("Port %s is available for tcp.\n", pt)
+}
+
+func TestGetFreePorts(t *testing.T) {
+	ps, err := GetFreePorts(3, TCP, TCP6)
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Printf("GetFreePorts: %v\n", ps)
 }

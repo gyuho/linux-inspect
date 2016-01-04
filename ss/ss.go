@@ -3,10 +3,12 @@ package ss
 import (
 	"fmt"
 	"io"
+	"net"
 	"os/user"
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 
 	"github.com/olekukonko/tablewriter"
@@ -174,38 +176,109 @@ func parseLittleEndianIpv6(s string) (string, string, error) {
 	return ip, ":" + port, nil
 }
 
-// List lists all processes.
-func List(opt TransportProtocol) ([]Process, error) {
-	return list(opt)
+// List lists all processes. filter is used to return Processes
+// that matches the member values in filter struct.
+func List(filter *Process, opts ...TransportProtocol) ([]Process, error) {
+	rs := []Process{}
+	for _, opt := range opts {
+
+		ps, err := list(opt)
+		if err != nil {
+			return nil, err
+		}
+
+		if filter == nil {
+			rs = append(rs, ps...)
+			continue
+		}
+
+		pCh, done := make(chan Process), make(chan struct{})
+		fv := *filter
+
+		for _, p := range ps {
+
+			go func(ft, process Process) {
+
+				if !ft.Match(process) {
+					done <- struct{}{}
+					return
+				}
+				pCh <- process
+
+			}(fv, p)
+
+		}
+
+		cn := 0
+		ns := []Process{}
+		for cn != len(ps) {
+			select {
+			case p := <-pCh:
+				ns = append(ns, p)
+				cn++
+			case <-done:
+				cn++
+			}
+		}
+
+		close(pCh)
+		close(done)
+
+		rs = append(rs, ns...)
+	}
+	return rs, nil
 }
 
-// ListProgram lists all processes running a specific program.
-func ListProgram(opt TransportProtocol, program string) ([]Process, error) {
-	ps, err := list(opt)
-	if err != nil {
-		return nil, err
-	}
-	ns := []Process{}
-	for _, p := range ps {
-		if strings.HasSuffix(p.Program, program) {
-			ns = append(ns, p)
+// Match returns true if the Process matches the filter.
+func (filter Process) Match(p Process) bool {
+	if filter.Protocol != "" {
+		if p.Protocol != filter.Protocol {
+			return false
 		}
 	}
-	return ns, nil
-}
-
-// ListTcpPorts lists all TCP ports that are being used.
-func ListTcpPorts() map[string]struct{} {
-	ps4, _ := List(TCP)
-	ps6, _ := List(TCP6)
-	rm := make(map[string]struct{})
-	for _, p := range ps4 {
-		rm[p.LocalPort] = struct{}{}
+	// matches the suffix
+	if filter.Program != "" {
+		if !strings.HasSuffix(p.Program, filter.Program) {
+			return false
+		}
 	}
-	for _, p := range ps6 {
-		rm[p.RemotePort] = struct{}{}
+	if filter.PID != 0 {
+		if p.PID != filter.PID {
+			return false
+		}
 	}
-	return rm
+	if filter.LocalIP != "" {
+		if p.LocalIP != filter.LocalIP {
+			return false
+		}
+	}
+	if filter.LocalPort != "" {
+		if p.LocalPort != filter.LocalPort {
+			return false
+		}
+	}
+	if filter.RemoteIP != "" {
+		if p.RemoteIP != filter.RemoteIP {
+			return false
+		}
+	}
+	if filter.RemotePort != "" {
+		if p.RemotePort != filter.RemotePort {
+			return false
+		}
+	}
+	if filter.State != "" {
+		if p.State != filter.State {
+			return false
+		}
+	}
+	// currently only support user name
+	if filter.User.Username != "" {
+		if p.User.Username != filter.User.Username {
+			return false
+		}
+	}
+	return true
 }
 
 // WriteToTable writes slice of Processes to ASCII table.
@@ -227,6 +300,7 @@ func WriteToTable(w io.Writer, ps ...Process) {
 
 	by(
 		rows,
+		makeAscendingFunc(0), // PROTOCOL
 		makeAscendingFunc(1), // PROGRAM
 		makeAscendingFunc(2), // PID
 		makeAscendingFunc(3), // LOCAL_ADDR
@@ -238,4 +312,121 @@ func WriteToTable(w io.Writer, ps ...Process) {
 	}
 
 	table.Render()
+}
+
+// ListPorts lists all ports that are being used.
+func ListPorts(filter *Process, opts ...TransportProtocol) map[string]struct{} {
+	rm := make(map[string]struct{})
+	ps, _ := List(filter, opts...)
+	for _, p := range ps {
+		rm[p.LocalPort] = struct{}{}
+		rm[p.RemotePort] = struct{}{}
+	}
+	return rm
+}
+
+type Ports struct {
+	mu        sync.Mutex // guards the following
+	beingUsed map[string]struct{}
+}
+
+func NewPorts() *Ports {
+	p := &Ports{}
+	p.beingUsed = make(map[string]struct{})
+	return p
+}
+
+func (p *Ports) Exist(port string) bool {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	_, ok := p.beingUsed[port]
+	return ok
+}
+
+func (p *Ports) Add(ports ...string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	for _, port := range ports {
+		p.beingUsed[port] = struct{}{}
+	}
+}
+
+func (p *Ports) Free(ports ...string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	for _, port := range ports {
+		delete(p.beingUsed, port)
+	}
+}
+
+// RefreshPorts refreshes ports that are being used by the OS.
+// You would use as follows:
+//
+//	var (
+//		globalPorts     = NewPorts()
+//		refreshInterval = 10 * time.Second
+//	)
+//	func init() {
+//		globalPorts.Refresh()
+//		go func() {
+//			for {
+//				select {
+//				case <-time.After(refreshInterval):
+//					globalPorts.RefreshPorts()
+//				}
+//			}
+//		}()
+//	}
+//
+func (p *Ports) RefreshPorts() {
+	p.mu.Lock()
+	p.beingUsed = ListPorts(nil, TCP, TCP6)
+	p.mu.Unlock()
+}
+
+func getFreePort(opts ...TransportProtocol) (string, error) {
+	fp := ""
+	var errMsg error
+	for _, opt := range opts {
+		protocolStr := ""
+		switch opt {
+		case TCP:
+			protocolStr = "tcp"
+		case TCP6:
+			protocolStr = "tcp6"
+		}
+		addr, err := net.ResolveTCPAddr(protocolStr, "localhost:0")
+		if err != nil {
+			errMsg = err
+			continue
+		}
+		l, err := net.ListenTCP(protocolStr, addr)
+		if err != nil {
+			errMsg = err
+			continue
+		}
+		pd := l.Addr().(*net.TCPAddr).Port
+		l.Close()
+		fp = ":" + strconv.Itoa(pd)
+		break
+	}
+	return fp, errMsg
+}
+
+// GetFreePorts returns multiple free ports from OS.
+func GetFreePorts(num int, opts ...TransportProtocol) ([]string, error) {
+	rm := make(map[string]struct{})
+	for len(rm) != num {
+		p, err := getFreePort(opts...)
+		if err != nil {
+			return nil, err
+		}
+		rm[p] = struct{}{}
+	}
+	rs := []string{}
+	for p := range rm {
+		rs = append(rs, p)
+	}
+	sort.Strings(rs)
+	return rs, nil
 }
