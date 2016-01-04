@@ -1,9 +1,9 @@
-## ssn [![Build Status](https://img.shields.io/travis/gyuho/ssn.svg?style=flat-square)](https://travis-ci.org/gyuho/ssn) [![Godoc](http://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/gyuho/ssn)
+## psn [![Build Status](https://img.shields.io/travis/gyuho/psn.svg?style=flat-square)](https://travis-ci.org/gyuho/psn) [![Godoc](http://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/gyuho/psn)
 
-ss, netstat in Go. ssn is an utility to investigate sockets.
+Process, socket utilities in Go. It provides features in ps, ss, netstat.
 
 ```
-go get -v -u github.com/gyuho/ssn/...
+go get -v -u github.com/gyuho/psn/...
 ```
 
 
