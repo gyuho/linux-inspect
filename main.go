@@ -14,19 +14,24 @@ const (
 	cliDescription = "psn provides utilities to investigate OS processes and sockets."
 )
 
-type flags struct {
+type GlobalFlag struct {
+	GlobalFilter *ss.Process
 }
 
 var (
-	w            = os.Stdout
-	globalFlags  = flags{}
-	globalFilter = &ss.Process{}
+	w          = os.Stdout
+	globalFlag = GlobalFlag{GlobalFilter: &ss.Process{}}
 
 	rootCmd = &cobra.Command{
 		Use:        cliName,
 		Short:      cliDescription,
 		SuggestFor: []string{"sssn", "sns", "sn"},
 		RunE:       rootCommandFunc,
+	}
+	ssCmd = &cobra.Command{
+		Use:   "ss",
+		Short: "ss investigates sockets.",
+		RunE:  ssCommandFunc,
 	}
 	killCmd = &cobra.Command{
 		Use:   "kill",
@@ -36,36 +41,60 @@ var (
 )
 
 func rootCommandFunc(cmd *cobra.Command, args []string) error {
-	ps, err := ss.List(globalFilter, ss.TCP, ss.TCP6)
+	// TODO:
+	// psr, err := ps.List(...)
+
+	ssr, err := ss.List(globalFlag.GlobalFilter, ss.TCP, ss.TCP6)
 	if err != nil {
 		return err
 	}
-	ss.WriteToTable(w, ps...)
+	ss.WriteToTable(w, ssr...)
+
+	return nil
+}
+
+func ssCommandFunc(cmd *cobra.Command, args []string) error {
+	// TODO:
+	// psr, err := ps.List(...)
+
+	ssr, err := ss.List(globalFlag.GlobalFilter, ss.TCP, ss.TCP6)
+	if err != nil {
+		return err
+	}
+	ss.WriteToTable(w, ssr...)
+
 	return nil
 }
 
 func killCommandFunc(cmd *cobra.Command, args []string) error {
-	ps, err := ss.List(globalFilter, ss.TCP, ss.TCP6)
+	// TODO:
+	// psr, err := ps.List(...)
+	// ps.WriteToTable(...)
+	// ps.Kill(...)
+
+	ssr, err := ss.List(globalFlag.GlobalFilter, ss.TCP, ss.TCP6)
 	if err != nil {
 		return err
 	}
-	fmt.Fprintln(w, "Killing the following processes...")
-	ss.WriteToTable(w, ps...)
-	ss.Kill(w, ps...)
+	fmt.Fprintln(w, "Killing from ss:")
+	ss.WriteToTable(w, ssr...)
+	ss.Kill(w, ssr...)
+
 	return nil
 }
 
 func init() {
+	rootCmd.AddCommand(ssCmd)
 	rootCmd.AddCommand(killCmd)
 
-	rootCmd.PersistentFlags().StringVarP(&globalFilter.Protocol, "protocol", "t", "", "'tcp' or 'tcp6'. Empty lists all protocols.")
-	rootCmd.PersistentFlags().StringVarP(&globalFilter.Program, "program", "s", "", "Specify the program. Empty lists all programs.")
-	rootCmd.PersistentFlags().StringVarP(&globalFilter.LocalIP, "local-ip", "l", "", "Specify the local IP. Empty lists all local IPs.")
-	rootCmd.PersistentFlags().StringVarP(&globalFilter.LocalPort, "local-port", "p", "", "Specify the local port. Empty lists all local ports.")
-	rootCmd.PersistentFlags().StringVarP(&globalFilter.RemoteIP, "remote-ip", "r", "", "Specify the remote IP. Empty lists all remote IPs.")
-	rootCmd.PersistentFlags().StringVarP(&globalFilter.RemotePort, "remote-port", "m", "", "Specify the remote port. Empty lists all remote ports.")
-	rootCmd.PersistentFlags().StringVarP(&globalFilter.State, "state", "a", "", "Specify the state. Empty lists all states.")
-	rootCmd.PersistentFlags().StringVarP(&globalFilter.User.Username, "username", "u", "", "Specify the user name. Empty lists all user names.")
+	rootCmd.PersistentFlags().StringVarP(&globalFlag.GlobalFilter.Protocol, "protocol", "t", "", "'tcp' or 'tcp6'. Empty lists all protocols.")
+	rootCmd.PersistentFlags().StringVarP(&globalFlag.GlobalFilter.Program, "program", "s", "", "Specify the program. Empty lists all programs.")
+	rootCmd.PersistentFlags().StringVarP(&globalFlag.GlobalFilter.LocalIP, "local-ip", "l", "", "Specify the local IP. Empty lists all local IPs.")
+	rootCmd.PersistentFlags().StringVarP(&globalFlag.GlobalFilter.LocalPort, "local-port", "p", "", "Specify the local port. Empty lists all local ports.")
+	rootCmd.PersistentFlags().StringVarP(&globalFlag.GlobalFilter.RemoteIP, "remote-ip", "r", "", "Specify the remote IP. Empty lists all remote IPs.")
+	rootCmd.PersistentFlags().StringVarP(&globalFlag.GlobalFilter.RemotePort, "remote-port", "m", "", "Specify the remote port. Empty lists all remote ports.")
+	rootCmd.PersistentFlags().StringVarP(&globalFlag.GlobalFilter.State, "state", "a", "", "Specify the state. Empty lists all states.")
+	rootCmd.PersistentFlags().StringVarP(&globalFlag.GlobalFilter.User.Username, "username", "u", "", "Specify the user name. Empty lists all user names.")
 }
 
 func init() {
