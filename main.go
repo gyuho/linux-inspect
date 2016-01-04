@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/fatih/color"
 	"github.com/gyuho/psn/ss"
 	"github.com/spf13/cobra"
 )
@@ -41,6 +42,10 @@ var (
 )
 
 func rootCommandFunc(cmd *cobra.Command, args []string) error {
+	color.Set(color.FgBlue)
+	fmt.Fprintf(w, "\npsn is listing all ps and ss data:\n\n")
+	color.Unset()
+
 	// TODO:
 	// psr, err := ps.List(...)
 
@@ -48,25 +53,40 @@ func rootCommandFunc(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+
 	ss.WriteToTable(w, ssr...)
+
+	color.Set(color.FgGreen)
+	fmt.Fprintf(w, "\nDone.\n")
+	color.Unset()
 
 	return nil
 }
 
 func ssCommandFunc(cmd *cobra.Command, args []string) error {
-	// TODO:
-	// psr, err := ps.List(...)
+	color.Set(color.FgMagenta)
+	fmt.Fprintf(w, "\npsn ss is listing:\n\n")
+	color.Unset()
 
 	ssr, err := ss.List(globalFlag.GlobalFilter, ss.TCP, ss.TCP6)
 	if err != nil {
 		return err
 	}
+
 	ss.WriteToTable(w, ssr...)
+
+	color.Set(color.FgGreen)
+	fmt.Fprintf(w, "\nDone.\n")
+	color.Unset()
 
 	return nil
 }
 
 func killCommandFunc(cmd *cobra.Command, args []string) error {
+	color.Set(color.FgRed)
+	fmt.Fprintf(w, "\npsn is killing:\n\n")
+	color.Unset()
+
 	// TODO:
 	// psr, err := ps.List(...)
 	// ps.WriteToTable(...)
@@ -76,9 +96,15 @@ func killCommandFunc(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Fprintln(w, "Killing from ss:")
+
 	ss.WriteToTable(w, ssr...)
+	fmt.Fprintf(w, "\n")
+
 	ss.Kill(w, ssr...)
+
+	color.Set(color.FgGreen)
+	fmt.Fprintf(w, "\nDone.\n")
+	color.Unset()
 
 	return nil
 }
