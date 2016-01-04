@@ -7,6 +7,31 @@ This is still in active development and only supports Linux system.
 go get -v -u github.com/gyuho/psn/...
 ```
 
+```
+psn provides utilities to investigate OS processes and sockets.
+
+Usage:
+  psn [flags]
+  psn [command]
+
+Available Commands:
+  ss          ss investigates sockets.
+  kill        kill kills programs using syscall. Make sure to specify the flags to find the program.
+
+Flags:
+  -l, --local-ip="": Specify the local IP. Empty lists all local IPs.
+  -p, --local-port="": Specify the local port. Empty lists all local ports.
+  -s, --program="": Specify the program. Empty lists all programs.
+  -t, --protocol="": 'tcp' or 'tcp6'. Empty lists all protocols.
+  -r, --remote-ip="": Specify the remote IP. Empty lists all remote IPs.
+  -m, --remote-port="": Specify the remote port. Empty lists all remote ports.
+  -a, --state="": Specify the state. Empty lists all states.
+  -u, --username="": Specify the user name. Empty lists all user names.
+
+Use "psn [command] --help" for more information about a command.
+
+```
+
 
 <br>
 
