@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gyuho/ssn/ss"
+	"github.com/gyuho/psn/ss"
 	"github.com/spf13/cobra"
 )
 
