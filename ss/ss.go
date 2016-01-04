@@ -359,7 +359,7 @@ func (p *Ports) Free(ports ...string) {
 	}
 }
 
-// RefreshPorts refreshes ports that are being used by the OS.
+// Refresh refreshes ports that are being used by the OS.
 // You would use as follows:
 //
 //	var (
@@ -372,13 +372,13 @@ func (p *Ports) Free(ports ...string) {
 //			for {
 //				select {
 //				case <-time.After(refreshInterval):
-//					globalPorts.RefreshPorts()
+//					globalPorts.Refresh()
 //				}
 //			}
 //		}()
 //	}
 //
-func (p *Ports) RefreshPorts() {
+func (p *Ports) Refresh() {
 	p.mu.Lock()
 	p.beingUsed = ListPorts(nil, TCP, TCP6)
 	p.mu.Unlock()

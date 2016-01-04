@@ -98,14 +98,20 @@ func TestFilterMatch(t *testing.T) {
 	}
 }
 
-func TestListFilter(t *testing.T) {
-	filter := &Process{}
-	filter.Program = "etcd"
+func TestListEtcd(t *testing.T) {
+	filter := &Process{Program: "etcd"}
+	fmt.Println("etcd filter:", filter)
+
 	ps, err := List(filter, TCP, TCP6)
 	if err != nil {
 		t.Error(err)
 	}
 	WriteToTable(os.Stdout, ps...)
+
+	pm := ListPorts(filter, TCP, TCP6)
+	for pt := range pm {
+		fmt.Printf("%9s is being used...\n", pt)
+	}
 }
 
 func TestListPorts(t *testing.T) {
