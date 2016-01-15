@@ -94,7 +94,7 @@ func Kill(w io.Writer, ps ...Process) {
 
 	for _, pid := range pids {
 		fmt.Fprintf(w, "syscall.Kill: %s [PID: %d]\n", pidToKill[pid], pid)
-		if err := syscall.Kill(pid, syscall.SIGINT); err != nil {
+		if err := syscall.Kill(pid, syscall.SIGKILL); err != nil {
 			fmt.Fprintln(w, "Kill:", err)
 		}
 	}
