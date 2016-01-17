@@ -415,8 +415,13 @@ func getFreePort(opts ...TransportProtocol) (string, error) {
 
 // GetFreePorts returns multiple free ports from OS.
 func GetFreePorts(num int, opts ...TransportProtocol) ([]string, error) {
+	try := 0
 	rm := make(map[string]struct{})
 	for len(rm) != num {
+		if try > 150 {
+			return nil, fmt.Errorf("too many tries to find free ports")
+		}
+		try++
 		p, err := getFreePort(opts...)
 		if err != nil {
 			return nil, err
