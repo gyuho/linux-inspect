@@ -113,14 +113,14 @@ func init() {
 	rootCommand.AddCommand(ssCommand)
 	rootCommand.AddCommand(killCommand)
 
-	rootCommand.PersistentFlags().StringVarP(&globalFlag.GlobalFilter.Protocol, "protocol", "t", "", "'tcp' or 'tcp6'. Empty lists all protocols.")
 	rootCommand.PersistentFlags().StringVarP(&globalFlag.GlobalFilter.Program, "program", "s", "", "Specify the program. Empty lists all programs.")
-	rootCommand.PersistentFlags().StringVarP(&globalFlag.GlobalFilter.LocalIP, "local-ip", "l", "", "Specify the local IP. Empty lists all local IPs.")
-	rootCommand.PersistentFlags().StringVarP(&globalFlag.GlobalFilter.LocalPort, "local-port", "p", "", "Specify the local port. Empty lists all local ports.")
-	rootCommand.PersistentFlags().StringVarP(&globalFlag.GlobalFilter.RemoteIP, "remote-ip", "r", "", "Specify the remote IP. Empty lists all remote IPs.")
-	rootCommand.PersistentFlags().StringVarP(&globalFlag.GlobalFilter.RemotePort, "remote-port", "m", "", "Specify the remote port. Empty lists all remote ports.")
-	rootCommand.PersistentFlags().StringVarP(&globalFlag.GlobalFilter.State, "state", "a", "", "Specify the state. Empty lists all states.")
-	rootCommand.PersistentFlags().StringVarP(&globalFlag.GlobalFilter.User.Username, "username", "u", "", "Specify the user name. Empty lists all user names.")
+	rootCommand.PersistentFlags().StringVar(&globalFlag.GlobalFilter.Protocol, "protocol", "", "'tcp' or 'tcp6'. Empty lists all protocols.")
+	rootCommand.PersistentFlags().StringVar(&globalFlag.GlobalFilter.LocalIP, "local-ip", "", "Specify the local IP. Empty lists all local IPs.")
+	rootCommand.PersistentFlags().StringVar(&globalFlag.GlobalFilter.LocalPort, "local-port", "", "Specify the local port. Empty lists all local ports.")
+	rootCommand.PersistentFlags().StringVar(&globalFlag.GlobalFilter.RemoteIP, "remote-ip", "", "Specify the remote IP. Empty lists all remote IPs.")
+	rootCommand.PersistentFlags().StringVar(&globalFlag.GlobalFilter.RemotePort, "remote-port", "", "Specify the remote port. Empty lists all remote ports.")
+	rootCommand.PersistentFlags().StringVar(&globalFlag.GlobalFilter.State, "state", "", "Specify the state. Empty lists all states.")
+	rootCommand.PersistentFlags().StringVar(&globalFlag.GlobalFilter.User.Username, "username", "", "Specify the user name. Empty lists all user names.")
 }
 
 func init() {
