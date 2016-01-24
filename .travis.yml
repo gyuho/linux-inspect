@@ -8,5 +8,5 @@ go:
 - tip
 
 script:
-- ./test.sh
+- ./test
 
