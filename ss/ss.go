@@ -253,7 +253,15 @@ func (filter Process) Match(p Process) bool {
 		}
 	}
 	if filter.LocalPort != "" {
-		if p.LocalPort != filter.LocalPort {
+		p0 := p.LocalPort
+		if !strings.HasPrefix(p0, ":") {
+			p0 = ":" + p0
+		}
+		p1 := filter.LocalPort
+		if !strings.HasPrefix(p1, ":") {
+			p1 = ":" + p1
+		}
+		if p0 != p1 {
 			return false
 		}
 	}
@@ -263,7 +271,15 @@ func (filter Process) Match(p Process) bool {
 		}
 	}
 	if filter.RemotePort != "" {
-		if p.RemotePort != filter.RemotePort {
+		p0 := p.RemotePort
+		if !strings.HasPrefix(p0, ":") {
+			p0 = ":" + p0
+		}
+		p1 := filter.RemotePort
+		if !strings.HasPrefix(p1, ":") {
+			p1 = ":" + p1
+		}
+		if p0 != p1 {
 			return false
 		}
 	}
