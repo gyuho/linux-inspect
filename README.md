@@ -4,7 +4,7 @@ Process, socket utilities in Go. It provides features in ps, ss, netstat.
 This is still in active development and only supports Linux system.
 
 ```
-go get -v -u -f github.com/gyuho/psn/...
+go get -v -u -f github.com/gyuho/psn
 ```
 
 ```
