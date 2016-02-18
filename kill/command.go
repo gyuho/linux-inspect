@@ -10,8 +10,9 @@ import (
 )
 
 type Flags struct {
-	Force  bool
-	Filter *ss.Process
+	Force   bool
+	CleanUp bool
+	Filter  *ss.Process
 }
 
 var (
@@ -25,10 +26,11 @@ var (
 
 func init() {
 	Command.PersistentFlags().BoolVarP(&cmdFlag.Force, "force", "f", false, "'true' to force kill any programs.")
+	Command.PersistentFlags().BoolVar(&cmdFlag.CleanUp, "clean-up", false, "'true' to clean up deleted programs (this overwrites program flag).")
 	Command.PersistentFlags().StringVarP(&cmdFlag.Filter.Program, "program", "s", "SPECIFY YOUR PROGRAM HERE", "Specify the program. Empty lists all programs.")
 	Command.PersistentFlags().StringVar(&cmdFlag.Filter.Protocol, "protocol", "", "'tcp' or 'tcp6'. Empty lists all protocols.")
 	Command.PersistentFlags().StringVar(&cmdFlag.Filter.LocalIP, "local-ip", "", "Specify the local IP. Empty lists all local IPs.")
-	Command.PersistentFlags().StringVarP(&cmdFlag.Filter.LocalPort, "local-port", "l", "SPECIFY YOUR PORT HERE", "Specify the local port. Empty lists all local ports.")
+	Command.PersistentFlags().StringVarP(&cmdFlag.Filter.LocalPort, "local-port", "l", "", "Specify the local port. Empty lists all local ports.")
 	Command.PersistentFlags().StringVar(&cmdFlag.Filter.RemoteIP, "remote-ip", "", "Specify the remote IP. Empty lists all remote IPs.")
 	Command.PersistentFlags().StringVar(&cmdFlag.Filter.RemotePort, "remote-port", "", "Specify the remote port. Empty lists all remote ports.")
 	Command.PersistentFlags().StringVar(&cmdFlag.Filter.State, "state", "", "Specify the state. Empty lists all states.")
@@ -36,8 +38,11 @@ func init() {
 }
 
 func CommandFunc(cmd *cobra.Command, args []string) error {
+	if cmdFlag.CleanUp {
+		cmdFlag.Filter.Program = "deleted)"
+	}
 	color.Set(color.FgRed)
-	fmt.Fprintf(os.Stdout, "\npsn kill with %s(%s)\n\n", cmdFlag.Filter.Program, cmdFlag.Filter.LocalPort)
+	fmt.Fprintf(os.Stdout, "\npsn kill with %q (port %s)\n\n", cmdFlag.Filter.Program, cmdFlag.Filter.LocalPort)
 	color.Unset()
 
 	ssr, err := ss.List(cmdFlag.Filter, ss.TCP, ss.TCP6)
