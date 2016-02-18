@@ -2,8 +2,8 @@
 # Reference:
 # https://github.com/coreos/etcd/blob/master/test
 
-TEST=./ss;
-FMT="./ss/*.go"
+TEST="./...";
+FMT="./*.go";
 
 echo "Running tests...";
 go test -v -cover -cpu 1,2,4 $TEST;
@@ -31,4 +31,3 @@ if [ -n "${vetRes}" ]; then
 fi
 
 echo "Success";
-
