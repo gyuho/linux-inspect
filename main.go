@@ -1,126 +1,44 @@
 // psn is an utility to investigate sockets.
+//
+//	psn provides utilities to investigate OS processes and sockets.
+//
+//	Usage:
+//	  psn [command]
+//
+//	Available Commands:
+//	  ss          ss investigates sockets.
+//	  kill        kill kills programs using syscall. Make sure to specify the flags to find the program.
+//	  monitor     monitor monitors programs.
+//
+//	Flags:
+//	  -h, --help[=false]: help for psn
+//
+//	Use "psn [command] --help" for more information about a command.
+//
 package main
 
 import (
 	"fmt"
 	"os"
 
-	"github.com/fatih/color"
+	"github.com/gyuho/psn/kill"
+	"github.com/gyuho/psn/monitor"
 	"github.com/gyuho/psn/ss"
 	"github.com/spf13/cobra"
 )
 
-const (
-	cliName        = "psn"
-	cliDescription = "psn provides utilities to investigate OS processes and sockets."
-)
-
-type GlobalFlag struct {
-	GlobalFilter *ss.Process
-}
-
 var (
-	w          = os.Stdout
-	globalFlag = GlobalFlag{GlobalFilter: &ss.Process{}}
-
-	rootCommand = &cobra.Command{
-		Use:        cliName,
-		Short:      cliDescription,
-		SuggestFor: []string{"sssn", "sns", "sn"},
-		RunE:       rootCommandFunc,
-	}
-	ssCommand = &cobra.Command{
-		Use:   "ss",
-		Short: "ss investigates sockets.",
-		RunE:  ssCommandFunc,
-	}
-	killCommand = &cobra.Command{
-		Use:   "kill",
-		Short: "kill kills programs using syscall. Make sure to specify the flags to find the program.",
-		RunE:  killCommandFunc,
+	Command = &cobra.Command{
+		Use:        "psn",
+		Short:      "psn provides utilities to investigate OS processes and sockets.",
+		SuggestFor: []string{"pssn", "psns", "snp"},
 	}
 )
-
-func rootCommandFunc(cmd *cobra.Command, args []string) error {
-	color.Set(color.FgBlue)
-	fmt.Fprintf(w, "\npsn is listing all ps and ss data:\n\n")
-	color.Unset()
-
-	// TODO:
-	// psr, err := ps.List(...)
-
-	ssr, err := ss.List(globalFlag.GlobalFilter, ss.TCP, ss.TCP6)
-	if err != nil {
-		return err
-	}
-
-	ss.WriteToTable(w, ssr...)
-
-	color.Set(color.FgGreen)
-	fmt.Fprintf(w, "\nDone.\n")
-	color.Unset()
-
-	return nil
-}
-
-func ssCommandFunc(cmd *cobra.Command, args []string) error {
-	color.Set(color.FgMagenta)
-	fmt.Fprintf(w, "\npsn ss is listing:\n\n")
-	color.Unset()
-
-	ssr, err := ss.List(globalFlag.GlobalFilter, ss.TCP, ss.TCP6)
-	if err != nil {
-		return err
-	}
-
-	ss.WriteToTable(w, ssr...)
-
-	color.Set(color.FgGreen)
-	fmt.Fprintf(w, "\nDone.\n")
-	color.Unset()
-
-	return nil
-}
-
-func killCommandFunc(cmd *cobra.Command, args []string) error {
-	color.Set(color.FgRed)
-	fmt.Fprintf(w, "\npsn is killing:\n\n")
-	color.Unset()
-
-	// TODO:
-	// psr, err := ps.List(...)
-	// ps.WriteToTable(...)
-	// ps.Kill(...)
-
-	ssr, err := ss.List(globalFlag.GlobalFilter, ss.TCP, ss.TCP6)
-	if err != nil {
-		return err
-	}
-
-	ss.WriteToTable(w, ssr...)
-	fmt.Fprintf(w, "\n")
-
-	ss.Kill(w, ssr...)
-
-	color.Set(color.FgGreen)
-	fmt.Fprintf(w, "\nDone.\n")
-	color.Unset()
-
-	return nil
-}
 
 func init() {
-	rootCommand.AddCommand(ssCommand)
-	rootCommand.AddCommand(killCommand)
-
-	rootCommand.PersistentFlags().StringVarP(&globalFlag.GlobalFilter.Program, "program", "s", "", "Specify the program. Empty lists all programs.")
-	rootCommand.PersistentFlags().StringVar(&globalFlag.GlobalFilter.Protocol, "protocol", "", "'tcp' or 'tcp6'. Empty lists all protocols.")
-	rootCommand.PersistentFlags().StringVar(&globalFlag.GlobalFilter.LocalIP, "local-ip", "", "Specify the local IP. Empty lists all local IPs.")
-	rootCommand.PersistentFlags().StringVar(&globalFlag.GlobalFilter.LocalPort, "local-port", "", "Specify the local port. Empty lists all local ports.")
-	rootCommand.PersistentFlags().StringVar(&globalFlag.GlobalFilter.RemoteIP, "remote-ip", "", "Specify the remote IP. Empty lists all remote IPs.")
-	rootCommand.PersistentFlags().StringVar(&globalFlag.GlobalFilter.RemotePort, "remote-port", "", "Specify the remote port. Empty lists all remote ports.")
-	rootCommand.PersistentFlags().StringVar(&globalFlag.GlobalFilter.State, "state", "", "Specify the state. Empty lists all states.")
-	rootCommand.PersistentFlags().StringVar(&globalFlag.GlobalFilter.User.Username, "username", "", "Specify the user name. Empty lists all user names.")
+	Command.AddCommand(ss.Command)
+	Command.AddCommand(kill.Command)
+	Command.AddCommand(monitor.Command)
 }
 
 func init() {
@@ -128,8 +46,8 @@ func init() {
 }
 
 func main() {
-	if err := rootCommand.Execute(); err != nil {
-		fmt.Fprintln(w, err)
+	if err := Command.Execute(); err != nil {
+		fmt.Fprintln(os.Stdout, err)
 		os.Exit(1)
 	}
 }

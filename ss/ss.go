@@ -74,8 +74,39 @@ func (p Process) String() string {
 	)
 }
 
+// UnsafeKillPIDs lists PIDs to be protected.
+// (https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers)
+var UnsafeKillPIDs = map[int]struct{}{
+	0:  struct{}{},
+	22: struct{}{},
+}
+
+// UnsafeKillNames lists program names to be protected.
+// (https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers)
+var UnsafeKillNames = map[string]struct{}{
+	"/bin/sh":      struct{}{},
+	"/bin/bash":    struct{}{},
+	"/usr/bin/ssh": struct{}{},
+	"systemd":      struct{}{},
+}
+
+func filterOut(pidToKill *map[int]string) {
+	m := *pidToKill
+	for k, v := range m {
+		if _, ok := UnsafeKillPIDs[k]; ok {
+			delete(m, k)
+		} else {
+			for pname := range UnsafeKillNames {
+				if strings.HasSuffix(v, pname) {
+					delete(m, k)
+				}
+			}
+		}
+	}
+}
+
 // Kill kills all processes in arguments.
-func Kill(w io.Writer, ps ...Process) {
+func Kill(w io.Writer, force bool, ps ...Process) {
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Fprintln(w, "Kill:", err)
@@ -83,19 +114,27 @@ func Kill(w io.Writer, ps ...Process) {
 	}()
 
 	pidToKill := make(map[int]string)
-	pids := []int{}
 	for _, p := range ps {
 		if _, ok := pidToKill[p.PID]; !ok {
 			pidToKill[p.PID] = p.Program
-			pids = append(pids, p.PID)
 		}
+	}
+	if !force {
+		filterOut(&pidToKill)
+	}
+	pids := []int{}
+	for pid := range pidToKill {
+		pids = append(pids, pid)
 	}
 	sort.Ints(pids)
 
 	for _, pid := range pids {
 		fmt.Fprintf(w, "syscall.Kill: %s [PID: %d]\n", pidToKill[pid], pid)
+		if err := syscall.Kill(pid, syscall.SIGTERM); err != nil {
+			fmt.Fprintf(w, "error when sending syscall.SIGTERM (%v):", err)
+		}
 		if err := syscall.Kill(pid, syscall.SIGKILL); err != nil {
-			fmt.Fprintln(w, "Kill:", err)
+			fmt.Fprintf(w, "error when sending syscall.SIGKILL (%v):", err)
 		}
 	}
 }
