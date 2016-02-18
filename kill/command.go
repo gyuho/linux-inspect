@@ -41,8 +41,8 @@ func CommandFunc(cmd *cobra.Command, args []string) error {
 	if cmdFlag.CleanUp {
 		cmdFlag.Filter.Program = "deleted)"
 	}
-	if cmdFlag.Filter.LocalIP != "" && cmdFlag.Filter.Program == "" {
-		cmdFlag.Filter.Program = "SPECIFY YOUR PROGRAM HERE"
+	if cmdFlag.Filter.LocalIP != "" && cmdFlag.Filter.Program == "SPECIFY YOUR PROGRAM HERE" {
+		cmdFlag.Filter.Program = ""
 	}
 
 	color.Set(color.FgRed)
