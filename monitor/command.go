@@ -44,65 +44,66 @@ func CommandFunc(cmd *cobra.Command, args []string) error {
 	notifier := make(chan os.Signal, 1)
 	signal.Notify(notifier, syscall.SIGINT, syscall.SIGTERM)
 
-	if cmdFlag.LogPath == "" {
-		for {
-			select {
-			case <-time.After(cmdFlag.Interval):
-				color.Set(color.FgRed)
-				fmt.Fprintf(os.Stdout, "\npsn monitor at %s\n\n", time.Now())
-				color.Unset()
+	rFunc := func() error {
+		color.Set(color.FgRed)
+		fmt.Fprintf(os.Stdout, "\npsn monitor at %s\n\n", time.Now())
+		color.Unset()
 
-				ssr, err := ss.List(cmdFlag.Filter, ss.TCP, ss.TCP6)
-				if err != nil {
-					return err
-				}
-
-				ss.WriteToTable(os.Stdout, ssr...)
-				fmt.Fprintf(os.Stdout, "\n")
-
-			case sig := <-notifier:
-				fmt.Fprintf(os.Stdout, "Received %v", sig)
-				return nil
-			}
+		ssr, err := ss.List(cmdFlag.Filter, ss.TCP, ss.TCP6)
+		if err != nil {
+			return err
 		}
-	} else {
-		for {
-			rFunc := func() error {
-				f, err := openToAppend(cmdFlag.LogPath)
-				if err != nil {
-					return err
-				}
-				defer f.Close()
 
-				select {
-				case <-time.After(cmdFlag.Interval):
-					color.Set(color.FgRed)
-					fmt.Fprintf(f, "\npsn monitor at %s\n\n", time.Now())
-					color.Unset()
+		ss.WriteToTable(os.Stdout, ssr...)
+		fmt.Fprintf(os.Stdout, "\n")
 
-					ssr, err := ss.List(cmdFlag.Filter, ss.TCP, ss.TCP6)
-					if err != nil {
-						return err
-					}
-
-					ss.WriteToTable(f, ssr...)
-					fmt.Fprintf(f, "\n")
-
-					color.Set(color.FgGreen)
-					fmt.Fprintf(f, "\nDone.\n")
-					color.Unset()
-
-				case sig := <-notifier:
-					fmt.Fprintf(f, "Received %v", sig)
-				}
-				return nil
-			}
-
-			if err := rFunc(); err != nil {
+		return nil
+	}
+	if cmdFlag.LogPath != "" {
+		rFunc = func() error {
+			f, err := openToAppend(cmdFlag.LogPath)
+			if err != nil {
 				return err
 			}
+			defer f.Close()
+
+			color.Set(color.FgRed)
+			fmt.Fprintf(f, "\npsn monitor at %s\n\n", time.Now())
+			color.Unset()
+
+			ssr, err := ss.List(cmdFlag.Filter, ss.TCP, ss.TCP6)
+			if err != nil {
+				return err
+			}
+
+			ss.WriteToTable(f, ssr...)
+			fmt.Fprintf(f, "\n")
+
+			color.Set(color.FgGreen)
+			fmt.Fprintf(f, "\nDone.\n")
+			color.Unset()
+
+			return nil
 		}
 	}
 
-	return nil
+	var err error
+	if err = rFunc(); err != nil {
+		return err
+	}
+
+escape:
+	for {
+		select {
+		case <-time.After(cmdFlag.Interval):
+			if err = rFunc(); err != nil {
+				break escape
+			}
+		case sig := <-notifier:
+			fmt.Fprintf(os.Stdout, "Received %v\n", sig)
+			return nil
+		}
+	}
+
+	return err
 }
