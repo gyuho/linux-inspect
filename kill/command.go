@@ -41,13 +41,14 @@ func CommandFunc(cmd *cobra.Command, args []string) error {
 	if cmdFlag.CleanUp {
 		cmdFlag.Filter.Program = "deleted)"
 	}
+	if cmdFlag.Filter.LocalIP != "" && cmdFlag.Filter.Program == "" {
+		cmdFlag.Filter.Program = "SPECIFY YOUR PROGRAM HERE"
+	}
+
 	color.Set(color.FgRed)
 	fmt.Fprintf(os.Stdout, "\npsn kill with %q (port %s)\n\n", cmdFlag.Filter.Program, cmdFlag.Filter.LocalPort)
 	color.Unset()
 
-	if cmdFlag.Filter.LocalIP != "" && cmdFlag.Filter.Program == "" {
-		cmdFlag.Filter.Program = "SPECIFY YOUR PROGRAM HERE"
-	}
 	ssr, err := ss.List(cmdFlag.Filter, ss.TCP, ss.TCP6)
 	if err != nil {
 		return err
