@@ -86,6 +86,7 @@ var UnsafeKillPIDs = map[int]struct{}{
 var UnsafeKillNames = map[string]struct{}{
 	"/bin/sh":      struct{}{},
 	"/bin/bash":    struct{}{},
+	"sbin/init":    struct{}{},
 	"/usr/bin/ssh": struct{}{},
 	"systemd":      struct{}{},
 }
