@@ -14,15 +14,15 @@ Usage:
   psn [command]
 
 Available Commands:
-  ss          ss investigates sockets.
-  kill        kill kills programs using syscall. Make sure to specify the flags to find the program.
-  monitor     monitor monitors programs.
+  ps          Investigates processes.
+  ss          Investigates sockets.
+  kill        Kills programs using syscall. Make sure to specify the flags to find the program.
+  monitor     Monitors programs.
 
 Flags:
-  -h, --help[=false]: help for psn
+  -h, --help   help for psn
 
 Use "psn [command] --help" for more information about a command.
-
 ```
 
 
