@@ -9,6 +9,7 @@ import (
 )
 
 type Flags struct {
+	Top    int
 	Filter *Process
 }
 
@@ -22,6 +23,7 @@ var (
 )
 
 func init() {
+	Command.PersistentFlags().IntVarP(&cmdFlag.Top, "top", "t", 0, "Only list the top processes (descending order in memory usage). 0 means all.")
 	Command.PersistentFlags().StringVarP(&cmdFlag.Filter.Program, "program", "s", "", "Specify the program. Empty lists all programs.")
 	Command.PersistentFlags().StringVar(&cmdFlag.Filter.Protocol, "protocol", "", "'tcp' or 'tcp6'. Empty lists all protocols.")
 	Command.PersistentFlags().StringVar(&cmdFlag.Filter.LocalIP, "local-ip", "", "Specify the local IP. Empty lists all local IPs.")
@@ -42,7 +44,7 @@ func CommandFunc(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	WriteToTable(os.Stdout, ssr...)
+	WriteToTable(os.Stdout, cmdFlag.Top, ssr...)
 
 	color.Set(color.FgGreen)
 	fmt.Fprintf(os.Stdout, "\nDone.\n")

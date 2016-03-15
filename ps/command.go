@@ -11,6 +11,7 @@ import (
 type Flags struct {
 	Filter   *Status
 	Detailed bool
+	Top      int
 }
 
 var (
@@ -26,6 +27,7 @@ func init() {
 	Command.PersistentFlags().StringVarP(&cmdFlag.Filter.Name, "program", "s", "", "Specify the program. Empty lists all programs.")
 	Command.PersistentFlags().IntVarP(&cmdFlag.Filter.Pid, "pid", "p", 0, "Specify the pid. 0 lists all processes.")
 	Command.PersistentFlags().BoolVar(&cmdFlag.Detailed, "detailed", false, "'true' to print out detailed process information.")
+	Command.PersistentFlags().IntVarP(&cmdFlag.Top, "top", "t", 0, "Only list the top processes (descending order in memory usage). 0 means all.")
 }
 
 func CommandFunc(cmd *cobra.Command, args []string) error {
@@ -43,7 +45,7 @@ func CommandFunc(cmd *cobra.Command, args []string) error {
 			fmt.Fprintln(os.Stdout, p.StringDetailed())
 		}
 	} else {
-		WriteToTable(os.Stdout, pss...)
+		WriteToTable(os.Stdout, cmdFlag.Top, pss...)
 	}
 
 	color.Set(color.FgGreen)

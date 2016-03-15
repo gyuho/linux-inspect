@@ -14,8 +14,8 @@ func TestListStatus(t *testing.T) {
 	fmt.Println(len(rs))
 }
 
-func TestGetStatusByPID(t *testing.T) {
-	rs, err := GetStatusByPID(1)
+func TestStatusByPID(t *testing.T) {
+	rs, err := StatusByPID(1)
 	if err != nil {
 		t.Error(err)
 	}

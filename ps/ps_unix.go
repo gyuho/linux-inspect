@@ -26,31 +26,36 @@ func ListStatus(filter *Status) ([]Status, error) {
 			procPaths = append(procPaths, filepath.Join("/proc", f.Name(), "status"))
 		}
 	}
-	rc, errc := make(chan Status, len(procPaths)), make(chan error)
-	skip := make(chan struct{})
-	for _, fpath := range procPaths {
-		go func(fpath string, filter *Status) {
-			st, err := parseStatus(fpath)
-			if err != nil {
-				errc <- err
-			} else if st.Match(filter) {
-				rc <- st
-			} else {
-				skip <- struct{}{}
-			}
-		}(fpath, filter)
-	}
 	rs := []Status{}
-	cnt := 0
-	for cnt != len(procPaths) {
-		select {
-		case s := <-rc:
-			rs = append(rs, s)
-		case e := <-errc:
-			return nil, e
-		case <-skip:
+	if filter.Pid != 0 {
+		s, err := StatusByPID(filter.Pid)
+		return []Status{s}, err
+	} else {
+		rc, errc := make(chan Status, len(procPaths)), make(chan error)
+		skip := make(chan struct{})
+		for _, fpath := range procPaths {
+			go func(fpath string, filter *Status) {
+				st, err := parseStatus(fpath)
+				if err != nil {
+					errc <- err
+				} else if st.Match(filter) {
+					rc <- st
+				} else {
+					skip <- struct{}{}
+				}
+			}(fpath, filter)
 		}
-		cnt++
+		cnt := 0
+		for cnt != len(procPaths) {
+			select {
+			case s := <-rc:
+				rs = append(rs, s)
+			case e := <-errc:
+				return nil, e
+			case <-skip:
+			}
+			cnt++
+		}
 	}
 	return rs, nil
 }
@@ -229,7 +234,7 @@ func (s Status) String() string {
 }
 
 // WriteToTable writes slice of Status to ASCII table.
-func WriteToTable(w io.Writer, sts ...Status) {
+func WriteToTable(w io.Writer, top int, sts ...Status) {
 	table := tablewriter.NewWriter(w)
 	table.SetHeader(statusMembers[:9:9])
 
@@ -261,6 +266,9 @@ func WriteToTable(w io.Writer, sts ...Status) {
 		tablesorter.MakeDescendingIntFunc(4),  // FD
 	).Sort(rows)
 
+	if top != 0 && len(rows) > top {
+		rows = rows[:top:top]
+	}
 	for _, row := range rows {
 		table.Append(row[:9:9])
 	}
@@ -365,8 +373,8 @@ func (s *Status) Match(filter *Status) bool {
 	return true
 }
 
-// GetStatusByPID gets the Status of the pid.
-func GetStatusByPID(pid int) (Status, error) {
+// StatusByPID gets the Status of the pid.
+func StatusByPID(pid int) (Status, error) {
 	fpath := fmt.Sprintf("/proc/%d/status", pid)
 	return parseStatus(fpath)
 }

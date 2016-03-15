@@ -333,7 +333,7 @@ func (p *Process) Match(filter *Process) bool {
 }
 
 // WriteToTable writes slice of Processes to ASCII table.
-func WriteToTable(w io.Writer, ps ...Process) {
+func WriteToTable(w io.Writer, top int, ps ...Process) {
 	table := tablewriter.NewWriter(w)
 	table.SetHeader(processMembers)
 
@@ -358,6 +358,9 @@ func WriteToTable(w io.Writer, ps ...Process) {
 		tablesorter.MakeAscendingFunc(5), // USER
 	).Sort(rows)
 
+	if top != 0 && len(rows) > top {
+		rows = rows[:top:top]
+	}
 	for _, row := range rows {
 		table.Append(row)
 	}
