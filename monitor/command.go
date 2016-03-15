@@ -128,6 +128,7 @@ func PsCommandFunc(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	fmt.Fprintf(os.Stdout, "Monitoring file saved at %v\n", cmdFlag.LogPath)
 	var err error
 	if err = rFunc(); err != nil {
 		return err
