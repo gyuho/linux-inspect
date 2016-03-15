@@ -9,7 +9,8 @@ import (
 )
 
 type Flags struct {
-	Filter *Status
+	Filter   *Status
+	Detailed bool
 }
 
 var (
@@ -24,6 +25,7 @@ var (
 func init() {
 	Command.PersistentFlags().StringVarP(&cmdFlag.Filter.Name, "program", "s", "", "Specify the program. Empty lists all programs.")
 	Command.PersistentFlags().IntVarP(&cmdFlag.Filter.Pid, "pid", "p", 0, "Specify the pid. 0 lists all processes.")
+	Command.PersistentFlags().BoolVar(&cmdFlag.Detailed, "detailed", false, "'true' to print out detailed process information.")
 }
 
 func CommandFunc(cmd *cobra.Command, args []string) error {
@@ -36,8 +38,12 @@ func CommandFunc(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	for _, p := range pss {
-		fmt.Fprintln(os.Stdout, p)
+	if cmdFlag.Detailed {
+		for _, p := range pss {
+			fmt.Fprintln(os.Stdout, p.StringDetailed())
+		}
+	} else {
+		WriteToTable(os.Stdout, pss...)
 	}
 
 	color.Set(color.FgGreen)

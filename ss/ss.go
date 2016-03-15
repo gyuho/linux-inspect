@@ -11,6 +11,7 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/gyuho/psn/tablesorter"
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -348,13 +349,13 @@ func WriteToTable(w io.Writer, ps ...Process) {
 		rows[i] = sl
 	}
 
-	by(
+	tablesorter.By(
 		rows,
-		makeAscendingFunc(0), // PROTOCOL
-		makeAscendingFunc(1), // PROGRAM
-		makeAscendingFunc(2), // PID
-		makeAscendingFunc(3), // LOCAL_ADDR
-		makeAscendingFunc(5), // USER
+		tablesorter.MakeAscendingFunc(0), // PROTOCOL
+		tablesorter.MakeAscendingFunc(1), // PROGRAM
+		tablesorter.MakeAscendingFunc(2), // PID
+		tablesorter.MakeAscendingFunc(3), // LOCAL_ADDR
+		tablesorter.MakeAscendingFunc(5), // USER
 	).Sort(rows)
 
 	for _, row := range rows {
