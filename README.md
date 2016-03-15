@@ -25,13 +25,11 @@ Flags:
 Use "psn [command] --help" for more information about a command.
 ```
 
-
 <br>
-
 ## Motivation
 
 Programmatically find ports and PIDs of web servers, otherwise done
-by `ss` or `netstat`. For example, when stopping a web server, one can:
+by `ps`, `ss` or `netstat`. For example, when stopping a web server, one can:
 
 ```
 netstat -tlpn
