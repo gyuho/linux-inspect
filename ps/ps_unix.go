@@ -3,6 +3,7 @@ package ps
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -11,6 +12,8 @@ import (
 	"text/template"
 
 	"github.com/dustin/go-humanize"
+	"github.com/gyuho/psn/tablesorter"
+	"github.com/olekukonko/tablewriter"
 	"gopkg.in/yaml.v2"
 )
 
@@ -58,43 +61,109 @@ func isInt(s string) bool {
 }
 
 // Status is 'proc/pid/status'
+// See http://man7.org/linux/man-pages/man5/proc.5.html.
 type Status struct {
-	Name                     string `yaml:"Name"`
-	State                    string `yaml:"State"`
-	Tgid                     int    `yaml:"Tgid"`
-	Ngid                     int    `yaml:"Ngid"`
-	Pid                      int    `yaml:"Pid"`
-	PPid                     int    `yaml:"PPid"`
-	TracerPid                int    `yaml:"TracerPid"`
-	Uid                      string `yaml:"Uid"`
-	Gid                      string `yaml:"Gid"`
-	FDSize                   int    `yaml:"FDSize"`
-	Groups                   string `yaml:"Groups"`
-	VmPeak                   string `yaml:"VmPeak"`
-	VmPeakUint64             uint64
-	VmSize                   string `yaml:"VmSize"`
-	VmSizeUint64             uint64
-	VmLck                    string `yaml:"VmLck"`
-	VmLckUint64              uint64
-	VmPin                    string `yaml:"VmPin"`
-	VmPinUint64              uint64
-	VmHWM                    string `yaml:"VmHWM"`
-	VmHWMUint64              uint64
-	VmRSS                    string `yaml:"VmRSS"`
-	VmRSSUint64              uint64
-	VmData                   string `yaml:"VmData"`
-	VmDataUint64             uint64
-	VmStk                    string `yaml:"VmStk"`
-	VmStkUint64              uint64
-	VmExe                    string `yaml:"VmExe"`
-	VmExeUint64              uint64
-	VmLib                    string `yaml:"VmLib"`
-	VmLibUint64              uint64
-	VmPTE                    string `yaml:"VmPTE"`
-	VmPTEUint64              uint64
-	VmSwap                   string `yaml:"VmSwap"`
-	VmSwapUint64             uint64
-	Threads                  int    `yaml:"Threads"`
+	// Name is the command run by this process.
+	Name string `yaml:"Name"`
+
+	// State is Current state of the process.  One of "R (running)",
+	// "S (sleeping)", "D (disk sleep)", "T (stopped)", "T (tracing stop)",
+	// "Z (zombie)", or "X (dead)".
+	State string `yaml:"State"`
+
+	// Tgid is thread group ID.
+	Tgid int `yaml:"Tgid"`
+	Ngid int `yaml:"Ngid"`
+
+	// Pid is process ID.
+	Pid int `yaml:"Pid"`
+
+	// PPid is parent process ID, which launches the Pid.
+	PPid int `yaml:"PPid"`
+
+	// TracerPid is PID of process tracing this process (0 if not
+	// being traced).
+	TracerPid int `yaml:"TracerPid"`
+
+	Uid string `yaml:"Uid"`
+	Gid string `yaml:"Gid"`
+
+	// FDSize is the number of file descriptor slots currently allocated.
+	FDSize int `yaml:"FDSize"`
+
+	// Groups is supplementary group list.
+	Groups string `yaml:"Groups"`
+
+	// VmPeak is peak virtual memory usage.
+	// Vm includes physical memory and swap.
+	VmPeak string `yaml:"VmPeak"`
+	// VmPeakUint64 is VmPeak in bytes.
+	VmPeakUint64 uint64
+
+	// VmSize is current virtual memory usage.
+	// VmSize is the total amount of memory required for
+	// this process.
+	VmSize string `yaml:"VmSize"`
+	// VmSizeUint64 is VmSize in bytes.
+	VmSizeUint64 uint64
+
+	// VmLck is current mlocked memory.
+	VmLck string `yaml:"VmLck"`
+	// VmLckUint64 is VmLck in bytes.
+	VmLckUint64 uint64
+
+	// VmPin is pinned memory size.
+	VmPin string `yaml:"VmPin"`
+	// VmPinUint64 is VmPin in bytes.
+	VmPinUint64 uint64
+
+	// VmRSS is peak resident set size.
+	VmHWM string `yaml:"VmHWM"`
+	// VmHWMUint64 is VmHWM in bytes.
+	VmHWMUint64 uint64
+
+	// VmRSS is resident set size. VmRSS is the actual
+	// amount in memory. Some memory can be swapped out
+	// to physical disk. So this is the real memory usage
+	// of the process.
+	VmRSS string `yaml:"VmRSS"`
+	// VmRSSUint64 is VmRSS in bytes.
+	VmRSSUint64 uint64
+
+	// VmRSS is size of data segment.
+	VmData string `yaml:"VmData"`
+	// VmDataUint64 is VmData in bytes.
+	VmDataUint64 uint64
+
+	// VmStk is size of stack.
+	VmStk string `yaml:"VmStk"`
+	// VmStkUint64 is VmStk in bytes.
+	VmStkUint64 uint64
+
+	// VmExe is size of text segment.
+	VmExe string `yaml:"VmExe"`
+	// VmExeUint64 is VmExe in bytes.
+	VmExeUint64 uint64
+
+	// VmLib is shared library usage.
+	VmLib string `yaml:"VmLib"`
+	// VmLibUint64 is VmLib in bytes.
+	VmLibUint64 uint64
+
+	// VmPTE is page table entries size.
+	VmPTE string `yaml:"VmPTE"`
+	// VmPTEUint64 is VmPTE in bytes.
+	VmPTEUint64 uint64
+
+	// VmSwap is swap space used.
+	VmSwap string `yaml:"VmSwap"`
+	// VmSwapUint64 is VmSwap in bytes.
+	VmSwapUint64 uint64
+
+	// Threads is the number of threads in process
+	// containing this thread (process).
+	Threads int `yaml:"Threads"`
+
 	SigQ                     string `yaml:"SigQ"`
 	SigPnd                   string `yaml:"SigPnd"`
 	ShdPnd                   string `yaml:"ShdPnd"`
@@ -114,7 +183,92 @@ type Status struct {
 	NonvoluntaryCtxtSwitches int    `yaml:"nonvoluntary_ctxt_switches"`
 }
 
-const statusTemplate = `
+const statusTmpl = `
+-----------------------
+[/proc/{{.Pid}}/status]
+
+Name:  {{.Name}}
+State: {{.State}}
+
+Pid:  {{.Pid}}
+PPid: {{.PPid}}
+
+FDSize:  {{.FDSize}}
+Threads: {{.Threads}}
+
+VmRSS:   {{.VmRSS}}
+VmSize:  {{.VmSize}}
+VmPeak:  {{.VmPeak}}
+-----------------------
+`
+
+var statusMembers = []string{
+	"NAME",
+	"STATE",
+	"PID",
+	"PPID",
+	"FD",
+	"THREADS",
+	"VM_RSS",
+	"VM_SIZE",
+	"VM_PEAK",
+
+	"VmSizeUint64",
+	"VmRSSUint64",
+	"VmPeakUint64",
+}
+
+// String prints out only parts of the status.
+func (s Status) String() string {
+	tpl := template.Must(template.New("statusTmpl").Parse(statusTmpl))
+	buf := new(bytes.Buffer)
+	if err := tpl.Execute(buf, s); err != nil {
+		log.Fatal(err)
+	}
+	return buf.String()
+}
+
+// WriteToTable writes slice of Status to ASCII table.
+func WriteToTable(w io.Writer, sts ...Status) {
+	table := tablewriter.NewWriter(w)
+	table.SetHeader(statusMembers[:9:9])
+
+	rows := make([][]string, len(sts))
+	for i, s := range sts {
+		sl := make([]string, len(statusMembers))
+		sl[0] = s.Name
+		sl[1] = s.State
+		sl[2] = strconv.Itoa(s.Pid)
+		sl[3] = strconv.Itoa(s.PPid)
+		sl[4] = strconv.Itoa(s.FDSize)
+		sl[5] = strconv.Itoa(s.Threads)
+		sl[6] = s.VmRSS
+		sl[7] = s.VmSize
+		sl[8] = s.VmPeak
+
+		sl[9] = strconv.Itoa(int(s.VmRSSUint64))
+		sl[10] = strconv.Itoa(int(s.VmSizeUint64))
+		sl[11] = strconv.Itoa(int(s.VmPeakUint64))
+
+		rows[i] = sl
+	}
+
+	tablesorter.By(
+		rows,
+		tablesorter.MakeDescendingIntFunc(9),  // VM_RSS
+		tablesorter.MakeAscendingFunc(0),      // NAME
+		tablesorter.MakeDescendingIntFunc(10), // VM_SIZE
+		tablesorter.MakeDescendingIntFunc(4),  // FD
+	).Sort(rows)
+
+	for _, row := range rows {
+		table.Append(row[:9:9])
+	}
+
+	table.Render()
+}
+
+const statusTmplDetailed = `
 ----------------------------------------
 [/proc/{{.Pid}}/status]
 
@@ -175,8 +329,8 @@ nonvoluntary_ctxt_switches:
 ----------------------------------------
 `
 
-func (s Status) String() string {
-	tpl := template.Must(template.New("statusTemplate").Parse(statusTemplate))
+func (s Status) StringDetailed() string {
+	tpl := template.Must(template.New("statusTmplDetailed").Parse(statusTmplDetailed))
 	buf := new(bytes.Buffer)
 	if err := tpl.Execute(buf, s); err != nil {
 		log.Fatal(err)
@@ -237,28 +391,40 @@ func parseStatus(fpath string) (Status, error) {
 		return Status{}, err
 	}
 	u, _ := humanize.ParseBytes(rs.VmPeak)
+	rs.VmPeak = humanize.Bytes(u)
 	rs.VmPeakUint64 = u
 	u, _ = humanize.ParseBytes(rs.VmSize)
+	rs.VmSize = humanize.Bytes(u)
 	rs.VmSizeUint64 = u
 	u, _ = humanize.ParseBytes(rs.VmLck)
+	rs.VmLck = humanize.Bytes(u)
 	rs.VmLckUint64 = u
 	u, _ = humanize.ParseBytes(rs.VmPin)
+	rs.VmPin = humanize.Bytes(u)
 	rs.VmPinUint64 = u
 	u, _ = humanize.ParseBytes(rs.VmHWM)
+	rs.VmHWM = humanize.Bytes(u)
 	rs.VmHWMUint64 = u
 	u, _ = humanize.ParseBytes(rs.VmRSS)
+	rs.VmRSS = humanize.Bytes(u)
 	rs.VmRSSUint64 = u
 	u, _ = humanize.ParseBytes(rs.VmData)
+	rs.VmData = humanize.Bytes(u)
 	rs.VmDataUint64 = u
 	u, _ = humanize.ParseBytes(rs.VmStk)
+	rs.VmStk = humanize.Bytes(u)
 	rs.VmStkUint64 = u
 	u, _ = humanize.ParseBytes(rs.VmExe)
+	rs.VmExe = humanize.Bytes(u)
 	rs.VmExeUint64 = u
 	u, _ = humanize.ParseBytes(rs.VmLib)
+	rs.VmLib = humanize.Bytes(u)
 	rs.VmLibUint64 = u
 	u, _ = humanize.ParseBytes(rs.VmPTE)
+	rs.VmPTE = humanize.Bytes(u)
 	rs.VmPTEUint64 = u
 	u, _ = humanize.ParseBytes(rs.VmSwap)
+	rs.VmSwap = humanize.Bytes(u)
 	rs.VmSwapUint64 = u
 	return rs, nil
 }
