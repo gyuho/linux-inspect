@@ -2,11 +2,12 @@ language: go
 
 sudo: false
 
-go: 
+go:
 - 1.6
 - tip
 
 script:
 - ./test
 - go get -v -u -f github.com/gyuho/psn
+- psn ps
 - psn ss
