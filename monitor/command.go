@@ -139,6 +139,7 @@ escape:
 		select {
 		case <-time.After(cmdFlag.Interval):
 			if err = rFunc(); err != nil {
+				fmt.Fprintf(os.Stdout, "error: %v\n", err)
 				break escape
 			}
 		case sig := <-notifier:
