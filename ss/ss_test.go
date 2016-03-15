@@ -93,7 +93,7 @@ func TestFilterMatch(t *testing.T) {
 	p := Process{}
 	p.Program = "etcd"
 	p.PID = 1000
-	if !filter.Match(p) {
+	if !p.Match(&filter) {
 		t.Errorf("got = false, want = true for %s", p)
 	}
 }

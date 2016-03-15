@@ -1,17 +1,16 @@
-// psn is an utility to investigate sockets.
-//
-//	psn provides utilities to investigate OS processes and sockets.
+// psn provides utilities to investigate OS processes and sockets.
 //
 //	Usage:
 //	  psn [command]
 //
 //	Available Commands:
-//	  ss          ss investigates sockets.
-//	  kill        kill kills programs using syscall. Make sure to specify the flags to find the program.
-//	  monitor     monitor monitors programs.
+//	  ps          Investigates processes.
+//	  ss          Investigates sockets.
+//	  kill        Kills programs using syscall. Make sure to specify the flags to find the program.
+//	  monitor     Monitors programs.
 //
 //	Flags:
-//	  -h, --help[=false]: help for psn
+//	  -h, --help   help for psn
 //
 //	Use "psn [command] --help" for more information about a command.
 //
@@ -23,6 +22,7 @@ import (
 
 	"github.com/gyuho/psn/kill"
 	"github.com/gyuho/psn/monitor"
+	"github.com/gyuho/psn/ps"
 	"github.com/gyuho/psn/ss"
 	"github.com/spf13/cobra"
 )
@@ -36,6 +36,7 @@ var (
 )
 
 func init() {
+	Command.AddCommand(ps.Command)
 	Command.AddCommand(ss.Command)
 	Command.AddCommand(kill.Command)
 	Command.AddCommand(monitor.Command)
