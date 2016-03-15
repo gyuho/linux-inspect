@@ -2,6 +2,7 @@ package ps
 
 import (
 	"bytes"
+	"encoding/csv"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -10,6 +11,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"text/template"
+	"time"
 
 	"github.com/dustin/go-humanize"
 	"github.com/gyuho/psn/tablesorter"
@@ -274,6 +276,57 @@ func WriteToTable(w io.Writer, top int, sts ...Status) {
 	}
 
 	table.Render()
+}
+
+// WriteToTable writes slice of Status to a csv file.
+func WriteToCSV(firstCSV bool, f *os.File, sts ...Status) error {
+	wr := csv.NewWriter(f)
+	if firstCSV { // write header
+		if err := wr.Write(append([]string{"timestamp"}, statusMembers...)); err != nil {
+			return err
+		}
+	}
+
+	rows := make([][]string, len(sts))
+	for i, s := range sts {
+		sl := make([]string, len(statusMembers))
+		sl[0] = s.Name
+		sl[1] = s.State
+		sl[2] = strconv.Itoa(s.Pid)
+		sl[3] = strconv.Itoa(s.PPid)
+		sl[4] = strconv.Itoa(s.FDSize)
+		sl[5] = strconv.Itoa(s.Threads)
+		sl[6] = s.VmRSS
+		sl[7] = s.VmSize
+		sl[8] = s.VmPeak
+
+		sl[9] = strconv.Itoa(int(s.VmRSSUint64))
+		sl[10] = strconv.Itoa(int(s.VmSizeUint64))
+		sl[11] = strconv.Itoa(int(s.VmPeakUint64))
+
+		rows[i] = sl
+	}
+
+	tablesorter.By(
+		rows,
+		tablesorter.MakeDescendingIntFunc(9),  // VM_RSS
+		tablesorter.MakeAscendingFunc(0),      // NAME
+		tablesorter.MakeDescendingIntFunc(10), // VM_SIZE
+		tablesorter.MakeDescendingIntFunc(4),  // FD
+	).Sort(rows)
+
+	// adding timestamp
+	ts := time.Now().String()[:19]
+	nrows := make([][]string, len(rows))
+	for i, row := range rows {
+		nrows[i] = append([]string{ts}, row...)
+	}
+	if err := wr.WriteAll(nrows); err != nil {
+		return err
+	}
+
+	wr.Flush()
+	return wr.Error()
 }
 
 const statusTmplDetailed = `

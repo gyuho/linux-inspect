@@ -1,15 +1,18 @@
 package ss
 
 import (
+	"encoding/csv"
 	"fmt"
 	"io"
 	"net"
+	"os"
 	"os/user"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/gyuho/psn/tablesorter"
 	"github.com/olekukonko/tablewriter"
@@ -366,6 +369,50 @@ func WriteToTable(w io.Writer, top int, ps ...Process) {
 	}
 
 	table.Render()
+}
+
+// WriteToTable writes slice of Processes to a csv file.
+func WriteToCSV(firstCSV bool, f *os.File, ps ...Process) error {
+	wr := csv.NewWriter(f)
+	if firstCSV { // write header
+		if err := wr.Write(append([]string{"timestamp"}, processMembers...)); err != nil {
+			return err
+		}
+	}
+
+	rows := make([][]string, len(ps))
+	for i, p := range ps {
+		sl := make([]string, len(processMembers))
+		sl[0] = p.Protocol
+		sl[1] = p.Program
+		sl[2] = strconv.Itoa(p.PID)
+		sl[3] = p.LocalIP + p.LocalPort
+		sl[4] = p.RemoteIP + p.RemotePort
+		sl[5] = p.User.Name
+		rows[i] = sl
+	}
+
+	tablesorter.By(
+		rows,
+		tablesorter.MakeAscendingFunc(0), // PROTOCOL
+		tablesorter.MakeAscendingFunc(1), // PROGRAM
+		tablesorter.MakeAscendingFunc(2), // PID
+		tablesorter.MakeAscendingFunc(3), // LOCAL_ADDR
+		tablesorter.MakeAscendingFunc(5), // USER
+	).Sort(rows)
+
+	// adding timestamp
+	ts := time.Now().String()[:19]
+	nrows := make([][]string, len(rows))
+	for i, row := range rows {
+		nrows[i] = append([]string{ts}, row...)
+	}
+	if err := wr.WriteAll(nrows); err != nil {
+		return err
+	}
+
+	wr.Flush()
+	return wr.Error()
 }
 
 // ListPorts lists all ports that are being used.

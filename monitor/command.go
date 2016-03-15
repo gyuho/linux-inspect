@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -78,6 +79,7 @@ func PsCommandFunc(cmd *cobra.Command, args []string) error {
 
 		return nil
 	}
+	firstCSV := true
 	if cmdFlag.LogPath != "" {
 		rFunc = func() error {
 			f, err := openToAppend(cmdFlag.LogPath)
@@ -104,6 +106,26 @@ func PsCommandFunc(cmd *cobra.Command, args []string) error {
 
 			return nil
 		}
+		if filepath.Ext(cmdFlag.LogPath) == ".csv" {
+			rFunc = func() error {
+				pss, err := ps.ListStatus(cmdFlag.FilterStatus)
+				if err != nil {
+					return err
+				}
+
+				f, err := openToAppend(cmdFlag.LogPath)
+				if err != nil {
+					return err
+				}
+				defer f.Close()
+
+				if err := ps.WriteToCSV(firstCSV, f, pss...); err != nil {
+					return err
+				}
+				firstCSV = false
+				return nil
+			}
+		}
 	}
 
 	var err error
@@ -113,6 +135,7 @@ func PsCommandFunc(cmd *cobra.Command, args []string) error {
 
 escape:
 	for {
+		fmt.Fprintf(os.Stdout, "Running 'psn monitor ps' at %v\n", time.Now())
 		select {
 		case <-time.After(cmdFlag.Interval):
 			if err = rFunc(); err != nil {
@@ -146,6 +169,7 @@ func SsCommandFunc(cmd *cobra.Command, args []string) error {
 
 		return nil
 	}
+	firstCSV := true
 	if cmdFlag.LogPath != "" {
 		rFunc = func() error {
 			f, err := openToAppend(cmdFlag.LogPath)
@@ -172,6 +196,26 @@ func SsCommandFunc(cmd *cobra.Command, args []string) error {
 
 			return nil
 		}
+		if filepath.Ext(cmdFlag.LogPath) == ".csv" {
+			rFunc = func() error {
+				ssr, err := ss.List(cmdFlag.FilterProcess, ss.TCP, ss.TCP6)
+				if err != nil {
+					return err
+				}
+
+				f, err := openToAppend(cmdFlag.LogPath)
+				if err != nil {
+					return err
+				}
+				defer f.Close()
+
+				if err := ss.WriteToCSV(firstCSV, f, ssr...); err != nil {
+					return err
+				}
+				firstCSV = false
+				return nil
+			}
+		}
 	}
 
 	var err error
@@ -181,6 +225,7 @@ func SsCommandFunc(cmd *cobra.Command, args []string) error {
 
 escape:
 	for {
+		fmt.Fprintf(os.Stdout, "Running 'psn monitor ss' at %v\n", time.Now())
 		select {
 		case <-time.After(cmdFlag.Interval):
 			if err = rFunc(); err != nil {
