@@ -221,39 +221,27 @@ func parseLittleEndianIpv6(s string) (string, string, error) {
 func List(filter *Process, opts ...TransportProtocol) ([]Process, error) {
 	rs := []Process{}
 	for _, opt := range opts {
-
 		ps, err := list(opt)
 		if err != nil {
 			return nil, err
 		}
 
-		if filter == nil {
-			rs = append(rs, ps...)
-			continue
-		}
-
-		pCh, done := make(chan Process), make(chan struct{})
-		fv := *filter
-
+		pc, done := make(chan Process), make(chan struct{})
 		for _, p := range ps {
-
-			go func(ft, process Process) {
-
-				if !ft.Match(process) {
+			go func(process Process, ft *Process) {
+				if !process.Match(ft) {
 					done <- struct{}{}
 					return
 				}
-				pCh <- process
-
-			}(fv, p)
-
+				pc <- process
+			}(p, filter)
 		}
 
 		cn := 0
 		ns := []Process{}
 		for cn != len(ps) {
 			select {
-			case p := <-pCh:
+			case p := <-pc:
 				ns = append(ns, p)
 				cn++
 			case <-done:
@@ -261,7 +249,7 @@ func List(filter *Process, opts ...TransportProtocol) ([]Process, error) {
 			}
 		}
 
-		close(pCh)
+		close(pc)
 		close(done)
 
 		rs = append(rs, ns...)
@@ -270,7 +258,13 @@ func List(filter *Process, opts ...TransportProtocol) ([]Process, error) {
 }
 
 // Match returns true if the Process matches the filter.
-func (filter Process) Match(p Process) bool {
+func (p *Process) Match(filter *Process) bool {
+	if p == nil {
+		return false
+	}
+	if filter == nil {
+		return true
+	}
 	if filter.Protocol != "" {
 		if p.Protocol != filter.Protocol {
 			return false

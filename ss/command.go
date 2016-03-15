@@ -15,7 +15,7 @@ type Flags struct {
 var (
 	Command = &cobra.Command{
 		Use:   "ss",
-		Short: "ss investigates sockets.",
+		Short: "Investigates sockets.",
 		RunE:  CommandFunc,
 	}
 	cmdFlag = Flags{Filter: &Process{}}

@@ -21,7 +21,7 @@ type Flags struct {
 var (
 	Command = &cobra.Command{
 		Use:   "monitor",
-		Short: "monitor monitors programs.",
+		Short: "Monitors programs.",
 		RunE:  CommandFunc,
 	}
 	cmdFlag = Flags{Filter: &ss.Process{}}

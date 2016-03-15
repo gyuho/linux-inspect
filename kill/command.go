@@ -18,7 +18,7 @@ type Flags struct {
 var (
 	Command = &cobra.Command{
 		Use:   "kill",
-		Short: "kill kills programs using syscall. Make sure to specify the flags to find the program.",
+		Short: "Kills programs using syscall. Make sure to specify the flags to find the program.",
 		RunE:  CommandFunc,
 	}
 	cmdFlag = Flags{Filter: &ss.Process{}}
