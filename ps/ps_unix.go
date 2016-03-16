@@ -548,7 +548,7 @@ func Kill(w io.Writer, parent bool, sts ...Status) {
 			if err := cmd.Wait(); err != nil {
 				fmt.Fprintf(w, "Start(%s) cmd.Wait returned %v\n", cmd.Path, err)
 			}
-			fmt.Fprintf(w, "Done: %q\n", strings.Join(cmd.Args, ""))
+			fmt.Fprintf(w, "    Done: %q\n", strings.Join(cmd.Args, ""))
 		}
 		if err := syscall.Kill(pid, syscall.SIGKILL); err != nil {
 			fmt.Fprintf(w, "syscall.SIGKILL error (%v)\n", err)
@@ -568,7 +568,7 @@ func Kill(w io.Writer, parent bool, sts ...Status) {
 			if err := cmd.Wait(); err != nil {
 				fmt.Fprintf(w, "Start(%s) cmd.Wait returned %v\n", cmd.Path, err)
 			}
-			fmt.Fprintf(w, "Done: %q\n", strings.Join(cmd.Args, ""))
+			fmt.Fprintf(w, "    Done: %q\n", strings.Join(cmd.Args, ""))
 		}
 	}
 }
