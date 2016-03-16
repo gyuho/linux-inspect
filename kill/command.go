@@ -49,12 +49,14 @@ func CommandFunc(cmd *cobra.Command, args []string) error {
 	fmt.Fprintf(os.Stdout, "\npsn kill with %q, %q (port %s)\n\n", cmdFlag.FilterProcess.Program, cmdFlag.FilterStatus.Name, cmdFlag.FilterProcess.LocalPort)
 	color.Unset()
 
-	pss, err := ps.ListStatus(cmdFlag.FilterStatus)
-	if err != nil {
-		return err
+	if cmdFlag.FilterStatus.State != "" || cmdFlag.FilterStatus.Name != "" {
+		pss, err := ps.ListStatus(cmdFlag.FilterStatus)
+		if err != nil {
+			return err
+		}
+		ps.WriteToTable(os.Stdout, 0, pss...)
+		fmt.Fprintf(os.Stdout, "\n")
 	}
-	ps.WriteToTable(os.Stdout, 0, pss...)
-	fmt.Fprintf(os.Stdout, "\n")
 
 	ssr, err := ss.List(cmdFlag.FilterProcess, ss.TCP, ss.TCP6)
 	if err != nil {
