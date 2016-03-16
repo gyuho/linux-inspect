@@ -9,7 +9,9 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
+	"syscall"
 	"text/template"
 	"time"
 
@@ -423,6 +425,11 @@ func (s *Status) Match(filter *Status) bool {
 			return false
 		}
 	}
+	if filter.State != "" {
+		if filter.State != s.State {
+			return false
+		}
+	}
 	return true
 }
 
@@ -496,4 +503,36 @@ func open(fpath string) (*os.File, error) {
 		return f, err
 	}
 	return f, nil
+}
+
+// Kill kills all processes in arguments.
+func Kill(w io.Writer, parent bool, sts ...Status) {
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Fprintln(w, "Kill:", err)
+		}
+	}()
+
+	pidToKill := make(map[int]string)
+	for _, s := range sts {
+		pidToKill[s.Pid] = s.Name
+		if parent {
+			pidToKill[s.PPid] = s.Name
+		}
+	}
+	pids := []int{}
+	for pid := range pidToKill {
+		pids = append(pids, pid)
+	}
+	sort.Ints(pids)
+
+	for _, pid := range pids {
+		fmt.Fprintf(w, "syscall.Kill: %s [PID: %d]\n", pidToKill[pid], pid)
+		if err := syscall.Kill(pid, syscall.SIGTERM); err != nil {
+			fmt.Fprintf(w, "error when sending syscall.SIGTERM (%v):", err)
+		}
+		if err := syscall.Kill(pid, syscall.SIGKILL); err != nil {
+			fmt.Fprintf(w, "error when sending syscall.SIGKILL (%v):", err)
+		}
+	}
 }

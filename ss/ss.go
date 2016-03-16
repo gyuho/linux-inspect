@@ -111,7 +111,7 @@ func filterOut(pidToKill *map[int]string) {
 }
 
 // Kill kills all processes in arguments.
-func Kill(w io.Writer, force bool, ps ...Process) {
+func Kill(w io.Writer, ps ...Process) {
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Fprintln(w, "Kill:", err)
@@ -120,13 +120,9 @@ func Kill(w io.Writer, force bool, ps ...Process) {
 
 	pidToKill := make(map[int]string)
 	for _, p := range ps {
-		if _, ok := pidToKill[p.PID]; !ok {
-			pidToKill[p.PID] = p.Program
-		}
+		pidToKill[p.PID] = p.Program
 	}
-	if !force {
-		filterOut(&pidToKill)
-	}
+	filterOut(&pidToKill)
 	pids := []int{}
 	for pid := range pidToKill {
 		pids = append(pids, pid)
