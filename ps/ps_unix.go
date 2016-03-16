@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -530,9 +531,41 @@ func Kill(w io.Writer, parent bool, sts ...Status) {
 		fmt.Fprintf(w, "syscall.Kill: %s [PID: %d]\n", pidToKill[pid], pid)
 		if err := syscall.Kill(pid, syscall.SIGTERM); err != nil {
 			fmt.Fprintf(w, "error when sending syscall.SIGTERM (%v):", err)
+
+			shell := os.Getenv("SHELL")
+			if len(shell) == 0 {
+				shell = "sh"
+			}
+			args := []string{shell, "-c", fmt.Sprintf("sudo kill -9 %d", pid)}
+			cmd := exec.Command(args[0], args[1:]...)
+			cmd.Stdout = w
+			cmd.Stderr = w
+			fmt.Fprintf(w, "Starting: %q\n", cmd.Args)
+			if err := cmd.Start(); err != nil {
+				fmt.Fprintf(w, "error when 'sudo kill' (%v)", err)
+			}
+			if err := cmd.Wait(); err != nil {
+				fmt.Fprintf(w, "Start(%s) cmd.Wait returned %v\n", cmd.Path, err)
+			}
 		}
 		if err := syscall.Kill(pid, syscall.SIGKILL); err != nil {
 			fmt.Fprintf(w, "error when sending syscall.SIGKILL (%v):", err)
+
+			shell := os.Getenv("SHELL")
+			if len(shell) == 0 {
+				shell = "sh"
+			}
+			args := []string{shell, "-c", fmt.Sprintf("sudo kill -9 %d", pid)}
+			cmd := exec.Command(args[0], args[1:]...)
+			cmd.Stdout = w
+			cmd.Stderr = w
+			fmt.Fprintf(w, "Starting: %q\n", cmd.Args)
+			if err := cmd.Start(); err != nil {
+				fmt.Fprintf(w, "error when 'sudo kill' (%v)", err)
+			}
+			if err := cmd.Wait(); err != nil {
+				fmt.Fprintf(w, "Start(%s) cmd.Wait returned %v\n", cmd.Path, err)
+			}
 		}
 	}
 }
