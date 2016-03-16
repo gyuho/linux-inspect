@@ -133,7 +133,7 @@ func Kill(w io.Writer, ps ...Process) {
 	for _, pid := range pids {
 		fmt.Fprintf(w, "syscall.Kill: %s [PID: %d]\n", pidToKill[pid], pid)
 		if err := syscall.Kill(pid, syscall.SIGTERM); err != nil {
-			fmt.Fprintf(w, "error when sending syscall.SIGTERM (%v):", err)
+			fmt.Fprintf(w, "syscall.SIGTERM error (%v)\n", err)
 
 			shell := os.Getenv("SHELL")
 			if len(shell) == 0 {
@@ -145,14 +145,14 @@ func Kill(w io.Writer, ps ...Process) {
 			cmd.Stderr = w
 			fmt.Fprintf(w, "Starting: %q\n", cmd.Args)
 			if err := cmd.Start(); err != nil {
-				fmt.Fprintf(w, "error when 'sudo kill' (%v)", err)
+				fmt.Fprintf(w, "error when 'sudo kill -9' (%v)\n", err)
 			}
 			if err := cmd.Wait(); err != nil {
 				fmt.Fprintf(w, "Start(%s) cmd.Wait returned %v\n", cmd.Path, err)
 			}
 		}
 		if err := syscall.Kill(pid, syscall.SIGKILL); err != nil {
-			fmt.Fprintf(w, "error when sending syscall.SIGKILL (%v):", err)
+			fmt.Fprintf(w, "syscall.SIGKILL error (%v)\n", err)
 
 			shell := os.Getenv("SHELL")
 			if len(shell) == 0 {
@@ -164,7 +164,7 @@ func Kill(w io.Writer, ps ...Process) {
 			cmd.Stderr = w
 			fmt.Fprintf(w, "Starting: %q\n", cmd.Args)
 			if err := cmd.Start(); err != nil {
-				fmt.Fprintf(w, "error when 'sudo kill' (%v)", err)
+				fmt.Fprintf(w, "error when 'sudo kill -9' (%v)\n", err)
 			}
 			if err := cmd.Wait(); err != nil {
 				fmt.Fprintf(w, "Start(%s) cmd.Wait returned %v\n", cmd.Path, err)
