@@ -143,13 +143,14 @@ func Kill(w io.Writer, ps ...Process) {
 			cmd := exec.Command(args[0], args[1:]...)
 			cmd.Stdout = w
 			cmd.Stderr = w
-			fmt.Fprintf(w, "Starting: %q\n", cmd.Args)
+			fmt.Fprintf(w, "Starting: %q\n", strings.Join(cmd.Args, ""))
 			if err := cmd.Start(); err != nil {
 				fmt.Fprintf(w, "error when 'sudo kill -9' (%v)\n", err)
 			}
 			if err := cmd.Wait(); err != nil {
 				fmt.Fprintf(w, "Start(%s) cmd.Wait returned %v\n", cmd.Path, err)
 			}
+			fmt.Fprintf(w, "Done: %q\n", strings.Join(cmd.Args, ""))
 		}
 		if err := syscall.Kill(pid, syscall.SIGKILL); err != nil {
 			fmt.Fprintf(w, "syscall.SIGKILL error (%v)\n", err)
@@ -162,13 +163,14 @@ func Kill(w io.Writer, ps ...Process) {
 			cmd := exec.Command(args[0], args[1:]...)
 			cmd.Stdout = w
 			cmd.Stderr = w
-			fmt.Fprintf(w, "Starting: %q\n", cmd.Args)
+			fmt.Fprintf(w, "Starting: %q\n", strings.Join(cmd.Args, ""))
 			if err := cmd.Start(); err != nil {
 				fmt.Fprintf(w, "error when 'sudo kill -9' (%v)\n", err)
 			}
 			if err := cmd.Wait(); err != nil {
 				fmt.Fprintf(w, "Start(%s) cmd.Wait returned %v\n", cmd.Path, err)
 			}
+			fmt.Fprintf(w, "Done: %q\n", strings.Join(cmd.Args, ""))
 		}
 	}
 }
