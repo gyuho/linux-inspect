@@ -55,6 +55,7 @@ func CommandFunc(cmd *cobra.Command, args []string) error {
 			return err
 		}
 		ps.WriteToTable(os.Stdout, 0, pss...)
+		ps.Kill(os.Stdout, cmdFlag.Force, pss...)
 		fmt.Fprintf(os.Stdout, "\n")
 	}
 
