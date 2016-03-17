@@ -41,7 +41,7 @@ func ListStatus(filter *Status) ([]Status, error) {
 		skip := make(chan struct{})
 		for _, fpath := range procPaths {
 			go func(fpath string, filter *Status) {
-				st, err := parseStatus(fpath)
+				st, err := getStatus(fpath)
 				if err != nil {
 					errc <- err
 				} else if st.Match(filter) {
@@ -66,13 +66,9 @@ func ListStatus(filter *Status) ([]Status, error) {
 	return rs, nil
 }
 
-func isInt(s string) bool {
-	_, err := strconv.Atoi(s)
-	return err == nil
-}
-
-// Status is 'proc/pid/status'
-// See http://man7.org/linux/man-pages/man5/proc.5.html.
+// Status is 'proc/$PID/status' and 'proc/$PID/stat'.
+// Reference:
+//	- http://man7.org/linux/man-pages/man5/proc.5.html
 type Status struct {
 	// Name is the command run by this process.
 	Name string `yaml:"Name"`
@@ -192,11 +188,13 @@ type Status struct {
 	MemsAllowedList          string `yaml:"Mems_allowed_list"`
 	VoluntaryCtxtSwitches    int    `yaml:"voluntary_ctxt_switches"`
 	NonvoluntaryCtxtSwitches int    `yaml:"nonvoluntary_ctxt_switches"`
+
+	Stat Stat
 }
 
 const statusTmpl = `
 -----------------------
-[/proc/{{.Pid}}/status]
+[/proc/{{.Pid}}/status,stat]
 
 Name:  {{.Name}}
 State: {{.State}}
@@ -207,26 +205,29 @@ PPid: {{.PPid}}
 FDSize:  {{.FDSize}}
 Threads: {{.Threads}}
 
-VmRSS:   {{.VmRSS}}
-VmSize:  {{.VmSize}}
-VmPeak:  {{.VmPeak}}
+VmRSS:     {{.VmRSS}}
+VmSize:    {{.VmSize}}
+CpuUsage:  {{.Stat.CpuUsage}} %
 -----------------------
 `
 
 var statusMembers = []string{
 	"NAME",
 	"STATE",
+
 	"PID",
 	"PPID",
-	"FD",
-	"THREADS",
+
 	"VM_RSS",
 	"VM_SIZE",
-	"VM_PEAK",
 
-	"VmSizeUint64",
+	"CPU",
+	"FD",
+	"THREADS",
+
 	"VmRSSUint64",
-	"VmPeakUint64",
+	"VmSizeUint64",
+	"CpuUsageFloat64",
 }
 
 // String prints out only parts of the status.
@@ -251,25 +252,21 @@ func WriteToTable(w io.Writer, top int, sts ...Status) {
 		sl[1] = s.State
 		sl[2] = strconv.Itoa(s.Pid)
 		sl[3] = strconv.Itoa(s.PPid)
-		sl[4] = strconv.Itoa(s.FDSize)
-		sl[5] = strconv.Itoa(s.Threads)
-		sl[6] = s.VmRSS
-		sl[7] = s.VmSize
-		sl[8] = s.VmPeak
-
+		sl[4] = s.VmRSS
+		sl[5] = s.VmSize
+		sl[6] = fmt.Sprintf("%3.2f %%", s.Stat.CpuUsage)
+		sl[7] = strconv.Itoa(s.FDSize)
+		sl[8] = strconv.Itoa(s.Threads)
 		sl[9] = strconv.Itoa(int(s.VmRSSUint64))
 		sl[10] = strconv.Itoa(int(s.VmSizeUint64))
-		sl[11] = strconv.Itoa(int(s.VmPeakUint64))
-
+		sl[11] = fmt.Sprintf("%3.2f", s.Stat.CpuUsage)
 		rows[i] = sl
 	}
-
 	tablesorter.By(
 		rows,
-		tablesorter.MakeDescendingIntFunc(9),  // VM_RSS
-		tablesorter.MakeAscendingFunc(0),      // NAME
-		tablesorter.MakeDescendingIntFunc(10), // VM_SIZE
-		tablesorter.MakeDescendingIntFunc(4),  // FD
+		tablesorter.MakeDescendingIntFunc(9),      // VM_RSS
+		tablesorter.MakeDescendingFloat64Func(11), // CPU
+		tablesorter.MakeDescendingIntFunc(10),     // VM_SIZE
 	).Sort(rows)
 
 	if top != 0 && len(rows) > top {
@@ -298,25 +295,21 @@ func WriteToCSV(firstCSV bool, f *os.File, sts ...Status) error {
 		sl[1] = s.State
 		sl[2] = strconv.Itoa(s.Pid)
 		sl[3] = strconv.Itoa(s.PPid)
-		sl[4] = strconv.Itoa(s.FDSize)
-		sl[5] = strconv.Itoa(s.Threads)
-		sl[6] = s.VmRSS
-		sl[7] = s.VmSize
-		sl[8] = s.VmPeak
-
+		sl[4] = s.VmRSS
+		sl[5] = s.VmSize
+		sl[6] = fmt.Sprintf("%3.2f %%", s.Stat.CpuUsage)
+		sl[7] = strconv.Itoa(s.FDSize)
+		sl[8] = strconv.Itoa(s.Threads)
 		sl[9] = strconv.Itoa(int(s.VmRSSUint64))
 		sl[10] = strconv.Itoa(int(s.VmSizeUint64))
-		sl[11] = strconv.Itoa(int(s.VmPeakUint64))
-
+		sl[11] = fmt.Sprintf("%3.2f", s.Stat.CpuUsage)
 		rows[i] = sl
 	}
-
 	tablesorter.By(
 		rows,
-		tablesorter.MakeDescendingIntFunc(9),  // VM_RSS
-		tablesorter.MakeAscendingFunc(0),      // NAME
-		tablesorter.MakeDescendingIntFunc(10), // VM_SIZE
-		tablesorter.MakeDescendingIntFunc(4),  // FD
+		tablesorter.MakeDescendingIntFunc(9),      // VM_RSS
+		tablesorter.MakeDescendingFloat64Func(11), // CPU
+		tablesorter.MakeDescendingIntFunc(10),     // VM_SIZE
 	).Sort(rows)
 
 	// adding timestamp
@@ -335,7 +328,7 @@ func WriteToCSV(firstCSV bool, f *os.File, sts ...Status) error {
 
 const statusTmplDetailed = `
 ----------------------------------------
-[/proc/{{.Pid}}/status]
+[/proc/{{.Pid}}/status,stat]
 
 Name:  {{.Name}}
 State: {{.State}}
@@ -361,7 +354,8 @@ VmLib:   {{.VmLib}}
 VmPTE:   {{.VmPTE}}
 VmSwap:  {{.VmSwap}}
 
-Threads: {{.Threads}}
+CpuUsage:  {{.Stat.CpuUsage}} %
+Threads:   {{.Threads}}
 
 Groups: {{.Groups}}
 Uid:    {{.Uid}}
@@ -438,10 +432,11 @@ func (s *Status) Match(filter *Status) bool {
 // StatusByPID gets the Status of the pid.
 func StatusByPID(pid int) (Status, error) {
 	fpath := fmt.Sprintf("/proc/%d/status", pid)
-	return parseStatus(fpath)
+	return getStatus(fpath)
 }
 
-func parseStatus(fpath string) (Status, error) {
+// getStatus reads /proc/$PID/status,stat data.
+func getStatus(fpath string) (Status, error) {
 	_, err := os.Stat(fpath)
 	if err != nil {
 		return Status{}, err
@@ -496,15 +491,18 @@ func parseStatus(fpath string) (Status, error) {
 	u, _ = humanize.ParseBytes(rs.VmSwap)
 	rs.VmSwap = humanize.Bytes(u)
 	rs.VmSwapUint64 = u
-	return rs, nil
-}
 
-func open(fpath string) (*os.File, error) {
-	f, err := os.OpenFile(fpath, os.O_RDONLY, 0444)
+	stat, err := getStat(strings.Replace(fpath, "/status", "/stat", -1))
 	if err != nil {
-		return f, err
+		return Status{}, err
 	}
-	return f, nil
+	rs.Stat = stat
+
+	if len(rs.Name) < len(stat.Comm) && strings.HasPrefix(strings.ToLower(stat.Comm), strings.ToLower(rs.Name)) {
+		fmt.Println(rs.Name, stat.Comm)
+		rs.Name = stat.Comm
+	}
+	return rs, nil
 }
 
 // Kill kills all processes in arguments.
