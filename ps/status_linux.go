@@ -525,7 +525,7 @@ func Kill(w io.Writer, parent bool, sts ...Status) {
 	pidToKill := make(map[int]string)
 	for _, s := range sts {
 		pidToKill[s.Pid] = s.Name
-		if parent {
+		if parent && s.PPid != 0 {
 			pidToKill[s.PPid] = s.Name
 		}
 	}
