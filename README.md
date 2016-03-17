@@ -14,10 +14,8 @@ Usage:
   psn [command]
 
 Available Commands:
-  ps          Investigates processes.
+  ps          Investigates processes status.
   ss          Investigates sockets.
-  kill        Kills programs using syscall. Make sure to specify the flags to find the program.
-  monitor     Monitors programs.
 
 Flags:
   -h, --help   help for psn
@@ -54,12 +52,12 @@ But I want something easier. Here's sample output:
 
 ```
 psn ps
-+-----------------+--------------+-------+-------+------+---------+--------+---------+---------+
-|      NAME       |    STATE     |  PID  | PPID  |  FD  | THREADS | VM RSS | VM SIZE | VM PEAK |
-+-----------------+--------------+-------+-------+------+---------+--------+---------+---------+
-| chrome          | S (sleeping) | 12442 | 18818 |  256 |      11 | 334 MB | 1.4 GB  | 1.4 GB  |
-| chrome          | S (sleeping) | 18800 |  2018 | 1024 |      47 | 248 MB | 1.2 GB  | 1.3 GB  |
-| chrome          | S (sleeping) |  9476 | 18818 |   64 |       9 | 220 MB | 1.0 GB  | 1.0 GB  |
++-----------------+--------------+-------+-------+--------+---------+---------+------+---------+
+|      NAME       |    STATE     |  PID  | PPID  | VM RSS | VM SIZE |   CPU   |  FD  | THREADS |
++-----------------+--------------+-------+-------+--------+---------+---------+------+---------+
+| chrome          | S (sleeping) |  3821 |  2642 | 71 MB  | 766 MB  | 0.01 %  |   64 |       7 |
+| chrome          | S (sleeping) |  4564 |  2642 | 69 MB  | 756 MB  | 0.00 %  |   64 |       7 |
+| unity-panel-ser | S (sleeping) |  2154 |  1979 | 63 MB  | 601 MB  | 0.17 %  |   64 |       3 |
 +-----------------+--------------+-------+-------+------+---------+--------+---------+---------+
 
 psn ss
