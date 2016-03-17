@@ -13,6 +13,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"text/template"
 	"time"
@@ -23,8 +24,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// ListStatus finds the status by specifying the filter.
-func ListStatus(filter *Status) ([]Status, error) {
+// List finds the status by specifying the filter.
+func List(filter *Status) ([]Status, error) {
 	ds, _ := ioutil.ReadDir("/proc")
 	procPaths := []string{}
 	for _, f := range ds {
@@ -279,13 +280,21 @@ func WriteToTable(w io.Writer, top int, sts ...Status) {
 	table.Render()
 }
 
+var once sync.Once
+
 // WriteToTable writes slice of Status to a csv file.
-func WriteToCSV(firstCSV bool, f *os.File, sts ...Status) error {
+func WriteToCSV(f *os.File, sts ...Status) error {
 	wr := csv.NewWriter(f)
-	if firstCSV { // write header
+
+	var werr error
+	writeCSVHeader := func() {
 		if err := wr.Write(append([]string{"timestamp"}, statusMembers...)); err != nil {
-			return err
+			werr = err
 		}
+	}
+	once.Do(writeCSVHeader)
+	if werr != nil {
+		return werr
 	}
 
 	rows := make([][]string, len(sts))
@@ -441,7 +450,7 @@ func getStatus(fpath string) (Status, error) {
 	if err != nil {
 		return Status{}, err
 	}
-	f, err := open(fpath)
+	f, err := openToRead(fpath)
 	if err != nil {
 		return Status{}, err
 	}
@@ -527,7 +536,7 @@ func Kill(w io.Writer, parent bool, sts ...Status) {
 	sort.Ints(pids)
 
 	for _, pid := range pids {
-		fmt.Fprintf(w, "syscall.Kill: %s [PID: %d]\n", pidToKill[pid], pid)
+		fmt.Fprintf(w, "\nsyscall.Kill: %s [PID: %d]\n", pidToKill[pid], pid)
 		if err := syscall.Kill(pid, syscall.SIGTERM); err != nil {
 			fmt.Fprintf(w, "syscall.SIGTERM error (%v)\n", err)
 
@@ -569,4 +578,5 @@ func Kill(w io.Writer, parent bool, sts ...Status) {
 			fmt.Fprintf(w, "    Done: %q\n", strings.Join(cmd.Args, ""))
 		}
 	}
+	fmt.Fprintln(w)
 }

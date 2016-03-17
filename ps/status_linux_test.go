@@ -5,8 +5,8 @@ import (
 	"testing"
 )
 
-func TestListStatus(t *testing.T) {
-	rs, err := ListStatus(nil)
+func TestList(t *testing.T) {
+	rs, err := List(nil)
 	if err != nil {
 		t.Error(err)
 	}

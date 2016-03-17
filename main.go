@@ -4,10 +4,8 @@
 //	  psn [command]
 //
 //	Available Commands:
-//	  status      Investigates processes status.
+//	  ps          Investigates processes status.
 //	  ss          Investigates sockets.
-//	  kill        Kills programs using syscall. Make sure to specify the flags to find the program.
-//	  monitor     Monitors programs.
 //
 //	Flags:
 //	  -h, --help   help for psn
@@ -20,8 +18,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gyuho/psn/kill"
-	"github.com/gyuho/psn/monitor"
 	"github.com/gyuho/psn/ps"
 	"github.com/gyuho/psn/ss"
 	"github.com/spf13/cobra"
@@ -38,8 +34,6 @@ var (
 func init() {
 	Command.AddCommand(ps.Command)
 	Command.AddCommand(ss.Command)
-	Command.AddCommand(kill.Command)
-	Command.AddCommand(monitor.Command)
 }
 
 func init() {

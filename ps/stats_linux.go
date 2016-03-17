@@ -82,7 +82,7 @@ func getStat(fpath string) (Stat, error) {
 	if err != nil {
 		return Stat{}, err
 	}
-	f, err := open(fpath)
+	f, err := openToRead(fpath)
 	if err != nil {
 		return Stat{}, err
 	}
