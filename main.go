@@ -4,7 +4,7 @@
 //	  psn [command]
 //
 //	Available Commands:
-//	  ps          Investigates processes.
+//	  status      Investigates processes status.
 //	  ss          Investigates sockets.
 //	  kill        Kills programs using syscall. Make sure to specify the flags to find the program.
 //	  monitor     Monitors programs.

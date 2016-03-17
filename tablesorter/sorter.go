@@ -48,6 +48,16 @@ func MakeDescendingIntFunc(idx int) func(row1, row2 *[]string) bool {
 	}
 }
 
+func MakeDescendingFloat64Func(idx int) func(row1, row2 *[]string) bool {
+	return func(row1, row2 *[]string) bool {
+		num1s := (*row1)[idx]
+		num1, _ := strconv.ParseFloat(num1s, 64)
+		num2s := (*row2)[idx]
+		num2, _ := strconv.ParseFloat(num2s, 64)
+		return num1 > num2
+	}
+}
+
 // MultiSorter implements the Sort interface,
 // sorting the two dimensional string slices within.
 type MultiSorter struct {
