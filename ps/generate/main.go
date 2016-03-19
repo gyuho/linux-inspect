@@ -1,3 +1,4 @@
+// generate generates ps struct based on the schema.
 package main
 
 import (
