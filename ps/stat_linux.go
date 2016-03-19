@@ -26,6 +26,8 @@ func GetStat(pid int64) (Stat, error) {
 		s, err = getStat(pid)
 		if err == nil {
 			return s, nil
+		} else {
+			log.Println(err)
 		}
 		time.Sleep(5 * time.Millisecond)
 	}
