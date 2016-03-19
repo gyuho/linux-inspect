@@ -308,6 +308,11 @@ func Kill(w io.Writer, parent bool, pss ...Process) {
 			pidToKill[s.Status.PPid] = s.Status.Name
 		}
 	}
+	if len(pidToKill) == 0 {
+		fmt.Fprintln(w, "no PID to kill...")
+		return
+	}
+
 	pids := []int64{}
 	for pid := range pidToKill {
 		pids = append(pids, pid)

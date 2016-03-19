@@ -91,6 +91,11 @@ func Kill(w io.Writer, ps ...Process) {
 	for _, p := range ps {
 		pidToKill[p.PID] = p.Program
 	}
+	if len(pidToKill) == 0 {
+		fmt.Fprintln(w, "no PID to kill...")
+		return
+	}
+
 	pids := []int{}
 	for pid := range pidToKill {
 		pids = append(pids, pid)
