@@ -39,6 +39,14 @@ var ProcessTableColumns = []string{
 
 // List finds the status by specifying the filter.
 func List(filter *Process) ([]Process, error) {
+	if filter != nil {
+		if filter.Stat.Pid != 0 && filter.Status.Pid == 0 {
+			filter.Status.Pid = filter.Stat.Pid
+		}
+		if filter.Stat.Pid == 0 && filter.Status.Pid != 0 {
+			filter.Stat.Pid = filter.Status.Pid
+		}
+	}
 	if filter != nil && filter.Stat.Pid != 0 && filter.Status.Pid != 0 {
 		stat, err := GetStat(filter.Stat.Pid)
 		if err != nil {
