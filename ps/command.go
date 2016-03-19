@@ -16,7 +16,7 @@ import (
 type Flags struct {
 	LogPath string
 
-	Filter *Status
+	Filter Process
 	Top    int
 
 	Kill       bool
@@ -33,22 +33,34 @@ var (
 		Short: "Investigates processes status.",
 		RunE:  CommandFunc,
 	}
-	cmdFlag = Flags{Filter: &Status{}}
+	KillCommand = &cobra.Command{
+		Use:   "ps-kill",
+		Short: "Kills processes.",
+		RunE:  KillCommandFunc,
+	}
+	MonitorCommand = &cobra.Command{
+		Use:   "ps-monitor",
+		Short: "Monitors processes.",
+		RunE:  MonitorCommandFunc,
+	}
+	cmdFlag = Flags{}
 )
 
 func init() {
-	Command.PersistentFlags().StringVar(&cmdFlag.LogPath, "log-path", "", "File path to store logs. Empty to print out to stdout. Supports csv file.")
-
-	Command.PersistentFlags().StringVarP(&cmdFlag.Filter.Name, "program", "s", "", "Specify the program. Empty lists all programs.")
-	Command.PersistentFlags().IntVarP(&cmdFlag.Filter.Pid, "pid", "p", 0, "Specify the pid. 0 lists all processes.")
+	Command.PersistentFlags().StringVarP(&cmdFlag.Filter.Stat.Comm, "program", "s", "", "Specify the program. Empty lists all programs.")
+	Command.PersistentFlags().Int64VarP(&cmdFlag.Filter.Stat.Pid, "pid", "i", 0, "Specify the pid. 0 lists all processes.")
 	Command.PersistentFlags().IntVarP(&cmdFlag.Top, "top", "t", 0, "Only list the top processes (descending order in memory usage). 0 means all.")
 
-	Command.PersistentFlags().BoolVar(&cmdFlag.Kill, "kill", false, "'true' to kill processes that matches the filter.")
-	Command.PersistentFlags().BoolVar(&cmdFlag.KillParent, "kill-parent", false, "'true' to kill processes including its parent processes.")
-	Command.PersistentFlags().BoolVar(&cmdFlag.CleanUp, "clean-up", false, "'true' to automatically kill zombie processes. Name must be empty.")
+	KillCommand.PersistentFlags().StringVarP(&cmdFlag.Filter.Stat.Comm, "program", "s", "", "Specify the program. Empty lists all programs.")
+	KillCommand.PersistentFlags().Int64VarP(&cmdFlag.Filter.Stat.Pid, "pid", "i", 0, "Specify the pid. 0 lists all processes.")
+	KillCommand.PersistentFlags().BoolVarP(&cmdFlag.KillParent, "force", "f", false, "'true' to kill processes including its parent processes.")
+	KillCommand.PersistentFlags().BoolVarP(&cmdFlag.CleanUp, "clean-up", "c", false, "'true' to automatically kill zombie processes. Name must be empty.")
 
-	Command.PersistentFlags().BoolVar(&cmdFlag.Monitor, "monitor", false, "'true' to periodically run ps command.")
-	Command.PersistentFlags().DurationVar(&cmdFlag.MonitorInterval, "monitor-interval", 10*time.Second, "Monitor interval.")
+	MonitorCommand.PersistentFlags().StringVarP(&cmdFlag.Filter.Stat.Comm, "program", "s", "", "Specify the program. Empty lists all programs.")
+	MonitorCommand.PersistentFlags().Int64VarP(&cmdFlag.Filter.Stat.Pid, "pid", "i", 0, "Specify the pid. 0 lists all processes.")
+	MonitorCommand.PersistentFlags().IntVarP(&cmdFlag.Top, "top", "t", 0, "Only list the top processes (descending order in memory usage). 0 means all.")
+	MonitorCommand.PersistentFlags().StringVar(&cmdFlag.LogPath, "log-path", "", "File path to store logs. Empty to print out to stdout. Supports csv file.")
+	MonitorCommand.PersistentFlags().DurationVar(&cmdFlag.MonitorInterval, "monitor-interval", 10*time.Second, "Monitor interval.")
 }
 
 func CommandFunc(cmd *cobra.Command, args []string) error {
@@ -56,73 +68,120 @@ func CommandFunc(cmd *cobra.Command, args []string) error {
 	fmt.Fprintf(os.Stdout, "\npsn ps\n\n")
 	color.Unset()
 
-	if cmdFlag.Kill && cmdFlag.Monitor {
-		fmt.Fprintln(os.Stdout, "can't kill and monitor at the same time!")
-		os.Exit(1)
+	if cmdFlag.Filter.Stat.Comm != "" {
+		cmdFlag.Filter.Status.Name = cmdFlag.Filter.Stat.Comm
+	}
+	if cmdFlag.Filter.Stat.Pid != 0 {
+		cmdFlag.Filter.Status.Pid = cmdFlag.Filter.Stat.Pid
 	}
 
-	if cmdFlag.Kill {
-		if cmdFlag.CleanUp && cmdFlag.Filter.Name == "" && cmdFlag.Filter.State == "" {
-			cmdFlag.Filter.State = "Z (zombie)"
-		}
+	pss, err := List(&cmdFlag.Filter)
+	if err != nil {
+		return err
+	}
+	WriteToTable(os.Stdout, cmdFlag.Top, pss...)
+
+	color.Set(color.FgGreen)
+	fmt.Fprintf(os.Stdout, "\nDone.\n")
+	color.Unset()
+
+	return nil
+}
+
+func KillCommandFunc(cmd *cobra.Command, args []string) error {
+	color.Set(color.FgRed)
+	fmt.Fprintf(os.Stdout, "\npsn ps-kill\n\n")
+	color.Unset()
+
+	if cmdFlag.Filter.Stat.Comm != "" {
+		cmdFlag.Filter.Status.Name = cmdFlag.Filter.Stat.Comm
+	}
+	if cmdFlag.Filter.Stat.Pid != 0 {
+		cmdFlag.Filter.Status.Pid = cmdFlag.Filter.Stat.Pid
+	}
+	if cmdFlag.CleanUp && cmdFlag.Filter.Stat.Comm == "" {
+		cmdFlag.Filter.Status.State = "Z (zombie)"
 	}
 
-	rFunc := func() ([]Status, error) {
-		pss, err := List(cmdFlag.Filter)
+	pss, err := List(&cmdFlag.Filter)
+	if err != nil {
+		return err
+	}
+	WriteToTable(os.Stdout, cmdFlag.Top, pss...)
+	Kill(os.Stdout, cmdFlag.KillParent, pss...)
+
+	color.Set(color.FgGreen)
+	fmt.Fprintf(os.Stdout, "\nDone.\n")
+	color.Unset()
+
+	return nil
+}
+
+func MonitorCommandFunc(cmd *cobra.Command, args []string) error {
+	color.Set(color.FgBlue)
+	fmt.Fprintf(os.Stdout, "\npsn ps-monitor\n\n")
+	color.Unset()
+
+	if cmdFlag.Filter.Stat.Comm != "" {
+		cmdFlag.Filter.Status.Name = cmdFlag.Filter.Stat.Comm
+	}
+	if cmdFlag.Filter.Stat.Pid != 0 {
+		cmdFlag.Filter.Status.Pid = cmdFlag.Filter.Stat.Pid
+	}
+	if cmdFlag.CleanUp && cmdFlag.Filter.Stat.Comm == "" {
+		cmdFlag.Filter.Status.State = "Z (zombie)"
+	}
+
+	rFunc := func() error {
+		pss, err := List(&cmdFlag.Filter)
 		if err != nil {
-			return nil, err
+			return err
 		}
+
 		if filepath.Ext(cmdFlag.LogPath) == ".csv" {
-			fmt.Fprintf(os.Stdout, "File saved at %s\n", cmdFlag.LogPath)
 			f, err := openToAppend(cmdFlag.LogPath)
 			if err != nil {
-				return nil, err
+				return err
 			}
 			defer f.Close()
 			if err := WriteToCSV(f, pss...); err != nil {
-				return nil, err
+				return err
 			}
-			return pss, err
+			return err
 		}
+
 		var wr io.Writer
 		if cmdFlag.LogPath == "" {
 			wr = os.Stdout
 		} else {
-			fmt.Fprintf(os.Stdout, "File saved at %s\n", cmdFlag.LogPath)
 			f, err := openToAppend(cmdFlag.LogPath)
 			if err != nil {
-				return nil, err
+				return err
 			}
 			defer f.Close()
 			wr = f
 		}
 		WriteToTable(wr, cmdFlag.Top, pss...)
-		return pss, nil
+		return nil
 	}
 
-	pss, err := rFunc()
-	if err != nil {
+	if err := rFunc(); err != nil {
 		return err
 	}
 
 	notifier := make(chan os.Signal, 1)
 	signal.Notify(notifier, syscall.SIGINT, syscall.SIGTERM)
-
-	if cmdFlag.Kill {
-		Kill(os.Stdout, cmdFlag.KillParent, pss...)
-	} else if cmdFlag.Monitor {
-	escape:
-		for {
-			select {
-			case <-time.After(cmdFlag.MonitorInterval):
-				if _, err = rFunc(); err != nil {
-					fmt.Fprintf(os.Stdout, "error: %v\n", err)
-					break escape
-				}
-			case sig := <-notifier:
-				fmt.Fprintf(os.Stdout, "Received %v\n", sig)
-				return nil
+escape:
+	for {
+		select {
+		case <-time.After(cmdFlag.MonitorInterval):
+			if err := rFunc(); err != nil {
+				fmt.Fprintf(os.Stdout, "error: %v\n", err)
+				break escape
 			}
+		case sig := <-notifier:
+			fmt.Fprintf(os.Stdout, "Received %v\n", sig)
+			return nil
 		}
 	}
 

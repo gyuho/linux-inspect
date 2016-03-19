@@ -24,7 +24,17 @@ if [ -n "${vetRes}" ]; then
 fi
 
 echo "Checking govet -shadow..."
+vetRes=$(go tool vet -shadow ./ps/*.go)
+if [ -n "${vetRes}" ]; then
+	echo -e "govet -shadow checking failed:\n${vetRes}"
+	exit 255
+fi
 vetRes=$(go tool vet -shadow ./ss/*.go)
+if [ -n "${vetRes}" ]; then
+	echo -e "govet -shadow checking failed:\n${vetRes}"
+	exit 255
+fi
+vetRes=$(go tool vet -shadow ./tablesorter/*.go)
 if [ -n "${vetRes}" ]; then
 	echo -e "govet -shadow checking failed:\n${vetRes}"
 	exit 255
