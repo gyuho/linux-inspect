@@ -83,7 +83,7 @@ func TestWriteToTable(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	WriteToTable(os.Stdout, ps...)
+	WriteToTable(os.Stdout, 0, ps...)
 }
 
 func TestFilterMatch(t *testing.T) {
@@ -106,7 +106,7 @@ func TestListEtcd(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	WriteToTable(os.Stdout, ps...)
+	WriteToTable(os.Stdout, 0, ps...)
 
 	pm := ListPorts(filter, TCP, TCP6)
 	for pt := range pm {

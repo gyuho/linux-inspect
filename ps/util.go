@@ -49,5 +49,5 @@ func ToField(s string) string {
 			ss = append(ss, strings.Title(v))
 		}
 	}
-	return strings.Join(ss, "")
+	return strings.TrimSpace(strings.Join(ss, ""))
 }

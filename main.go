@@ -5,7 +5,11 @@
 //
 //	Available Commands:
 //	  ps          Investigates processes status.
+//	  ps-kill     Kills processes.
+//	  ps-monitor  Monitors processes.
 //	  ss          Investigates sockets.
+//	  ss-kill     Kills sockets.
+//	  ss-monitor  Monitors sockets.
 //
 //	Flags:
 //	  -h, --help   help for psn
@@ -33,7 +37,11 @@ var (
 
 func init() {
 	Command.AddCommand(ps.Command)
+	Command.AddCommand(ps.KillCommand)
+	Command.AddCommand(ps.MonitorCommand)
 	Command.AddCommand(ss.Command)
+	Command.AddCommand(ss.KillCommand)
+	Command.AddCommand(ss.MonitorCommand)
 }
 
 func init() {

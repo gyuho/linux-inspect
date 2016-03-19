@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -16,7 +17,7 @@ type Flags struct {
 	LogPath string
 
 	Top    int
-	Filter *Process
+	Filter Process
 
 	Kill    bool
 	CleanUp bool
@@ -31,21 +32,33 @@ var (
 		Short: "Investigates sockets.",
 		RunE:  CommandFunc,
 	}
-	cmdFlag = Flags{Filter: &Process{}}
+	KillCommand = &cobra.Command{
+		Use:   "ss-kill",
+		Short: "Kills sockets.",
+		RunE:  KillCommandFunc,
+	}
+	MonitorCommand = &cobra.Command{
+		Use:   "ss-monitor",
+		Short: "Monitors sockets.",
+		RunE:  MonitorCommandFunc,
+	}
+	cmdFlag = Flags{}
 )
 
 func init() {
-	Command.PersistentFlags().StringVar(&cmdFlag.LogPath, "log-path", "", "File path to store logs. Empty to print out to stdout.")
-
-	Command.PersistentFlags().IntVarP(&cmdFlag.Top, "top", "t", 0, "Only list the top processes (descending order in memory usage). 0 means all.")
 	Command.PersistentFlags().StringVarP(&cmdFlag.Filter.Program, "program", "s", "", "Specify the program. Empty lists all programs.")
 	Command.PersistentFlags().StringVarP(&cmdFlag.Filter.LocalPort, "local-port", "l", "", "Specify the local port. Empty lists all local ports.")
+	Command.PersistentFlags().IntVarP(&cmdFlag.Top, "top", "t", 0, "Only list the top processes (descending order in memory usage). 0 means all.")
 
-	Command.PersistentFlags().BoolVar(&cmdFlag.Kill, "kill", false, "'true' to kill processes that matches the filter.")
-	Command.PersistentFlags().BoolVar(&cmdFlag.CleanUp, "clean-up", false, "'true' to automatically kill zombie processes. Name must be empty.")
+	KillCommand.PersistentFlags().StringVarP(&cmdFlag.Filter.Program, "program", "s", "", "Specify the program. Empty lists all programs.")
+	KillCommand.PersistentFlags().StringVarP(&cmdFlag.Filter.LocalPort, "local-port", "l", "", "Specify the local port. Empty lists all local ports.")
+	KillCommand.PersistentFlags().BoolVarP(&cmdFlag.CleanUp, "clean-up", "c", false, "'true' to automatically kill deleted processes. Name must be empty.")
 
-	Command.PersistentFlags().BoolVar(&cmdFlag.Monitor, "monitor", false, "'true' to periodically run ps command.")
-	Command.PersistentFlags().DurationVar(&cmdFlag.MonitorInterval, "monitor-interval", 10*time.Second, "Monitor interval.")
+	MonitorCommand.PersistentFlags().StringVarP(&cmdFlag.Filter.Program, "program", "s", "", "Specify the program. Empty lists all programs.")
+	MonitorCommand.PersistentFlags().StringVarP(&cmdFlag.Filter.LocalPort, "local-port", "l", "", "Specify the local port. Empty lists all local ports.")
+	MonitorCommand.PersistentFlags().IntVarP(&cmdFlag.Top, "top", "t", 0, "Only list the top processes (descending order in memory usage). 0 means all.")
+	MonitorCommand.PersistentFlags().StringVar(&cmdFlag.LogPath, "log-path", "", "File path to store logs. Empty to print out to stdout.")
+	MonitorCommand.PersistentFlags().DurationVar(&cmdFlag.MonitorInterval, "monitor-interval", 10*time.Second, "Monitor interval.")
 }
 
 func CommandFunc(cmd *cobra.Command, args []string) error {
@@ -53,63 +66,99 @@ func CommandFunc(cmd *cobra.Command, args []string) error {
 	fmt.Fprintf(os.Stdout, "\npsn ss\n\n")
 	color.Unset()
 
-	if cmdFlag.Kill && cmdFlag.Monitor {
-		fmt.Fprintln(os.Stdout, "can't kill and monitor at the same time!")
-		os.Exit(1)
+	ssr, err := List(&cmdFlag.Filter, TCP, TCP6)
+	if err != nil {
+		return err
+	}
+	WriteToTable(os.Stdout, cmdFlag.Top, ssr...)
+
+	color.Set(color.FgGreen)
+	fmt.Fprintf(os.Stdout, "\nDone.\n")
+	color.Unset()
+
+	return nil
+}
+
+func KillCommandFunc(cmd *cobra.Command, args []string) error {
+	color.Set(color.FgRed)
+	fmt.Fprintf(os.Stdout, "\npsn ss-kill\n\n")
+	color.Unset()
+
+	if cmdFlag.CleanUp && cmdFlag.Filter.Program == "" {
+		cmdFlag.Filter.Program = "deleted)"
+	} else if cmdFlag.Filter.LocalPort == "" && cmdFlag.Filter.Program == "" { // to prevent killing all
+		cmdFlag.Filter.Program = "SPECIFY PROGRAM NAME"
 	}
 
-	if cmdFlag.Kill {
-		if cmdFlag.CleanUp && cmdFlag.Filter.Program == "" {
-			cmdFlag.Filter.Program = "deleted)"
-		} else if cmdFlag.Filter.LocalPort == "" && cmdFlag.Filter.Program == "" { // to prevent killing all
-			cmdFlag.Filter.Program = "SPECIFY PROGRAM NAME"
-		}
+	ssr, err := List(&cmdFlag.Filter, TCP, TCP6)
+	if err != nil {
+		return err
 	}
+	WriteToTable(os.Stdout, cmdFlag.Top, ssr...)
+	Kill(os.Stdout, ssr...)
 
-	rFunc := func() ([]Process, error) {
-		ssr, err := List(cmdFlag.Filter, TCP, TCP6)
+	color.Set(color.FgGreen)
+	fmt.Fprintf(os.Stdout, "\nDone.\n")
+	color.Unset()
+
+	return nil
+}
+
+func MonitorCommandFunc(cmd *cobra.Command, args []string) error {
+	color.Set(color.FgBlue)
+	fmt.Fprintf(os.Stdout, "\npsn ss-monitor\n\n")
+	color.Unset()
+
+	rFunc := func() error {
+		ssr, err := List(&cmdFlag.Filter, TCP, TCP6)
 		if err != nil {
-			return nil, err
+			return err
 		}
+
+		if filepath.Ext(cmdFlag.LogPath) == ".csv" {
+			f, err := openToAppend(cmdFlag.LogPath)
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+			if err := WriteToCSV(f, ssr...); err != nil {
+				return err
+			}
+			return err
+		}
+
 		var wr io.Writer
 		if cmdFlag.LogPath == "" {
 			wr = os.Stdout
 		} else {
-			fmt.Fprintf(os.Stdout, "File saved at %s\n", cmdFlag.LogPath)
 			f, err := openToAppend(cmdFlag.LogPath)
 			if err != nil {
-				return nil, err
+				return err
 			}
 			defer f.Close()
 			wr = f
 		}
 		WriteToTable(wr, cmdFlag.Top, ssr...)
-		return ssr, nil
+		return nil
 	}
 
-	ssr, err := rFunc()
-	if err != nil {
+	if err := rFunc(); err != nil {
 		return err
 	}
 
 	notifier := make(chan os.Signal, 1)
 	signal.Notify(notifier, syscall.SIGINT, syscall.SIGTERM)
-
-	if cmdFlag.Kill {
-		Kill(os.Stdout, ssr...)
-	} else if cmdFlag.Monitor {
-	escape:
-		for {
-			select {
-			case <-time.After(cmdFlag.MonitorInterval):
-				if _, err = rFunc(); err != nil {
-					fmt.Fprintf(os.Stdout, "error: %v\n", err)
-					break escape
-				}
-			case sig := <-notifier:
-				fmt.Fprintf(os.Stdout, "Received %v\n", sig)
-				return nil
+escape:
+	for {
+		select {
+		case <-time.After(cmdFlag.MonitorInterval):
+			if err := rFunc(); err != nil {
+				fmt.Fprintf(os.Stdout, "error: %v\n", err)
+				break escape
 			}
+		case sig := <-notifier:
+			fmt.Fprintf(os.Stdout, "Received %v\n", sig)
+			return nil
 		}
 	}
 

@@ -55,7 +55,7 @@ type Process struct {
 	User user.User
 }
 
-var processMembers = []string{
+var ProcessTableColumns = []string{
 	"PROTOCOL",
 	"PROGRAM",
 	"PID",
@@ -337,11 +337,11 @@ func (p *Process) Match(filter *Process) bool {
 // WriteToTable writes slice of Processes to ASCII table.
 func WriteToTable(w io.Writer, top int, ps ...Process) {
 	table := tablewriter.NewWriter(w)
-	table.SetHeader(processMembers)
+	table.SetHeader(ProcessTableColumns)
 
 	rows := make([][]string, len(ps))
 	for i, p := range ps {
-		sl := make([]string, len(processMembers))
+		sl := make([]string, len(ProcessTableColumns))
 		sl[0] = p.Protocol
 		sl[1] = p.Program
 		sl[2] = strconv.Itoa(p.PID)
@@ -370,18 +370,26 @@ func WriteToTable(w io.Writer, top int, ps ...Process) {
 	table.Render()
 }
 
-// WriteToTable writes slice of Processes to a csv file.
-func WriteToCSV(firstCSV bool, f *os.File, ps ...Process) error {
+var once sync.Once
+
+// WriteToCSV writes slice of Processes to a csv file.
+func WriteToCSV(f *os.File, ps ...Process) error {
 	wr := csv.NewWriter(f)
-	if firstCSV { // write header
-		if err := wr.Write(append([]string{"timestamp"}, processMembers...)); err != nil {
-			return err
+
+	var werr error
+	writeCSVHeader := func() {
+		if err := wr.Write(append([]string{"unix_ts"}, ProcessTableColumns...)); err != nil {
+			werr = err
 		}
+	}
+	once.Do(writeCSVHeader)
+	if werr != nil {
+		return werr
 	}
 
 	rows := make([][]string, len(ps))
 	for i, p := range ps {
-		sl := make([]string, len(processMembers))
+		sl := make([]string, len(ProcessTableColumns))
 		sl[0] = p.Protocol
 		sl[1] = p.Program
 		sl[2] = strconv.Itoa(p.PID)
@@ -401,7 +409,7 @@ func WriteToCSV(firstCSV bool, f *os.File, ps ...Process) error {
 	).Sort(rows)
 
 	// adding timestamp
-	ts := time.Now().String()[:19]
+	ts := fmt.Sprintf("%d", time.Now().Unix())
 	nrows := make([][]string, len(rows))
 	for i, row := range rows {
 		nrows[i] = append([]string{ts}, row...)
