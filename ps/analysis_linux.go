@@ -53,7 +53,7 @@ func ReadCSV(columns map[string]int, fpath string) (Table, error) {
 		return Table{}, err
 	}
 	if len(rows) > 0 && len(rows[0]) > 0 {
-		if rows[0][0] == "unix_ts" {
+		if rows[0][0] == columnSlice[0] {
 			rows = rows[1:]
 		}
 	}
