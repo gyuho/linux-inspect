@@ -168,6 +168,12 @@ func (s *Stat) Match(filter *Process) bool {
 			return false
 		}
 	}
+	state := filter.Stat.State
+	if state != "" {
+		if state != s.State {
+			return false
+		}
+	}
 	return true
 }
 

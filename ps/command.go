@@ -100,6 +100,7 @@ func KillCommandFunc(cmd *cobra.Command, args []string) error {
 		cmdFlag.Filter.Status.Pid = cmdFlag.Filter.Stat.Pid
 	}
 	if cmdFlag.CleanUp && cmdFlag.Filter.Stat.Comm == "" {
+		cmdFlag.Filter.Stat.State = "Z"
 		cmdFlag.Filter.Status.State = "Z (zombie)"
 	}
 
