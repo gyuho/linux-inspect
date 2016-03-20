@@ -130,15 +130,18 @@ func List(filter *Process) ([]Process, error) {
 
 	rs := []Process{}
 	for _, proc := range rmap {
-		if proc.Stat.Comm != "" && proc.Status.Name == "" {
+		if proc.Stat.Comm == "" && proc.Status.Name != "" {
 			proc.Stat.Comm = proc.Status.Name
 			// return nil, fmt.Errorf("%s != %s\n", proc.Stat.Comm, proc.Status.Name)
 		}
-		if proc.Stat.Comm == "" && proc.Status.Name != "" {
+		if proc.Stat.Comm != "" && proc.Status.Name == "" {
 			proc.Status.Name = proc.Stat.Comm
 		}
-		if proc.Stat.Pid != proc.Status.Pid {
-			return nil, fmt.Errorf("%s : %d != %d\n", proc.Stat.Comm, proc.Stat.Pid, proc.Status.Pid)
+		if proc.Stat.Pid == 0 && proc.Status.Pid != 0 {
+			proc.Stat.Pid = proc.Status.Pid
+		}
+		if proc.Stat.Pid != 0 && proc.Status.Pid == 0 {
+			proc.Status.Pid = proc.Stat.Pid
 		}
 		rs = append(rs, proc)
 	}
