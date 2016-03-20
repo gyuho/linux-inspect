@@ -2,6 +2,7 @@ package ps
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"testing"
 	"time"
@@ -74,4 +75,19 @@ func TestReadCSVs(t *testing.T) {
 		fmt.Printf("%q\n", row)
 	}
 	fmt.Println(tb.ToRows())
+}
+
+func TestReadCSVsTestdata(t *testing.T) {
+	testPaths := []string{"testdata/test-01-etcd-server-1.csv", "testdata/test-01-etcd-server-2.csv", "testdata/test-01-etcd-server-3.csv"}
+	tb, err := ReadCSVs(testPaths...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(tb.Columns)
+	for _, row := range tb.Rows {
+		fmt.Printf("%q\n", row)
+	}
+	if err := tb.ToCSV("testdata/test.csv"); err != nil {
+		log.Fatal(err)
+	}
 }

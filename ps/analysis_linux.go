@@ -3,6 +3,7 @@ package ps
 import (
 	"encoding/csv"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -152,4 +153,33 @@ func (t Table) ToRows() [][]string {
 		cols[v] = k
 	}
 	return append([][]string{cols}, t.Rows...)
+}
+
+// ToCSV saves the table to csv file.
+func (t Table) ToCSV(fpath string) error {
+	f, err := os.OpenFile(fpath, os.O_RDWR|os.O_TRUNC, 0777)
+	if err != nil {
+		f, err = os.Create(fpath)
+		if err != nil {
+			return err
+		}
+	}
+	defer f.Close()
+
+	wr := csv.NewWriter(f)
+
+	cols := make([]string, len(t.Columns))
+	for k, v := range t.Columns {
+		cols[v] = k
+	}
+	if err := wr.Write(cols); err != nil {
+		return err
+	}
+
+	if err := wr.WriteAll(t.Rows); err != nil {
+		return err
+	}
+
+	wr.Flush()
+	return wr.Error()
 }
