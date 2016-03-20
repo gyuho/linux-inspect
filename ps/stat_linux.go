@@ -146,6 +146,9 @@ func (s Stat) getCpuUsage() (float64, error) {
 		return 0, err
 	}
 	tookSec := u.UptimeTotal - (float64(s.Starttime) / float64(hertz))
+	if hertz == 0 || tookSec == 0.0 {
+		return 0.0, nil
+	}
 	return 100 * ((float64(totalSec) / float64(hertz)) / float64(tookSec)), nil
 }
 

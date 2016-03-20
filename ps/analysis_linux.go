@@ -11,31 +11,37 @@ import (
 // Table represents CSV tables.
 type Table struct {
 	// Columns maps its column name to its column index.
-	Columns map[string]int
-	Rows    [][]string
+	Columns     map[string]int
+	ColumnSlice []string
+	Rows        [][]string
 
 	minTS int64
 	maxTS int64
 }
 
 var (
-	columnsPS = make(map[string]int)
+	ColumnsPS = make(map[string]int)
 )
 
 func init() {
 	for i, v := range append([]string{"unix_ts"}, ProcessTableColumns...) {
-		columnsPS[v] = i
+		ColumnsPS[v] = i
 	}
 }
 
 // ReadCSV reads a csv file for ps csv file.
 // It assumes the results from one single program.
-func ReadCSV(fpath string) (Table, error) {
+func ReadCSV(columns map[string]int, fpath string) (Table, error) {
 	f, err := openToRead(fpath)
 	if err != nil {
 		return Table{}, err
 	}
 	defer f.Close()
+
+	columnSlice := make([]string, len(columns))
+	for k, v := range columns {
+		columnSlice[v] = k
+	}
 
 	rd := csv.NewReader(f)
 
@@ -60,20 +66,21 @@ func ReadCSV(fpath string) (Table, error) {
 		return Table{}, err
 	}
 	return Table{
-		Columns: columnsPS,
-		Rows:    rows,
-		minTS:   min,
-		maxTS:   max,
+		Columns:     columns,
+		ColumnSlice: columnSlice,
+		Rows:        rows,
+		minTS:       min,
+		maxTS:       max,
 	}, nil
 }
 
 // ReadCSVs reads multiple csv files, including only unix timestamps,
 // CPU usage, and VmRSS in MB. It assumes the results from one single program.
-func ReadCSVs(fpaths ...string) (Table, error) {
+func ReadCSVs(columns map[string]int, fpaths ...string) (Table, error) {
 	tbs := []Table{}
 	var minTS, maxTS int64
 	for i, fpath := range fpaths {
-		tb, err := ReadCSV(fpath)
+		tb, err := ReadCSV(columns, fpath)
 		if err != nil {
 			return Table{}, err
 		}
@@ -98,6 +105,11 @@ func ReadCSVs(fpaths ...string) (Table, error) {
 		ntb.Columns[fmt.Sprintf("cpu_%d", i+1)] = 2*i + 1
 		ntb.Columns[fmt.Sprintf("memory_mb_%d", i+1)] = 2*i + 2
 	}
+	columnSlice := make([]string, len(ntb.Columns))
+	for k, v := range ntb.Columns {
+		columnSlice[v] = k
+	}
+	ntb.ColumnSlice = columnSlice
 
 	cIdx, mIdx := tbs[0].Columns["CpuUsageFloat64"], tbs[0].Columns["VmRSSBytes"]
 
@@ -124,7 +136,7 @@ func ReadCSVs(fpaths ...string) (Table, error) {
 
 		if i == 0 {
 			for _, row := range tb.Rows {
-				if row[0] == "unix_ts" {
+				if row[0] == tb.ColumnSlice[0] {
 					continue
 				}
 				mf, _ := strconv.ParseFloat(row[mIdx], 64)
@@ -133,7 +145,7 @@ func ReadCSVs(fpaths ...string) (Table, error) {
 		} else {
 			for rowNum := range nrows {
 				trow := tb.Rows[rowNum]
-				if trow[0] == "unix_ts" {
+				if trow[0] == tb.ColumnSlice[0] {
 					continue
 				}
 				mf, _ := strconv.ParseFloat(trow[mIdx], 64)
@@ -148,11 +160,7 @@ func ReadCSVs(fpaths ...string) (Table, error) {
 
 // ToRows returns rows from the table.
 func (t Table) ToRows() [][]string {
-	cols := make([]string, len(t.Columns))
-	for k, v := range t.Columns {
-		cols[v] = k
-	}
-	return append([][]string{cols}, t.Rows...)
+	return append([][]string{t.ColumnSlice}, t.Rows...)
 }
 
 // ToCSV saves the table to csv file.
@@ -168,11 +176,7 @@ func (t Table) ToCSV(fpath string) error {
 
 	wr := csv.NewWriter(f)
 
-	cols := make([]string, len(t.Columns))
-	for k, v := range t.Columns {
-		cols[v] = k
-	}
-	if err := wr.Write(cols); err != nil {
+	if err := wr.Write(t.ColumnSlice); err != nil {
 		return err
 	}
 
