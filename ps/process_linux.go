@@ -86,32 +86,14 @@ func List(filter *Process) ([]Process, error) {
 				errc <- err
 				return
 			}
-			if stat.Match(filter) {
-				mu.Lock()
-				if v, ok := rmap[pid]; !ok {
-					rmap[pid] = Process{Stat: stat}
-				} else {
-					v.Stat = stat
-					rmap[pid] = v
-				}
-				mu.Unlock()
-			}
-			donec <- struct{}{}
-		}(pid, filter)
-		go func(pid int64, filter *Process) {
 			status, err := GetStatus(pid)
 			if err != nil {
 				errc <- err
 				return
 			}
-			if status.Match(filter) {
+			if stat.Match(filter) && status.Match(filter) {
 				mu.Lock()
-				if v, ok := rmap[pid]; !ok {
-					rmap[pid] = Process{Status: status}
-				} else {
-					v.Status = status
-					rmap[pid] = v
-				}
+				rmap[pid] = Process{Stat: stat, Status: status}
 				mu.Unlock()
 			}
 			donec <- struct{}{}
@@ -119,7 +101,7 @@ func List(filter *Process) ([]Process, error) {
 	}
 
 	cnt := 0
-	for cnt != 2*len(pids) {
+	for cnt != len(pids) {
 		select {
 		case <-donec:
 			cnt++
@@ -132,7 +114,6 @@ func List(filter *Process) ([]Process, error) {
 	for _, proc := range rmap {
 		if proc.Stat.Comm == "" && proc.Status.Name != "" {
 			proc.Stat.Comm = proc.Status.Name
-			// return nil, fmt.Errorf("%s != %s\n", proc.Stat.Comm, proc.Status.Name)
 		}
 		if proc.Stat.Comm != "" && proc.Status.Name == "" {
 			proc.Status.Name = proc.Stat.Comm
