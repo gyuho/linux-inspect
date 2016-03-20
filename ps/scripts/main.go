@@ -15,7 +15,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err != toCSV(tb.Columns, tb.Rows, "results.csv"); err != nil {
+	cols := make([]string, len(tb.Columns))
+	for k, v := range tb.Columns {
+		cols[v] = k
+	}
+	if err := toCSV(cols, tb.Rows, "results.csv"); err != nil {
 		log.Fatal(err)
 	}
 }
