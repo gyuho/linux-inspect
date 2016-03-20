@@ -1,4 +1,4 @@
-package tablesorter
+package table
 
 import (
 	"sort"

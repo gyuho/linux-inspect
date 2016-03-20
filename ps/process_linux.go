@@ -14,7 +14,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gyuho/psn/tablesorter"
+	"github.com/gyuho/psn/table"
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -194,8 +194,8 @@ func (s *Status) Match(filter *Process) bool {
 
 // WriteToTable writes slice of Process to ASCII table.
 func WriteToTable(w io.Writer, top int, pss ...Process) {
-	table := tablewriter.NewWriter(w)
-	table.SetHeader(ProcessTableColumns[:9:9])
+	tw := tablewriter.NewWriter(w)
+	tw.SetHeader(ProcessTableColumns[:9:9])
 
 	rows := make([][]string, len(pss))
 	for i, s := range pss {
@@ -215,21 +215,21 @@ func WriteToTable(w io.Writer, top int, pss ...Process) {
 		sl[11] = fmt.Sprintf("%d", s.Status.VmSizeBytes)
 		rows[i] = sl
 	}
-	tablesorter.By(
+	table.By(
 		rows,
-		tablesorter.MakeDescendingIntFunc(10),    // VM_RSS
-		tablesorter.MakeDescendingFloat64Func(9), // CPU
-		tablesorter.MakeDescendingIntFunc(11),    // VM_SIZE
+		table.MakeDescendingIntFunc(10),    // VM_RSS
+		table.MakeDescendingFloat64Func(9), // CPU
+		table.MakeDescendingIntFunc(11),    // VM_SIZE
 	).Sort(rows)
 
 	if top != 0 && len(rows) > top {
 		rows = rows[:top:top]
 	}
 	for _, row := range rows {
-		table.Append(row[:9:9])
+		tw.Append(row[:9:9])
 	}
 
-	table.Render()
+	tw.Render()
 }
 
 var once sync.Once
@@ -267,11 +267,11 @@ func WriteToCSV(f *os.File, pss ...Process) error {
 		sl[11] = fmt.Sprintf("%d", s.Status.VmSizeBytes)
 		rows[i] = sl
 	}
-	tablesorter.By(
+	table.By(
 		rows,
-		tablesorter.MakeDescendingIntFunc(10),    // VM_RSS
-		tablesorter.MakeDescendingFloat64Func(9), // CPU
-		tablesorter.MakeDescendingIntFunc(11),    // VM_SIZE
+		table.MakeDescendingIntFunc(10),    // VM_RSS
+		table.MakeDescendingFloat64Func(9), // CPU
+		table.MakeDescendingIntFunc(11),    // VM_SIZE
 	).Sort(rows)
 
 	ts := fmt.Sprintf("%d", time.Now().Unix())
