@@ -18,6 +18,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
+// ProcessTableColumns is columns for CSV file.
 var ProcessTableColumns = []string{
 	"NAME",
 	"STATE",

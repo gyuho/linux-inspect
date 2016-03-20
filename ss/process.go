@@ -55,6 +55,7 @@ type Process struct {
 	User user.User
 }
 
+// ProcessTableColumns is columns for CSV file.
 var ProcessTableColumns = []string{
 	"PROTOCOL",
 	"PROGRAM",
