@@ -99,8 +99,8 @@ func ReadCSVs(columns map[string]int, fpaths ...string) (Table, error) {
 	}
 
 	ntb := Table{}
-	ntb.MaxTS = maxTS
 	ntb.MinTS = minTS
+	ntb.MaxTS = maxTS
 	ntb.Columns = make(map[string]int)
 	ntb.Columns["unix_tx"] = 0
 	for i := range fpaths {
