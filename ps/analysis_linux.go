@@ -15,8 +15,8 @@ type Table struct {
 	ColumnSlice []string
 	Rows        [][]string
 
-	minTS int64
-	maxTS int64
+	MinTS int64
+	MaxTS int64
 }
 
 var (
@@ -69,8 +69,8 @@ func ReadCSV(columns map[string]int, fpath string) (Table, error) {
 		Columns:     columns,
 		ColumnSlice: columnSlice,
 		Rows:        rows,
-		minTS:       min,
-		maxTS:       max,
+		MinTS:       min,
+		MaxTS:       max,
 	}, nil
 }
 
@@ -87,18 +87,20 @@ func ReadCSVs(columns map[string]int, fpaths ...string) (Table, error) {
 		tbs = append(tbs, tb)
 
 		if i == 0 {
-			minTS = tb.minTS
-			maxTS = tb.maxTS
+			minTS = tb.MinTS
+			maxTS = tb.MaxTS
 		}
-		if minTS > tb.minTS {
-			minTS = tb.minTS
+		if minTS > tb.MinTS {
+			minTS = tb.MinTS
 		}
-		if maxTS < tb.maxTS {
-			maxTS = tb.maxTS
+		if maxTS < tb.MaxTS {
+			maxTS = tb.MaxTS
 		}
 	}
 
 	ntb := Table{}
+	ntb.MaxTS = maxTS
+	ntb.MinTS = minTS
 	ntb.Columns = make(map[string]int)
 	ntb.Columns["unix_tx"] = 0
 	for i := range fpaths {
@@ -115,20 +117,20 @@ func ReadCSVs(columns map[string]int, fpaths ...string) (Table, error) {
 
 	nrows := [][]string{}
 	for i, tb := range tbs {
-		if minTS < tb.minTS { // need to fill in top rows
-			// push-front from minTS to tb.minTS-1
-			rows := make([][]string, tb.minTS-minTS)
+		if minTS < tb.MinTS { // need to fill in top rows
+			// push-front from minTS to tb.MinTS-1
+			rows := make([][]string, tb.MinTS-minTS)
 			for i := range rows {
 				emptyRow := append([]string{fmt.Sprintf("%d", minTS+int64(i))}, strings.Split(strings.Repeat("0.00_", len(ProcessTableColumns)), "_")...)
 				rows[i] = emptyRow
 			}
 			tb.Rows = append(rows, tb.Rows...)
 		}
-		if maxTS > tb.maxTS { // need to fill in bottom rows
-			// push-back from tb.maxTS+1 to maxTS
-			rows := make([][]string, maxTS-tb.maxTS)
+		if maxTS > tb.MaxTS { // need to fill in bottom rows
+			// push-back from tb.MaxTS+1 to maxTS
+			rows := make([][]string, maxTS-tb.MaxTS)
 			for i := range rows {
-				emptyRow := append([]string{fmt.Sprintf("%d", tb.maxTS+int64(i))}, strings.Split(strings.Repeat("0.00_", len(ProcessTableColumns)), "_")...)
+				emptyRow := append([]string{fmt.Sprintf("%d", tb.MaxTS+int64(i))}, strings.Split(strings.Repeat("0.00_", len(ProcessTableColumns)), "_")...)
 				rows[i] = emptyRow
 			}
 			tb.Rows = append(tb.Rows, rows...)
