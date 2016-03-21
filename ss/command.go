@@ -92,7 +92,8 @@ func KillCommandFunc(cmd *cobra.Command, args []string) error {
 
 	ssr, err := List(&cmdFlag.Filter, TCP, TCP6)
 	if err != nil {
-		return err
+		fmt.Fprintf(os.Stdout, "\nerror (%v)\n", err)
+		return nil
 	}
 	WriteToTable(os.Stdout, cmdFlag.Top, ssr...)
 	Kill(os.Stdout, ssr...)

@@ -106,7 +106,7 @@ func KillCommandFunc(cmd *cobra.Command, args []string) error {
 
 	pss, err := List(&cmdFlag.Filter)
 	if err != nil {
-		fmt.Fprintf(os.Stdout, "\nerror(%v)\n", err)
+		fmt.Fprintf(os.Stdout, "\nerror (%v)\n", err)
 		return nil
 	}
 	WriteToTable(os.Stdout, cmdFlag.Top, pss...)
