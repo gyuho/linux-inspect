@@ -14,7 +14,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gyuho/psn/table"
+	"github.com/gyuho/dataframe"
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -210,11 +210,11 @@ func WriteToTable(w io.Writer, top int, pss ...Process) {
 		sl[11] = fmt.Sprintf("%d", s.Status.VmSizeBytes)
 		rows[i] = sl
 	}
-	table.By(
+	dataframe.SortBy(
 		rows,
-		table.MakeDescendingIntFunc(10),    // VM_RSS
-		table.MakeDescendingFloat64Func(9), // CPU
-		table.MakeDescendingIntFunc(11),    // VM_SIZE
+		dataframe.NumberDescendingFunc(10), // VM_RSS
+		dataframe.NumberDescendingFunc(9),  // CPU
+		dataframe.NumberDescendingFunc(11), // VM_SIZE
 	).Sort(rows)
 
 	if top != 0 && len(rows) > top {
@@ -262,11 +262,11 @@ func WriteToCSV(f *os.File, pss ...Process) error {
 		sl[11] = fmt.Sprintf("%d", s.Status.VmSizeBytes)
 		rows[i] = sl
 	}
-	table.By(
+	dataframe.SortBy(
 		rows,
-		table.MakeDescendingIntFunc(10),    // VM_RSS
-		table.MakeDescendingFloat64Func(9), // CPU
-		table.MakeDescendingIntFunc(11),    // VM_SIZE
+		dataframe.NumberDescendingFunc(10), // VM_RSS
+		dataframe.NumberDescendingFunc(9),  // CPU
+		dataframe.NumberDescendingFunc(11), // VM_SIZE
 	).Sort(rows)
 
 	ts := fmt.Sprintf("%d", time.Now().Unix())
