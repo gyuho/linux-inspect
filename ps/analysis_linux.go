@@ -192,7 +192,7 @@ func (t Table) ToCSV(fpath string) error {
 	return wr.Error()
 }
 
-func ReadCSVWithFillIn(fpath string) (Table, error) {
+func ReadCSVFillIn(fpath string) (Table, error) {
 	tb, err := ReadCSV(ColumnsPS, fpath)
 	if err != nil {
 		return Table{}, err

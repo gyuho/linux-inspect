@@ -59,8 +59,8 @@ func TestReadCSVsTestdata(t *testing.T) {
 	}
 }
 
-func TestReadCSVWithFillIn(t *testing.T) {
-	tb, err := ReadCSVWithFillIn("./testdata/missing-monitor.csv")
+func TestReadCSVFillIn(t *testing.T) {
+	tb, err := ReadCSVFillIn("./testdata/missing-monitor.csv")
 	if err != nil {
 		t.Fatal(err)
 	}
