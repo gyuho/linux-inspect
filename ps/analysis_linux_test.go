@@ -28,7 +28,6 @@ func TestReadCSVs(t *testing.T) {
 			if err := WriteToCSV(f, pss...); err != nil {
 				t.Fatal(err)
 			}
-
 			fmt.Println("sleeping...")
 			time.Sleep(time.Second)
 		}
@@ -57,5 +56,19 @@ func TestReadCSVsTestdata(t *testing.T) {
 	}
 	if err := tb.ToCSV("testdata/test.csv"); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func TestReadCSVWithFillIn(t *testing.T) {
+	tb, err := ReadCSVWithFillIn("./testdata/missing-monitor.csv")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(tb.Columns)
+	for _, row := range tb.Rows {
+		fmt.Printf("%q\n", row)
+	}
+	if len(tb.Rows) != 18 {
+		t.Fatalf("expected %d rows, got %d rows", len(tb.Rows))
 	}
 }
