@@ -11,12 +11,12 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/gyuho/psn/ps"
+	"github.com/gyuho/psn/process"
 )
 
 func main() {
 	buf := new(bytes.Buffer)
-	buf.WriteString(`package ps
+	buf.WriteString(`package process
 
 	` + "// updated at " + nowPST().String() + `
 
@@ -32,10 +32,10 @@ type Process struct {
 type Stat struct {
 `)
 
-	for i := range ps.StatList {
-		fieldName := ps.ToField(ps.StatList[i].Col)
+	for i := range process.StatList {
+		fieldName := process.ToField(process.StatList[i].Col)
 		var typeStr string
-		switch ps.StatList[i].Kind {
+		switch process.StatList[i].Kind {
 		case reflect.Uint64:
 			typeStr = "uint64"
 		case reflect.Int64:
@@ -43,9 +43,9 @@ type Stat struct {
 		case reflect.String:
 			typeStr = "string"
 		}
-		buf.WriteString(fmt.Sprintf("\t%s\t%s\t`column:\"%s\"`\n", fieldName, typeStr, ps.StatList[i].Col))
-		if ps.StatList[i].Humanize {
-			buf.WriteString(fmt.Sprintf("\t%sHumanize\tstring\t`column:\"%s_humanized\"`\n", fieldName, ps.StatList[i].Col))
+		buf.WriteString(fmt.Sprintf("\t%s\t%s\t`column:\"%s\"`\n", fieldName, typeStr, process.StatList[i].Col))
+		if process.StatList[i].Humanize {
+			buf.WriteString(fmt.Sprintf("\t%sHumanize\tstring\t`column:\"%s_humanized\"`\n", fieldName, process.StatList[i].Col))
 		}
 	}
 	for _, line := range additionalFields {
@@ -56,10 +56,10 @@ type Stat struct {
 	buf.WriteString(`// Status is 'proc/$PID/status' in linux.
 type Status struct {
 `)
-	for i := range ps.StatusListYAML {
-		fieldName := ps.ToField(ps.StatusListYAML[i].Col)
+	for i := range process.StatusListYAML {
+		fieldName := process.ToField(process.StatusListYAML[i].Col)
 		var typeStr string
-		switch ps.StatusListYAML[i].Kind {
+		switch process.StatusListYAML[i].Kind {
 		case reflect.Uint64:
 			typeStr = "uint64"
 		case reflect.Int64:
@@ -67,9 +67,9 @@ type Status struct {
 		case reflect.String:
 			typeStr = "string"
 		}
-		buf.WriteString(fmt.Sprintf("\t%s\t%s\t`yaml:\"%s\"`\n", fieldName, typeStr, ps.StatusListYAML[i].Col))
-		if ps.StatusListYAML[i].Bytes {
-			buf.WriteString(fmt.Sprintf("\t%sBytes\tuint64\t`yaml:\"%s_bytes\"`\n", fieldName, ps.StatusListYAML[i].Col))
+		buf.WriteString(fmt.Sprintf("\t%s\t%s\t`yaml:\"%s\"`\n", fieldName, typeStr, process.StatusListYAML[i].Col))
+		if process.StatusListYAML[i].Bytes {
+			buf.WriteString(fmt.Sprintf("\t%sBytes\tuint64\t`yaml:\"%s_bytes\"`\n", fieldName, process.StatusListYAML[i].Col))
 		}
 	}
 	buf.WriteString("}\n\n")

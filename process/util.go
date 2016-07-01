@@ -1,4 +1,4 @@
-package ps
+package process
 
 import (
 	"os"
@@ -11,32 +11,34 @@ func isInt(s string) bool {
 	return err == nil
 }
 
+const (
+	// privateFileMode grants owner to read/write a file.
+	privateFileMode = 0600
+
+	// privateDirMode grants owner to make/remove files inside the directory.
+	privateDirMode = 0700
+)
+
 func openToRead(fpath string) (*os.File, error) {
-	f, err := os.OpenFile(fpath, os.O_RDONLY, 0444)
+	f, err := os.OpenFile(fpath, os.O_RDONLY, privateFileMode)
 	if err != nil {
-		return f, err
+		return nil, err
 	}
 	return f, nil
 }
 
 func openToAppend(fpath string) (*os.File, error) {
-	f, err := os.OpenFile(fpath, os.O_RDWR|os.O_APPEND, 0777)
+	f, err := os.OpenFile(fpath, os.O_RDWR|os.O_APPEND|os.O_CREATE, privateFileMode)
 	if err != nil {
-		f, err = os.Create(fpath)
-		if err != nil {
-			return f, err
-		}
+		return nil, err
 	}
 	return f, nil
 }
 
 func openToOverwrite(fpath string) (*os.File, error) {
-	f, err := os.OpenFile(fpath, os.O_RDWR|os.O_TRUNC, 0777)
+	f, err := os.OpenFile(fpath, os.O_RDWR|os.O_TRUNC|os.O_CREATE, privateFileMode)
 	if err != nil {
-		f, err = os.Create(fpath)
-		if err != nil {
-			return f, err
-		}
+		return nil, err
 	}
 	return f, nil
 }

@@ -1,4 +1,4 @@
-package ps
+package process
 
 import (
 	"bytes"
