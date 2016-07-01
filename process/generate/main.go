@@ -75,10 +75,10 @@ type Status struct {
 	buf.WriteString("}\n\n")
 
 	txt := buf.String()
-	if err := toFile(txt, filepath.Join(os.Getenv("GOPATH"), "src/github.com/gyuho/psn/ps/process_generated_linux.go")); err != nil {
+	if err := toFile(txt, filepath.Join(os.Getenv("GOPATH"), "src/github.com/gyuho/psn/process/process_generated_linux.go")); err != nil {
 		log.Fatal(err)
 	}
-	if err := os.Chdir(filepath.Join(os.Getenv("GOPATH"), "src/github.com/gyuho/psn/ps")); err != nil {
+	if err := os.Chdir(filepath.Join(os.Getenv("GOPATH"), "src/github.com/gyuho/psn/process")); err != nil {
 		log.Fatal(err)
 	}
 	if err := exec.Command("go", "fmt", "./...").Run(); err != nil {
