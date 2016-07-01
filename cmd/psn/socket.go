@@ -64,7 +64,7 @@ func init() {
 
 func socketCommandFunc(cmd *cobra.Command, args []string) error {
 	color.Set(color.FgMagenta)
-	fmt.Fprintf(os.Stdout, "\npsn ss\n\n")
+	fmt.Fprintf(os.Stdout, "\npsn socket\n\n")
 	color.Unset()
 
 	ssr, err := socket.List(&socketCmdFlag.Filter, socket.TCP, socket.TCP6)
@@ -82,7 +82,7 @@ func socketCommandFunc(cmd *cobra.Command, args []string) error {
 
 func socketKillCommandFunc(cmd *cobra.Command, args []string) error {
 	color.Set(color.FgRed)
-	fmt.Fprintf(os.Stdout, "\npsn ss-kill\n\n")
+	fmt.Fprintf(os.Stdout, "\npsn socket-kill\n\n")
 	color.Unset()
 
 	if socketCmdFlag.CleanUp && socketCmdFlag.Filter.Program == "" {
@@ -108,7 +108,7 @@ func socketKillCommandFunc(cmd *cobra.Command, args []string) error {
 
 func socketMonitorCommandFunc(cmd *cobra.Command, args []string) error {
 	color.Set(color.FgBlue)
-	fmt.Fprintf(os.Stdout, "\npsn ss-monitor\n\n")
+	fmt.Fprintf(os.Stdout, "\npsn socket-monitor\n\n")
 	color.Unset()
 
 	rFunc := func() error {
