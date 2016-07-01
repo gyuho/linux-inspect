@@ -4,15 +4,15 @@
 //	  psn [command]
 //
 //	Available Commands:
-//	  ps          Investigates processes status.
-//	  ps-kill     Kills processes.
-//	  ps-monitor  Monitors processes.
-//	  ss          Investigates sockets.
-//	  ss-kill     Kills sockets.
-//	  ss-monitor  Monitors sockets.
+//	  process         Investigates processes status
+//	  process-kill    Kills processes
+//	  process-monitor Monitors processes
+//	  socket          Investigates sockets
+//	  socket-kill     Kills sockets
+//	  socket-monitor  Monitors sockets
 //
 //	Flags:
-//	  -h, --help   help for psn
+//	  -h, --help[=false]: help for psn
 //
 //	Use "psn [command] --help" for more information about a command.
 //
@@ -22,8 +22,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gyuho/psn/ps"
-	"github.com/gyuho/psn/ss"
 	"github.com/spf13/cobra"
 )
 
@@ -36,12 +34,12 @@ var (
 )
 
 func init() {
-	Command.AddCommand(ps.Command)
-	Command.AddCommand(ps.KillCommand)
-	Command.AddCommand(ps.MonitorCommand)
-	Command.AddCommand(ss.Command)
-	Command.AddCommand(ss.KillCommand)
-	Command.AddCommand(ss.MonitorCommand)
+	Command.AddCommand(processCommand)
+	Command.AddCommand(processKillCommand)
+	Command.AddCommand(processMonitorCommand)
+	Command.AddCommand(socketCommand)
+	Command.AddCommand(socketKillCommand)
+	Command.AddCommand(socketMonitorCommand)
 }
 
 func init() {

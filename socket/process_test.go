@@ -1,4 +1,4 @@
-package ss
+package socket
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 )
 
 func TestParseLittleEndianIpv4(t *testing.T) {
-	var tests = map[string]string{
+	tests := map[string]string{
 		"0101007F:0035": "127.0.1.1:53",
 		"0100007F:0277": "127.0.0.1:631",
 		"0100007F:049A": "127.0.0.1:1178",
@@ -22,14 +22,15 @@ func TestParseLittleEndianIpv4(t *testing.T) {
 		"0100007F:981F": "127.0.0.1:38943",
 		"0100007F:B02D": "127.0.0.1:45101",
 	}
+
 	for k, v := range tests {
 		host, port, err := parseLittleEndianIpv4(k)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
 		addr := host + port
 		if addr != v {
-			t.Errorf("got = %s, want = %s", addr, v)
+			t.Fatalf("got = %s, want = %s", addr, v)
 		}
 	}
 }

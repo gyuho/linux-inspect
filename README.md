@@ -4,7 +4,7 @@ Process, socket utilities in Go. It provides features in ps, ss, netstat.
 This is still in active development and only supports Linux system.
 
 ```
-go get -v -u -f github.com/gyuho/psn
+go get -v -u -f github.com/gyuho/psn/cmd/psn
 ```
 
 ```
@@ -14,15 +14,15 @@ Usage:
   psn [command]
 
 Available Commands:
-  ps          Investigates processes status.
-  ps-kill     Kills processes.
-  ps-monitor  Monitors processes.
-  ss          Investigates sockets.
-  ss-kill     Kills sockets.
-  ss-monitor  Monitors sockets.
+  process         Investigates processes status
+  process-kill    Kills processes
+  process-monitor Monitors processes
+  socket          Investigates sockets
+  socket-kill     Kills sockets
+  socket-monitor  Monitors sockets
 
 Flags:
-  -h, --help   help for psn
+  -h, --help[=false]: help for psn
 
 Use "psn [command] --help" for more information about a command.
 ```
@@ -55,7 +55,7 @@ sudo kill $(sudo netstat -tlpn | perl -ne 'my @a = split /[ \/]+/; print "$a[6]\
 But I want something easier. Here's sample output:
 
 ```
-psn ps
+psn process
 
 +-----------------+--------------+-------+-------+---------+--------+---------+------+---------+
 |      NAME       |    STATE     |  PID  | PPID  |   CPU   | VM RSS | VM SIZE |  FD  | THREADS |
