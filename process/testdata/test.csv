@@ -1,4 +1,4 @@
-unix_tx,cpu_1,memory_mb_1,cpu_2,memory_mb_2,cpu_3,memory_mb_3
+unix-ts,cpu-1,memory-mb-1,cpu-2,memory-mb-2,cpu-3,memory-mb-3
 1458504678,0.00,10.52,0.00,8.59,NaN,5.62
 1458504679,7.92,25.64,6.93,25.48,6.00,23.16
 1458504680,11.94,28.14,7.96,26.55,7.50,24.50

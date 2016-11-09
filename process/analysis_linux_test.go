@@ -11,7 +11,7 @@ import (
 func TestReadCSVs(t *testing.T) {
 	testPaths := []string{}
 	for i := 0; i < 3; i++ {
-		testCSVPath := fmt.Sprintf("test_%d.csv", i)
+		testCSVPath := fmt.Sprintf("test-%d.csv", i)
 		testPaths = append(testPaths, testCSVPath)
 		defer os.RemoveAll(testCSVPath)
 

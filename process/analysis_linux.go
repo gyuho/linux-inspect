@@ -27,7 +27,7 @@ var (
 )
 
 func init() {
-	for i, v := range append([]string{"unix_ts"}, ProcessTableColumns...) {
+	for i, v := range append([]string{"unix-ts"}, ProcessTableColumns...) {
 		ColumnsPS[v] = i
 	}
 }
@@ -104,10 +104,10 @@ func ReadCSVs(columns map[string]int, fpaths ...string) (Table, error) {
 	ntb.MinTS = minTS
 	ntb.MaxTS = maxTS
 	ntb.Columns = make(map[string]int)
-	ntb.Columns["unix_tx"] = 0
+	ntb.Columns["unix-ts"] = 0
 	for i := range fpaths {
-		ntb.Columns[fmt.Sprintf("cpu_%d", i+1)] = 2*i + 1
-		ntb.Columns[fmt.Sprintf("memory_mb_%d", i+1)] = 2*i + 2
+		ntb.Columns[fmt.Sprintf("cpu-%d", i+1)] = 2*i + 1
+		ntb.Columns[fmt.Sprintf("memory-mb-%d", i+1)] = 2*i + 2
 	}
 	columnSlice := make([]string, len(ntb.Columns))
 	for k, v := range ntb.Columns {
@@ -123,7 +123,7 @@ func ReadCSVs(columns map[string]int, fpaths ...string) (Table, error) {
 			// push-front from minTS to tb.MinTS-1
 			rows := make([][]string, tb.MinTS-minTS)
 			for i := range rows {
-				emptyRow := append([]string{fmt.Sprintf("%d", minTS+int64(i))}, strings.Split(strings.Repeat("0.00_", len(ProcessTableColumns)), "_")...)
+				emptyRow := append([]string{fmt.Sprintf("%d", minTS+int64(i))}, strings.Split(strings.Repeat("0.00-", len(ProcessTableColumns)), "-")...)
 				rows[i] = emptyRow
 			}
 			tb.Rows = append(rows, tb.Rows...)
@@ -132,7 +132,7 @@ func ReadCSVs(columns map[string]int, fpaths ...string) (Table, error) {
 			// push-back from tb.MaxTS+1 to maxTS
 			rows := make([][]string, maxTS-tb.MaxTS)
 			for i := range rows {
-				emptyRow := append([]string{fmt.Sprintf("%d", tb.MaxTS+int64(i))}, strings.Split(strings.Repeat("0.00_", len(ProcessTableColumns)), "_")...)
+				emptyRow := append([]string{fmt.Sprintf("%d", tb.MaxTS+int64(i))}, strings.Split(strings.Repeat("0.00-", len(ProcessTableColumns)), "-")...)
 				rows[i] = emptyRow
 			}
 			tb.Rows = append(tb.Rows, rows...)
@@ -198,7 +198,7 @@ func ReadCSVFillIn(fpath string) (Table, error) {
 		return Table{}, err
 	}
 	var (
-		uidx    = tb.Columns["unix_ts"]
+		uidx    = tb.Columns["unix-ts"]
 		tsToRow = make(map[int64][]string)
 	)
 	for _, row := range tb.Rows {

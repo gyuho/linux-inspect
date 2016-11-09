@@ -236,7 +236,7 @@ func WriteToCSV(f *os.File, pss ...Process) error {
 
 	var werr error
 	writeCSVHeader := func() {
-		if err := wr.Write(append([]string{"unix_ts"}, ProcessTableColumns...)); err != nil {
+		if err := wr.Write(append([]string{"unix-ts"}, ProcessTableColumns...)); err != nil {
 			werr = err
 		}
 	}
