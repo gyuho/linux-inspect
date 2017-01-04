@@ -1,2 +1,3 @@
-// Package psn provides utilities to investigate OS processes and sockets.
+// Package psn provides utilities to programmatically inspect Linux
+// processes, sockets (ps, ss, netstat).
 package psn
