@@ -10,5 +10,7 @@ func TestGetStatus(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	fmt.Println(rs.VmRSS)
+	fmt.Println(rs.VmRSSHumanizedBytes)
 	fmt.Printf("GetStatus: %+v\n", rs)
 }

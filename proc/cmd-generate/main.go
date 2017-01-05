@@ -61,8 +61,9 @@ func main() {
 
 	` + "// updated at " + nowPST().String() + `
 
-// Proc represents '/proc' in linux.
+// Proc represents '/proc' in Linux.
 type Proc struct {
+	Uptime    Uptime
 	DiskStats DiskStats
 	Stat      Stat
 	Status    Status
@@ -72,21 +73,21 @@ type Proc struct {
 `)
 
 	// 'proc/uptime'
-	buf.WriteString(`// Uptime is 'proc/uptime' in linux.
+	buf.WriteString(`// Uptime is 'proc/uptime' in Linux.
 type Uptime struct {
 `)
 	buf.WriteString(generate(schema.Uptime...))
 	buf.WriteString("}\n\n")
 
 	// 'proc/diskstats'
-	buf.WriteString(`// DiskStats is 'proc/diskstats' in linux.
+	buf.WriteString(`// DiskStats is 'proc/diskstats' in Linux.
 type DiskStats struct {
 `)
 	buf.WriteString(generate(schema.DiskStats...))
 	buf.WriteString("}\n\n")
 
 	// 'proc/$PID/stat'
-	buf.WriteString(`// Stat is 'proc/$PID/stat' in linux.
+	buf.WriteString(`// Stat is 'proc/$PID/stat' in Linux.
 type Stat struct {
 `)
 	buf.WriteString(generate(schema.Stat...))
@@ -96,14 +97,14 @@ type Stat struct {
 	buf.WriteString("}\n\n")
 
 	// 'proc/$PID/status'
-	buf.WriteString(`// Status is 'proc/$PID/status' in linux.
+	buf.WriteString(`// Status is 'proc/$PID/status' in Linux.
 type Status struct {
 `)
 	buf.WriteString(generate(schema.Status...))
 	buf.WriteString("}\n\n")
 
 	// 'proc/$PID/io'
-	buf.WriteString(`// IO is 'proc/$PID/io' in linux.
+	buf.WriteString(`// IO is 'proc/$PID/io' in Linux.
 type IO struct {
 `)
 	buf.WriteString(generate(schema.IO...))

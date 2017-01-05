@@ -10,16 +10,8 @@ func isInt(s string) bool {
 	return err == nil
 }
 
-const (
-	// privateFileMode grants owner to read/write a file.
-	privateFileMode = 0600
-
-	// privateDirMode grants owner to make/remove files inside the directory.
-	privateDirMode = 0700
-)
-
 func openToRead(fpath string) (*os.File, error) {
-	f, err := os.OpenFile(fpath, os.O_RDONLY, privateFileMode)
+	f, err := os.OpenFile(fpath, os.O_RDONLY, 0777)
 	if err != nil {
 		return nil, err
 	}
@@ -27,7 +19,7 @@ func openToRead(fpath string) (*os.File, error) {
 }
 
 func openToAppend(fpath string) (*os.File, error) {
-	f, err := os.OpenFile(fpath, os.O_RDWR|os.O_APPEND|os.O_CREATE, privateFileMode)
+	f, err := os.OpenFile(fpath, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0777)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +27,7 @@ func openToAppend(fpath string) (*os.File, error) {
 }
 
 func openToOverwrite(fpath string) (*os.File, error) {
-	f, err := os.OpenFile(fpath, os.O_RDWR|os.O_TRUNC|os.O_CREATE, privateFileMode)
+	f, err := os.OpenFile(fpath, os.O_RDWR|os.O_TRUNC|os.O_CREATE, 0777)
 	if err != nil {
 		return nil, err
 	}

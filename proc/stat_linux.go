@@ -17,25 +17,23 @@ import (
 )
 
 // GetStat reads /proc/$PID/stat data.
-func GetStat(pid int64) (Stat, error) {
+func GetStat(pid int64, up Uptime) (Stat, error) {
 	var (
 		s   Stat
 		err error
 	)
 	for i := 0; i < 3; i++ {
-		s, err = getStat(pid)
+		s, err = getStat(pid, up)
 		if err == nil {
 			return s, nil
-		} else {
-			log.Println(err)
 		}
+		log.Println("retrying;", err)
 		time.Sleep(5 * time.Millisecond)
 	}
 	return s, err
 }
 
-func getStat(pid int64) (Stat, error) {
-	// TODO: handle too many open files
+func getStat(pid int64, up Uptime) (Stat, error) {
 	fpath := fmt.Sprintf("/proc/%d/stat", pid)
 	f, err := openToRead(fpath)
 	if err != nil {
@@ -124,10 +122,10 @@ func getStat(pid int64) (Stat, error) {
 	if err := scanner.Err(); err != nil {
 		return Stat{}, err
 	}
-	return st.update()
+	return st.update(up)
 }
 
-func (s *Stat) update() (Stat, error) {
+func (s *Stat) update(up Uptime) (Stat, error) {
 	if s == nil {
 		return Stat{}, nil
 	}
@@ -137,7 +135,7 @@ func (s *Stat) update() (Stat, error) {
 	if strings.HasSuffix(s.Comm, ")") {
 		s.Comm = s.Comm[:len(s.Comm)-1]
 	}
-	cu, err := s.getCpuUsage()
+	cu, err := s.getCPU(up)
 	if err != nil {
 		return Stat{}, err
 	}
@@ -145,9 +143,9 @@ func (s *Stat) update() (Stat, error) {
 	return *s, nil
 }
 
-// getCpuUsage returns the average CPU usage in percentage.
+// getCPU returns the average CPU usage in percentage.
 // http://stackoverflow.com/questions/16726779/how-do-i-get-the-total-cpu-usage-of-an-application-from-proc-pid-stat
-func (s Stat) getCpuUsage() (float64, error) {
+func (s Stat) getCPU(up Uptime) (float64, error) {
 	totalSec := s.Utime + s.Stime
 	totalSec += s.Cutime + s.Cstime
 
@@ -161,11 +159,7 @@ func (s Stat) getCpuUsage() (float64, error) {
 		return 0, err
 	}
 
-	u, err := GetUptime()
-	if err != nil {
-		return 0, err
-	}
-	tookSec := u.UptimeTotal - (float64(s.Starttime) / float64(hertz))
+	tookSec := up.UptimeTotal - (float64(s.Starttime) / float64(hertz))
 	if hertz == 0 || tookSec == 0.0 {
 		return 0.0, nil
 	}

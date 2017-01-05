@@ -30,7 +30,6 @@ func GetStatus(pid int64) (Status, error) {
 }
 
 func getStatus(pid int64) (Status, error) {
-	// TODO: handle too many open files
 	fpath := fmt.Sprintf("/proc/%d/status", pid)
 	f, err := openToRead(fpath)
 	if err != nil {

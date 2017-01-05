@@ -1,16 +1,17 @@
 package proc
 
-// updated at 2017-01-04 17:23:04.150726124 -0800 PST
+// updated at 2017-01-05 11:24:31.72082678 -0800 PST
 
-// Proc represents '/proc' in linux.
+// Proc represents '/proc' in Linux.
 type Proc struct {
+	Uptime    Uptime
 	DiskStats DiskStats
 	Stat      Stat
 	Status    Status
 	IO        IO
 }
 
-// Uptime is 'proc/uptime' in linux.
+// Uptime is 'proc/uptime' in Linux.
 type Uptime struct {
 	UptimeTotal              float64 `column:"uptime-total"`
 	UptimeTotalHumanizedTime string  `column:"uptime-total_humanized_time"`
@@ -18,7 +19,7 @@ type Uptime struct {
 	UptimeIdleHumanizedTime  string  `column:"uptime-idle_humanized_time"`
 }
 
-// DiskStats is 'proc/diskstats' in linux.
+// DiskStats is 'proc/diskstats' in Linux.
 type DiskStats struct {
 	MajorNumber             uint64 `column:"major-number"`
 	MinorNumber             uint64 `column:"minor-number"`
@@ -36,7 +37,7 @@ type DiskStats struct {
 	WeightedTimeSpentOnIoMs uint64 `column:"weighted-time-spent-on-i/o-ms"`
 }
 
-// Stat is 'proc/$PID/stat' in linux.
+// Stat is 'proc/$PID/stat' in Linux.
 type Stat struct {
 	Pid                  int64   `column:"pid"`
 	Comm                 string  `column:"comm"`
@@ -99,7 +100,7 @@ type Stat struct {
 	CpuUsage             float64 `column:"cpu_usage"`
 }
 
-// Status is 'proc/$PID/status' in linux.
+// Status is 'proc/$PID/status' in Linux.
 type Status struct {
 	Name                     string `yaml:"Name"`
 	State                    string `yaml:"State"`
@@ -172,7 +173,7 @@ type Status struct {
 	NonvoluntaryCtxtSwitches uint64 `yaml:"nonvoluntary_ctxt_switches"`
 }
 
-// IO is 'proc/$PID/io' in linux.
+// IO is 'proc/$PID/io' in Linux.
 type IO struct {
 	Rchar                             uint64 `yaml:"rchar"`
 	RcharBytesN                       uint64 `yaml:"rchar_bytes_n"`
