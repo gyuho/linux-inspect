@@ -3,200 +3,269 @@ package schema
 
 import "reflect"
 
+// RawDataType defines how the raw data bytes are defined.
+type RawDataType int
+
+const (
+	TypeBytes RawDataType = iota
+	TypeTimeSeconds
+	TypeIPAddress
+	TypeStatus
+)
+
+// RawData defines 'proc' raw data.
+type RawData struct {
+	// IsYAML is true if raw data is parsable in YAML.
+	IsYAML bool
+
+	Columns        []Column
+	ColumnsToParse map[string]RawDataType
+}
+
 // Column represents the schema column.
 type Column struct {
-	Name string
-	Kind reflect.Kind
+	Name  string
+	Godoc string
+	Kind  reflect.Kind
+}
 
-	// true to humanize float64
-	HumanizedSeconds bool
-
-	// true to humanize bytes string
-	HumanizedBytes bool
-	YAMLTag        bool
+// NetStat represents '/proc/net/tcp' and '/proc/net/tcp6'
+// (See http://man7.org/linux/man-pages/man5/proc.5.html
+// and http://www.onlamp.com/pub/a/linux/2000/11/16/LinuxAdmin.html).
+var NetStat = RawData{
+	IsYAML: false,
+	Columns: []Column{
+		{"sl", "kernel hash slot", reflect.Uint64},
+		{"local_address", "local-address:port", reflect.String},
+		{"rem_address", "remote-address:port", reflect.String},
+		{"st", "internal status of socket", reflect.String},
+		{"tx_queue", "outgoing data queue in terms of kernel memory usage", reflect.String},
+		{"rx_queue", "incoming data queue in terms of kernel memory usage", reflect.String},
+		{"tr", "internal information of the kernel socket state", reflect.String},
+		{"tm->when", "internal information of the kernel socket state", reflect.String},
+		{"retrnsmt", "internal information of the kernel socket state", reflect.String},
+		{"uid", "effective UID of the creator of the socket", reflect.Uint64},
+		{"timeout", "timeout", reflect.Uint64},
+		{"inode", "inode raw data", reflect.String},
+	},
+	ColumnsToParse: map[string]RawDataType{
+		"local_address": TypeIPAddress,
+		"rem_address":   TypeIPAddress,
+		"st":            TypeStatus,
+	},
 }
 
 // Uptime represents '/proc/uptime'
 // (See http://man7.org/linux/man-pages/man5/proc.5.html).
-var Uptime = []Column{
-	{"uptime-total", reflect.Float64, true, false, false},
-	{"uptime-idle", reflect.Float64, true, false, false},
+var Uptime = RawData{
+	IsYAML: false,
+	Columns: []Column{
+		{"uptime-total", "total uptime in seconds", reflect.Float64},
+		{"uptime-idle", "total amount of time in seconds spent in idle process", reflect.Float64},
+	},
+	ColumnsToParse: map[string]RawDataType{
+		"uptime-total": TypeTimeSeconds,
+		"uptime-idle":  TypeTimeSeconds,
+	},
 }
 
-// DiskStats represents '/proc/diskstats'
+// DiskStat represents '/proc/diskstats'
 // (See https://www.kernel.org/doc/Documentation/ABI/testing/procfs-diskstats
 // and https://www.kernel.org/doc/Documentation/iostats.txt).
-var DiskStats = []Column{
-	{"major-number", reflect.Uint64, false, false, false}, // 1
-	{"minor-number", reflect.Uint64, false, false, false}, // 2
+var DiskStat = RawData{
+	IsYAML: false,
+	Columns: []Column{
+		{"major-number", "major device number", reflect.Uint64},
+		{"minor-number", "minor device number", reflect.Uint64},
+		{"device-name", "device name", reflect.String},
 
-	{"device-name", reflect.String, false, false, false}, // 3
+		{"reads-completed", "total number of reads completed successfully", reflect.Uint64},
+		{"reads-merged", "total number of reads merged when adjacent to each other", reflect.Uint64},
+		{"sectors-read", "total number of sectors read successfully", reflect.Uint64},
+		{"time-spent-on-reading-ms", "total number of milliseconds spent by all reads", reflect.Uint64},
 
-	{"reads-completed", reflect.Uint64, false, false, false},          // 4
-	{"reads-merged", reflect.Uint64, false, false, false},             // 5
-	{"sectors-read", reflect.Uint64, false, false, false},             // 6
-	{"time-spent-on-reading-ms", reflect.Uint64, false, false, false}, // 7
+		{"writes-completed", "total number of writes completed successfully", reflect.Uint64},
+		{"writes-merged", "total number of writes merged when adjacent to each other", reflect.Uint64},
+		{"sectors-written", "total number of sectors written successfully", reflect.Uint64},
+		{"time-spent-on-writing-ms", "total number of milliseconds spent by all writes", reflect.Uint64},
 
-	{"writes-completed", reflect.Uint64, false, false, false},         // 8
-	{"writes-merged", reflect.Uint64, false, false, false},            // 9
-	{"sectors-written", reflect.Uint64, false, false, false},          // 10
-	{"time-spent-on-writing-ms", reflect.Uint64, false, false, false}, // 11
-
-	{"i/o-in-progress", reflect.Uint64, false, false, false},               // 12
-	{"time-spent-on-i/o-ms", reflect.Uint64, false, false, false},          // 13
-	{"weighted-time-spent-on-i/o-ms", reflect.Uint64, false, false, false}, // 14
-}
-
-// Stat represents '/proc/$PID/stat'
-// (See http://man7.org/linux/man-pages/man5/proc.5.html).
-var Stat = []Column{
-	{"pid", reflect.Int64, false, false, false},    // the process ID
-	{"comm", reflect.String, false, false, false},  // filename of the executable (originally in parentheses, automatically removed by this package)
-	{"state", reflect.String, false, false, false}, // One character that represents the state of the process
-	{"ppid", reflect.Int64, false, false, false},   // PID of the parent of this process
-	{"pgrp", reflect.Int64, false, false, false},   // process group ID of the process
-	{"session", reflect.Int64, false, false, false},
-	{"tty_nr", reflect.Int64, false, false, false},
-	{"tpgid", reflect.Int64, false, false, false}, // ID of the foreground process group of the controlling terminal of the process
-	{"flags", reflect.Uint64, false, false, false},
-	{"minflt", reflect.Uint64, false, false, false},  // number of minor faults the process has made which have not required loading a memory page from disk.
-	{"cminflt", reflect.Uint64, false, false, false}, // number of minor faults that the process's waited-for children have made.
-	{"majflt", reflect.Uint64, false, false, false},  // number of major faults the process has made which have required loading a memory page from disk.
-	{"cmajflt", reflect.Uint64, false, false, false}, // number of major faults that the process's waited-for children have made.
-	{"utime", reflect.Uint64, false, false, false},   // Amount of time that this process has been scheduled in user mode, measured in clock ticks.
-	{"stime", reflect.Uint64, false, false, false},   // Amount of time that this process has been scheduled in kernel mode, measured in clock ticks.
-	{"cutime", reflect.Uint64, false, false, false},  // Amount of time that this process's waited-for children have been scheduled in user mode.
-	{"cstime", reflect.Uint64, false, false, false},  // Amount of time that this process's waited-for children have been scheduled in kernel mode.
-	{"priority", reflect.Int64, false, false, false},
-	{"nice", reflect.Int64, false, false, false},
-	{"num_threads", reflect.Int64, false, false, false},
-	{"itrealvalue", reflect.Int64, false, false, false},
-	{"starttime", reflect.Uint64, false, false, false}, // time the process started after system boot.
-	{"vsize", reflect.Uint64, false, true, false},      // Virtual memory size in bytes.
-	{"rss", reflect.Int64, false, true, false},         // Resident Set Size: number of pages the process has in real memory.
-	{"rsslim", reflect.Uint64, false, true, false},
-	{"startcode", reflect.Uint64, false, false, false},
-	{"endcode", reflect.Uint64, false, false, false},
-	{"startstack", reflect.Uint64, false, false, false},
-	{"kstkesp", reflect.Uint64, false, false, false},
-	{"kstkeip", reflect.Uint64, false, false, false},
-	{"signal", reflect.Uint64, false, false, false},
-	{"blocked", reflect.Uint64, false, false, false},
-	{"sigignore", reflect.Uint64, false, false, false},
-	{"sigcatch", reflect.Uint64, false, false, false},
-	{"wchan", reflect.Uint64, false, false, false},
-	{"nswap", reflect.Uint64, false, false, false},
-	{"cnswap", reflect.Uint64, false, false, false},
-	{"exit_signal", reflect.Int64, false, false, false},
-	{"processor", reflect.Int64, false, false, false}, // CPU number last executed on.
-	{"rt_priority", reflect.Uint64, false, false, false},
-	{"policy", reflect.Uint64, false, false, false},
-	{"delayacct_blkio_ticks", reflect.Uint64, false, false, false},
-	{"guest_time", reflect.Uint64, false, false, false},
-	{"cguest_time", reflect.Int64, false, false, false},
-	{"start_data", reflect.Uint64, false, false, false},
-	{"end_data", reflect.Uint64, false, false, false},
-	{"start_brk", reflect.Uint64, false, false, false},
-	{"arg_start", reflect.Uint64, false, false, false},
-	{"arg_end", reflect.Uint64, false, false, false},
-	{"env_start", reflect.Uint64, false, false, false},
-	{"env_end", reflect.Uint64, false, false, false},
-	{"exit_code", reflect.Int64, false, false, false},
-}
-
-// Status represents 'proc/$PID/status'
-// (See http://man7.org/linux/man-pages/man5/proc.5.html).
-var Status = []Column{
-	{"Name", reflect.String, false, false, true}, // Name is the command run by this process.
-
-	// State is Current state of the process.
-	// One of "R (running)", "S (sleeping)", "D (disk sleep)",
-	// "T (stopped)", "T (tracing stop)", "Z (zombie)", or "X (dead)".
-	{"State", reflect.String, false, false, true},
-
-	{"Tgid", reflect.Int64, false, false, true}, // Tgid is thread group ID.
-	{"Ngid", reflect.Int64, false, false, true},
-	{"Pid", reflect.Int64, false, false, true},       // Pid is process ID.
-	{"PPid", reflect.Int64, false, false, true},      // PPid is parent process ID, which launches the Pid.
-	{"TracerPid", reflect.Int64, false, false, true}, // TracerPid is PID of process tracing this process (0 if not being traced).
-
-	{"Uid", reflect.String, false, false, true},
-	{"Gid", reflect.String, false, false, true},
-
-	{"FDSize", reflect.Uint64, false, false, true}, // FDSize is the number of file descriptor slots currently allocated.
-
-	{"Groups", reflect.String, false, false, true}, // Groups is supplementary group list.
-
-	{"VmPeak", reflect.String, false, true, true}, // VmPeak is peak virtual memory usage. Vm includes physical memory and swap.
-	{"VmSize", reflect.String, false, true, true}, // VmSize is current virtual memory usage. VmSize is the total amount of memory required for this process.
-	{"VmLck", reflect.String, false, true, true},  // VmLck is current mlocked memory.
-	{"VmPin", reflect.String, false, true, true},  // VmPin is pinned memory size.
-	{"VmHWM", reflect.String, false, true, true},  // VmHWM is peak resident set size ("high water mark").
-
-	// VmRSS is resident set size. VmRSS is the actual
-	// amount in memory. Some memory can be swapped out
-	// to physical disk. So this is the real memory usage
-	// of the process.
-	{"VmRSS", reflect.String, false, true, true},
-
-	{"VmData", reflect.String, false, true, true}, // VmRSS is size of data segment.
-
-	{"VmStk", reflect.String, false, true, true}, // VmStk is size of stack.
-	{"VmExe", reflect.String, false, true, true}, // VmExe is size of text segment.
-	{"VmLib", reflect.String, false, true, true}, // VmLib is shared library usage.
-	{"VmPMD", reflect.String, false, true, true},
-	{"VmPTE", reflect.String, false, true, true},  // VmPTE is page table entries size.
-	{"VmSwap", reflect.String, false, true, true}, // VmSwap is swap space used.
-
-	{"Threads", reflect.Uint64, false, false, true}, // Threads is the number of threads in process containing this thread (process).
-
-	{"SigQ", reflect.String, false, false, true},
-	{"SigPnd", reflect.String, false, false, true},
-	{"ShdPnd", reflect.String, false, false, true},
-	{"SigBlk", reflect.String, false, false, true},
-	{"SigIgn", reflect.String, false, false, true},
-	{"SigCgt", reflect.String, false, false, true},
-	{"CapInh", reflect.String, false, false, true},
-	{"CapPrm", reflect.String, false, false, true},
-	{"CapEff", reflect.String, false, false, true},
-	{"CapBnd", reflect.String, false, false, true},
-	{"CapAmb", reflect.String, false, false, true},
-	{"Seccomp", reflect.Uint64, false, false, true},
-
-	{"Cpus_allowed", reflect.String, false, false, true},
-	{"Cpus_allowed_list", reflect.String, false, false, true},
-	{"Mems_allowed", reflect.String, false, false, true},
-	{"Mems_allowed_list", reflect.String, false, false, true},
-
-	{"voluntary_ctxt_switches", reflect.Uint64, false, false, true},
-	{"nonvoluntary_ctxt_switches", reflect.Uint64, false, false, true},
+		{"I/O-in-progress", "only field that should go to zero (incremented as requests are on request_queue)", reflect.Uint64},
+		{"time-spent-on-I/O-ms", "milliseconds spent doing I/Os", reflect.Uint64},
+		{"weighted-time-spent-on-I/O-ms", "weighted milliseconds spent doing I/Os (incremented at each I/O start, I/O completion, I/O merge)", reflect.Uint64},
+	},
+	ColumnsToParse: map[string]RawDataType{},
 }
 
 // IO represents 'proc/$PID/io'
 // (See http://man7.org/linux/man-pages/man5/proc.5.html).
-var IO = []Column{
-	// number of bytes which this task has caused to be read from storage
-	// sum of bytes which this process passed to read(2)
-	{"rchar", reflect.Uint64, false, true, true},
+var IO = RawData{
+	IsYAML: true,
+	Columns: []Column{
+		{"rchar", "number of bytes which this task has caused to be read from storage (sum of bytes which this process passed to read)", reflect.Uint64},
+		{"wchar", "number of bytes which this task has caused, or shall cause to be written to disk", reflect.Uint64},
+		{"syscr", "number of read I/O operations", reflect.Uint64},
+		{"syscw", "number of write I/O operations", reflect.Uint64},
+		{"read_bytes", "number of bytes which this process really did cause to be fetched from the storage layer", reflect.Uint64},
+		{"write_bytes", "number of bytes which this process caused to be sent to the storage layer", reflect.Uint64},
+		{"cancelled_write_bytes", "number of bytes which this process caused to not happen by truncating pagecache", reflect.Uint64},
+	},
+	ColumnsToParse: map[string]RawDataType{
+		"rchar":                 TypeBytes,
+		"wchar":                 TypeBytes,
+		"read_bytes":            TypeBytes,
+		"write_bytes":           TypeBytes,
+		"cancelled_write_bytes": TypeBytes,
+	},
+}
 
-	// number of bytes which this task has caused, or shall cause to be written to disk
-	{"wchar", reflect.Uint64, false, true, true},
+// Stat represents '/proc/$PID/stat'
+// (See http://man7.org/linux/man-pages/man5/proc.5.html).
+var Stat = RawData{
+	IsYAML: false,
+	Columns: []Column{
+		{"pid", "process ID", reflect.Int64},
+		{"comm", "filename of the executable (originally in parentheses, automatically removed by this package)", reflect.String},
+		{"state", "one character that represents the state of the process", reflect.String},
+		{"ppid", "PID of the parent process", reflect.Int64},
+		{"pgrp", "group ID of the process", reflect.Int64},
+		{"session", "session ID of the process", reflect.Int64},
+		{"tty_nr", "controlling terminal of the process", reflect.Int64},
+		{"tpgid", "ID of the foreground process group of the controlling terminal of the process", reflect.Int64},
+		{"flags", "kernel flags word of the process", reflect.Int64},
+		{"minflt", "number of minor faults the process has made which have not required loading a memory page from disk", reflect.Uint64},
+		{"cminflt", "number of minor faults that the process's waited-for children have made", reflect.Uint64},
+		{"majflt", "number of major faults the process has made which have required loading a memory page from disk", reflect.Uint64},
+		{"cmajflt", "number of major faults that the process's waited-for children have made", reflect.Uint64},
+		{"utime", "number of clock ticks that this process has been scheduled in user mode (includes guest_time)", reflect.Uint64},
+		{"stime", "number of clock ticks that this process has been scheduled in kernel mode", reflect.Uint64},
+		{"cutime", "number of clock ticks that this process's waited-for children have been scheduled in user mode", reflect.Uint64},
+		{"cstime", "number of clock ticks that this process's waited-for children have been scheduled in kernel mode", reflect.Uint64},
+		{"priority", "for processes running a real-time scheduling policy, the negated scheduling priority, minus one; that is, a number in the range -2 to -100, corresponding to real-time priorities 1 to 99. For processes running under a non-real-time scheduling policy, this is the raw nice value. The kernel stores nice values as numbers in the range 0 (high) to 39 (low)", reflect.Int64},
+		{"nice", "nice value, a value in the range 19 (low priority) to -20 (high priority)", reflect.Int64},
+		{"num_threads", "number of threads in this process", reflect.Int64},
+		{"itrealvalue", "no longer maintained", reflect.Int64},
+		{"starttime", "time(number of clock ticks) the process started after system boot", reflect.Uint64},
+		{"vsize", "virtual memory size in bytes", reflect.Uint64},
+		{"rss", "resident set size: number of pages the process has in real memory (text, data, or stack space but does not include pages which have not been demand-loaded in, or which are swapped out)", reflect.Int64},
+		{"rsslim", "current soft limit in bytes on the rss of the process", reflect.Uint64},
+		{"startcode", "address above which program text can run", reflect.Uint64},
+		{"endcode", "address below which program text can run", reflect.Uint64},
+		{"startstack", "address of the start (i.e., bottom) of the stack", reflect.Uint64},
+		{"kstkesp", "current value of ESP (stack pointer), as found in the kernel stack page for the process", reflect.Uint64},
+		{"kstkeip", "current EIP (instruction pointer)", reflect.Uint64},
+		{"signal", "obsolete, because it does not provide information on real-time signals (use /proc/$PID/status)", reflect.Uint64},
+		{"blocked", "obsolete, because it does not provide information on real-time signals (use /proc/$PID/status)", reflect.Uint64},
+		{"sigignore", "obsolete, because it does not provide information on real-time signals (use /proc/$PID/status)", reflect.Uint64},
+		{"sigcatch", "obsolete, because it does not provide information on real-time signals (use /proc/$PID/status)", reflect.Uint64},
+		{"wchan", "channel in which the process is waiting (address of a location in the kernel where the process is sleeping)", reflect.Uint64},
+		{"nswap", "not maintained (number of pages swapped)", reflect.Uint64},
+		{"cnswap", "not maintained (cumulative nswap for child processes)", reflect.Uint64},
+		{"exit_signal", "signal to be sent to parent when we die", reflect.Int64},
+		{"processor", "CPU number last executed on", reflect.Int64},
+		{"rt_priority", "real-time scheduling priority, a number in the range 1 to 99 for processes scheduled under a real-time policy, or 0, for non-real-time processes", reflect.Uint64},
+		{"policy", "scheduling policy", reflect.Uint64},
+		{"delayacct_blkio_ticks", "aggregated block I/O delays, measured in clock ticks", reflect.Uint64},
+		{"guest_time", "number of clock ticks spent running a virtual CPU for a guest operating system", reflect.Uint64},
+		{"cguest_time", "number of clock ticks (guest_time of the process's children)", reflect.Uint64},
+		{"start_data", "address above which program initialized and uninitialized (BSS) data are placed", reflect.Uint64},
+		{"end_data", "address below which program initialized and uninitialized (BSS) data are placed", reflect.Uint64},
+		{"start_brk", "address above which program heap can be expanded with brk", reflect.Uint64},
+		{"arg_start", "address above which program command-line arguments are placed", reflect.Uint64},
+		{"arg_end", "address below program command-line arguments are placed", reflect.Uint64},
+		{"env_start", "address above which program environment is placed", reflect.Uint64},
+		{"env_end", "address below which program environment is placed", reflect.Uint64},
+		{"exit_code", "thread's exit status in the form reported by waitpid(2)", reflect.Int64},
+	},
+	ColumnsToParse: map[string]RawDataType{
+		"state":  TypeStatus,
+		"vsize":  TypeBytes,
+		"rss":    TypeBytes,
+		"rsslim": TypeBytes,
+	},
+}
 
-	// number of read I/O operations
-	{"syscr", reflect.Uint64, false, false, true},
+// Status represents 'proc/$PID/status'
+// (See http://man7.org/linux/man-pages/man5/proc.5.html).
+var Status = RawData{
+	IsYAML: true,
+	Columns: []Column{
+		{"Name", "command run by this process", reflect.String},
+		{"Umask", "process umask, expressed in octal with a leading", reflect.String},
+		{"State", "current state of the process: R (running), S (sleeping), D (disk sleep), T (stopped), T (tracing stop), Z (zombie), or X (dead)", reflect.String},
 
-	// number of write I/O operations
-	{"syscw", reflect.Uint64, false, false, true},
+		{"Tgid", "thread group ID", reflect.Int64},
+		{"Ngid", "NUMA group ID", reflect.Int64},
+		{"Pid", "process ID", reflect.Int64},
+		{"PPid", "parent process ID, which launches the Pid", reflect.Int64},
+		{"TracerPid", "PID of process tracing this process (0 if not being traced)", reflect.Int64},
+		{"Uid", "real, effective, saved set, and filesystem UIDs", reflect.String},
+		{"Gid", "real, effective, saved set, and filesystem UIDs", reflect.String},
 
-	// number of bytes which this process really did cause to be fetched
-	// from the storage layer
-	{"read_bytes", reflect.Uint64, false, true, true},
+		{"FDSize", "number of file descriptor slots currently allocated", reflect.Uint64},
 
-	// number of bytes which this process
-	// caused to be sent to the storage layer
-	{"write_bytes", reflect.Uint64, false, true, true},
+		{"Groups", "supplementary group list", reflect.String},
 
-	// number of bytes which this process caused to not happen
-	// by truncating pagecache
-	{"cancelled_write_bytes", reflect.Uint64, false, true, true},
+		{"NStgid", "thread group ID (i.e., PID) in each of the PID namespaces of which [pid] is a member", reflect.Int64},
+		{"NSpid", "thread ID (i.e., PID) in each of the PID namespaces of which [pid] is a member", reflect.Int64},
+		{"NSpgid", "process group ID (i.e., PID) in each of the PID namespaces of which [pid] is a member", reflect.Int64},
+		{"NSsid", "descendant namespace session ID hierarchy Session ID in each of the PID namespaces of which [pid] is a member", reflect.Int64},
+
+		{"VmPeak", "peak virtual memory usage. Vm includes physical memory and swap", reflect.String},
+		{"VmSize", "current virtual memory usage. VmSize is the total amount of memory required for this process", reflect.String},
+		{"VmLck", "locked memory size", reflect.String},
+		{"VmPin", "pinned memory size (pages can't be moved, requires direct-access to physical memory)", reflect.String},
+		{"VmHWM", `peak resident set size ("high water mark")`, reflect.String},
+		{"VmRSS", "resident set size. VmRSS is the actual amount in memory. Some memory can be swapped out to physical disk. So this is the real memory usage of the process", reflect.String},
+		{"VmData", "size of data segment", reflect.String},
+		{"VmStk", "size of stack", reflect.String},
+		{"VmExe", "size of text segments", reflect.String},
+		{"VmLib", "shared library code size", reflect.String},
+		{"VmPTE", "page table entries size", reflect.String},
+		{"VmPMD", "size of second-level page tables", reflect.String},
+		{"VmSwap", "swapped-out virtual memory size by anonymous private", reflect.String},
+		{"HugetlbPages", "size of hugetlb memory portions", reflect.String},
+
+		{"Threads", "number of threads in process containing this thread (process)", reflect.Uint64},
+
+		{"SigQ", "queued signals for the real user ID of this process (queued signals / limits)", reflect.String},
+		{"SigPnd", "number of signals pending for thread", reflect.String},
+		{"ShdPnd", "number of signals pending for process as a whole", reflect.String},
+
+		{"SigBlk", "masks indicating signals being blocked", reflect.String},
+		{"SigIgn", "masks indicating signals being ignored", reflect.String},
+		{"SigCgt", "masks indicating signals being caught", reflect.String},
+
+		{"CapInh", "masks of capabilities enabled in inheritable sets", reflect.String},
+		{"CapPrm", "masks of capabilities enabled in permitted sets", reflect.String},
+		{"CapEff", "masks of capabilities enabled in effective sets", reflect.String},
+		{"CapBnd", "capability Bounding set", reflect.String},
+		{"CapAmb", "ambient capability set", reflect.String},
+
+		{"Seccomp", "seccomp mode of the process (0 means SECCOMP_MODE_DISABLED; 1 means SECCOMP_MODE_STRICT; 2 means SECCOMP_MODE_FILTER)", reflect.Uint64},
+
+		{"Cpus_allowed", "mask of CPUs on which this process may run", reflect.String},
+		{"Cpus_allowed_list", "list of CPUs on which this process may run", reflect.String},
+		{"Mems_allowed", "mask of memory nodes allowed to this process", reflect.String},
+		{"Mems_allowed_list", "list of memory nodes allowed to this process", reflect.String},
+
+		{"voluntary_ctxt_switches", "number of voluntary context switches", reflect.Uint64},
+		{"nonvoluntary_ctxt_switches", "number of involuntary context switches", reflect.Uint64},
+	},
+	ColumnsToParse: map[string]RawDataType{
+		"State":        TypeStatus,
+		"VmPeak":       TypeBytes,
+		"VmSize":       TypeBytes,
+		"VmLck":        TypeBytes,
+		"VmPin":        TypeBytes,
+		"VmHWM":        TypeBytes,
+		"VmRSS":        TypeBytes,
+		"VmData":       TypeBytes,
+		"VmStk":        TypeBytes,
+		"VmExe":        TypeBytes,
+		"VmLib":        TypeBytes,
+		"VmPTE":        TypeBytes,
+		"VmPMD":        TypeBytes,
+		"VmSwap":       TypeBytes,
+		"HugetlbPages": TypeBytes,
+	},
 }

@@ -14,44 +14,71 @@ import (
 	"github.com/gyuho/psn/schema"
 )
 
-func generate(cols ...schema.Column) string {
+func generate(raw schema.RawData) string {
+	tagstr := "yaml"
+	if !raw.IsYAML {
+		tagstr = "column"
+	}
+
 	buf := new(bytes.Buffer)
-	for i := range cols {
-		tagstr := "yaml"
-		if !cols[i].YAMLTag {
-			tagstr = "column"
+	for _, col := range raw.Columns {
+		if col.Godoc != "" {
+			buf.WriteString(fmt.Sprintf("\t// %s is %s.\n", schema.ToField(col.Name), col.Godoc))
 		}
-		buf.WriteString(fmt.Sprintf(
-			"\t%s\t%s\t`%s:\"%s\"`\n",
-			schema.ToField(cols[i].Name),
-			goType(cols[i].Kind),
+		buf.WriteString(fmt.Sprintf("\t%s\t%s\t`%s:\"%s\"`\n",
+			schema.ToField(col.Name),
+			schema.GoType(col.Kind),
 			tagstr,
-			cols[i].Name,
+			schema.ToYAMLField(col.Name),
 		))
-		if cols[i].HumanizedSeconds {
-			buf.WriteString(fmt.Sprintf("\t%sHumanizedTime\tstring\t`%s:\"%s_humanized_time\"`\n",
-				schema.ToField(cols[i].Name),
-				tagstr,
-				cols[i].Name,
-			))
-		} else if cols[i].HumanizedBytes {
-			ntstr := "uint64"
-			if cols[i].Kind == reflect.Int64 {
-				ntstr = "int64"
+
+		// additional parsed column
+		if v, ok := raw.ColumnsToParse[col.Name]; ok {
+			switch v {
+			case schema.TypeBytes:
+				ntstr := "uint64"
+				if col.Kind == reflect.Int64 {
+					ntstr = "int64"
+				}
+				buf.WriteString(fmt.Sprintf("\t%sBytesN\t%s\t`%s:\"%s_bytes_n\"`\n",
+					schema.ToField(col.Name),
+					ntstr,
+					tagstr,
+					schema.ToYAMLField(col.Name),
+				))
+				buf.WriteString(fmt.Sprintf("\t%sParsedBytes\tstring\t`%s:\"%s_parsed_bytes\"`\n",
+					schema.ToField(col.Name),
+					tagstr,
+					schema.ToYAMLField(col.Name),
+				))
+
+			case schema.TypeTimeSeconds:
+				buf.WriteString(fmt.Sprintf("\t%sParsedTime\tstring\t`%s:\"%s_parsed_time\"`\n",
+					schema.ToField(col.Name),
+					tagstr,
+					schema.ToYAMLField(col.Name),
+				))
+
+			case schema.TypeIPAddress:
+				buf.WriteString(fmt.Sprintf("\t%sParsedIPAddress\tstring\t`%s:\"%s_parsed_ip_address\"`\n",
+					schema.ToField(col.Name),
+					tagstr,
+					schema.ToYAMLField(col.Name),
+				))
+
+			case schema.TypeStatus:
+				buf.WriteString(fmt.Sprintf("\t%sParsedStatus\tstring\t`%s:\"%s_parsed_status\"`\n",
+					schema.ToField(col.Name),
+					tagstr,
+					col.Name,
+				))
+
+			default:
+				panic(fmt.Errorf("unknown parse type %d", raw.ColumnsToParse[col.Name]))
 			}
-			buf.WriteString(fmt.Sprintf("\t%sBytesN\t%s\t`%s:\"%s_bytes_n\"`\n",
-				schema.ToField(cols[i].Name),
-				ntstr,
-				tagstr,
-				cols[i].Name,
-			))
-			buf.WriteString(fmt.Sprintf("\t%sHumanizedBytes\tstring\t`%s:\"%s_humanized_bytes\"`\n",
-				schema.ToField(cols[i].Name),
-				tagstr,
-				cols[i].Name,
-			))
 		}
 	}
+
 	return buf.String()
 }
 
@@ -63,51 +90,59 @@ func main() {
 
 // Proc represents '/proc' in Linux.
 type Proc struct {
+	NetStats  NetStats
 	Uptime    Uptime
 	DiskStats DiskStats
+	IO        IO
 	Stat      Stat
 	Status    Status
-	IO        IO
 }
 
 `)
 
-	// 'proc/uptime'
-	buf.WriteString(`// Uptime is 'proc/uptime' in Linux.
+	// '/proc/net/tcp', '/proc/net/tcp6'
+	buf.WriteString(`// NetStat is '/proc/net/tcp', '/proc/net/tcp6' in Linux.
+type NetStat struct {
+`)
+	buf.WriteString(generate(schema.NetStat))
+	buf.WriteString("}\n\n")
+
+	// '/proc/uptime'
+	buf.WriteString(`// Uptime is '/proc/uptime' in Linux.
 type Uptime struct {
 `)
-	buf.WriteString(generate(schema.Uptime...))
+	buf.WriteString(generate(schema.Uptime))
 	buf.WriteString("}\n\n")
 
-	// 'proc/diskstats'
-	buf.WriteString(`// DiskStats is 'proc/diskstats' in Linux.
+	// '/proc/diskstats'
+	buf.WriteString(`// DiskStats is '/proc/diskstats' in Linux.
 type DiskStats struct {
 `)
-	buf.WriteString(generate(schema.DiskStats...))
+	buf.WriteString(generate(schema.DiskStat))
 	buf.WriteString("}\n\n")
 
-	// 'proc/$PID/stat'
-	buf.WriteString(`// Stat is 'proc/$PID/stat' in Linux.
+	// '/proc/$PID/io'
+	buf.WriteString(`// IO is '/proc/$PID/io' in Linux.
+type IO struct {
+`)
+	buf.WriteString(generate(schema.IO))
+	buf.WriteString("}\n\n")
+
+	// '/proc/$PID/stat'
+	buf.WriteString(`// Stat is '/proc/$PID/stat' in Linux.
 type Stat struct {
 `)
-	buf.WriteString(generate(schema.Stat...))
-	for _, line := range additionalFields {
+	buf.WriteString(generate(schema.Stat))
+	for _, line := range additionalFieldsStat {
 		buf.WriteString(fmt.Sprintf("\t%s\n", line))
 	}
 	buf.WriteString("}\n\n")
 
-	// 'proc/$PID/status'
-	buf.WriteString(`// Status is 'proc/$PID/status' in Linux.
+	// '/proc/$PID/status'
+	buf.WriteString(`// Status is '/proc/$PID/status' in Linux.
 type Status struct {
 `)
-	buf.WriteString(generate(schema.Status...))
-	buf.WriteString("}\n\n")
-
-	// 'proc/$PID/io'
-	buf.WriteString(`// IO is 'proc/$PID/io' in Linux.
-type IO struct {
-`)
-	buf.WriteString(generate(schema.IO...))
+	buf.WriteString(generate(schema.Status))
 	buf.WriteString("}\n\n")
 
 	txt := buf.String()
@@ -119,21 +154,6 @@ type IO struct {
 	}
 	if err := exec.Command("go", "fmt", "./...").Run(); err != nil {
 		log.Fatal(err)
-	}
-}
-
-func goType(tp reflect.Kind) string {
-	switch tp {
-	case reflect.Float64:
-		return "float64"
-	case reflect.Uint64:
-		return "uint64"
-	case reflect.Int64:
-		return "int64"
-	case reflect.String:
-		return "string"
-	default:
-		panic(fmt.Errorf("unknown type %q", tp.String()))
 	}
 }
 
@@ -168,6 +188,6 @@ func toFile(txt, fpath string) error {
 	return nil
 }
 
-var additionalFields = [...]string{
+var additionalFieldsStat = [...]string{
 	"CpuUsage float64 `column:\"cpu_usage\"`",
 }
