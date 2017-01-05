@@ -1,6 +1,6 @@
-package proc
+package psn
 
-// updated at 2017-01-05 11:24:31.72082678 -0800 PST
+// updated at 2017-01-05 12:18:44.709740398 -0800 PST
 
 // Proc represents '/proc' in Linux.
 type Proc struct {

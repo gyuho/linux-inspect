@@ -11,7 +11,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/gyuho/psn/proc/schema"
+	"github.com/gyuho/psn/schema"
 )
 
 func generate(cols ...schema.Column) string {
@@ -57,9 +57,9 @@ func generate(cols ...schema.Column) string {
 
 func main() {
 	buf := new(bytes.Buffer)
-	buf.WriteString(`package proc
+	buf.WriteString(`package psn
 
-	` + "// updated at " + nowPST().String() + `
+// updated at ` + nowPST().String() + `
 
 // Proc represents '/proc' in Linux.
 type Proc struct {
@@ -111,10 +111,10 @@ type IO struct {
 	buf.WriteString("}\n\n")
 
 	txt := buf.String()
-	if err := toFile(txt, filepath.Join(os.Getenv("GOPATH"), "src/github.com/gyuho/psn/proc/generated_linux.go")); err != nil {
+	if err := toFile(txt, filepath.Join(os.Getenv("GOPATH"), "src/github.com/gyuho/psn/generated_linux.go")); err != nil {
 		log.Fatal(err)
 	}
-	if err := os.Chdir(filepath.Join(os.Getenv("GOPATH"), "src/github.com/gyuho/psn/proc")); err != nil {
+	if err := os.Chdir(filepath.Join(os.Getenv("GOPATH"), "src/github.com/gyuho/psn")); err != nil {
 		log.Fatal(err)
 	}
 	if err := exec.Command("go", "fmt", "./...").Run(); err != nil {

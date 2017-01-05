@@ -1,4 +1,4 @@
-package proc
+package psn
 
 import (
 	"bufio"
@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/dustin/go-humanize"
-	"github.com/gyuho/psn/proc/schema"
+	"github.com/gyuho/psn/schema"
 )
 
 // GetStat reads /proc/$PID/stat data.
