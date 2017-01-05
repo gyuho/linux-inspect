@@ -35,13 +35,16 @@ func generate(cols ...schema.Column) string {
 				cols[i].Name,
 			))
 		} else if cols[i].HumanizedBytes {
-			if cols[i].Kind == reflect.String {
-				buf.WriteString(fmt.Sprintf("\t%sBytesN\tuint64\t`%s:\"%s_bytes_n\"`\n",
-					schema.ToField(cols[i].Name),
-					tagstr,
-					cols[i].Name,
-				))
+			ntstr := "uint64"
+			if cols[i].Kind == reflect.Int64 {
+				ntstr = "int64"
 			}
+			buf.WriteString(fmt.Sprintf("\t%sBytesN\t%s\t`%s:\"%s_bytes_n\"`\n",
+				schema.ToField(cols[i].Name),
+				ntstr,
+				tagstr,
+				cols[i].Name,
+			))
 			buf.WriteString(fmt.Sprintf("\t%sHumanizedBytes\tstring\t`%s:\"%s_humanized_bytes\"`\n",
 				schema.ToField(cols[i].Name),
 				tagstr,

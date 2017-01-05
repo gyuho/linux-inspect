@@ -1,6 +1,6 @@
 package proc
 
-// updated at 2017-01-04 17:09:34.981980906 -0800 PST
+// updated at 2017-01-04 17:23:04.150726124 -0800 PST
 
 // Proc represents '/proc' in linux.
 type Proc struct {
@@ -61,10 +61,13 @@ type Stat struct {
 	Itrealvalue          int64   `column:"itrealvalue"`
 	Starttime            uint64  `column:"starttime"`
 	Vsize                uint64  `column:"vsize"`
+	VsizeBytesN          uint64  `column:"vsize_bytes_n"`
 	VsizeHumanizedBytes  string  `column:"vsize_humanized_bytes"`
 	Rss                  int64   `column:"rss"`
+	RssBytesN            int64   `column:"rss_bytes_n"`
 	RssHumanizedBytes    string  `column:"rss_humanized_bytes"`
 	Rsslim               uint64  `column:"rsslim"`
+	RsslimBytesN         uint64  `column:"rsslim_bytes_n"`
 	RsslimHumanizedBytes string  `column:"rsslim_humanized_bytes"`
 	Startcode            uint64  `column:"startcode"`
 	Endcode              uint64  `column:"endcode"`
@@ -172,15 +175,20 @@ type Status struct {
 // IO is 'proc/$PID/io' in linux.
 type IO struct {
 	Rchar                             uint64 `yaml:"rchar"`
+	RcharBytesN                       uint64 `yaml:"rchar_bytes_n"`
 	RcharHumanizedBytes               string `yaml:"rchar_humanized_bytes"`
 	Wchar                             uint64 `yaml:"wchar"`
+	WcharBytesN                       uint64 `yaml:"wchar_bytes_n"`
 	WcharHumanizedBytes               string `yaml:"wchar_humanized_bytes"`
 	Syscr                             uint64 `yaml:"syscr"`
 	Syscw                             uint64 `yaml:"syscw"`
 	ReadBytes                         uint64 `yaml:"read_bytes"`
+	ReadBytesBytesN                   uint64 `yaml:"read_bytes_bytes_n"`
 	ReadBytesHumanizedBytes           string `yaml:"read_bytes_humanized_bytes"`
 	WriteBytes                        uint64 `yaml:"write_bytes"`
+	WriteBytesBytesN                  uint64 `yaml:"write_bytes_bytes_n"`
 	WriteBytesHumanizedBytes          string `yaml:"write_bytes_humanized_bytes"`
 	CancelledWriteBytes               uint64 `yaml:"cancelled_write_bytes"`
+	CancelledWriteBytesBytesN         uint64 `yaml:"cancelled_write_bytes_bytes_n"`
 	CancelledWriteBytesHumanizedBytes string `yaml:"cancelled_write_bytes_humanized_bytes"`
 }
