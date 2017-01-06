@@ -26,19 +26,6 @@ type DSEntry struct {
 	TimeSpentOnWritingMs uint64
 }
 
-const columnsDSToShow = 7
-
-var columnsDSEntry = []string{
-	"DEVICE",
-
-	"READS-COMPLETED", "SECTORS-READ", "TIME(READS)",
-	"WRITES-COMPLETED", "SECTORS-WRITE", "TIME(WRITES)",
-
-	// extra for sorting
-	"MILLISECONDS(READS)",
-	"MILLISECONDS(WRITES)",
-}
-
 // GetDS lists all disk statistics.
 func GetDS() ([]DSEntry, error) {
 	ss, err := GetDiskstats()
@@ -63,6 +50,19 @@ func GetDS() ([]DSEntry, error) {
 		}
 	}
 	return ds, nil
+}
+
+const columnsDSToShow = 7
+
+var columnsDSEntry = []string{
+	"DEVICE",
+
+	"READS-COMPLETED", "SECTORS-READ", "TIME(READS)",
+	"WRITES-COMPLETED", "SECTORS-WRITE", "TIME(WRITES)",
+
+	// extra for sorting
+	"MILLISECONDS(READS)",
+	"MILLISECONDS(WRITES)",
 }
 
 // ConvertDS converts to rows.

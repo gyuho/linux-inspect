@@ -2,11 +2,32 @@ package psn
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 )
+
+// ListPIDs reads all PIDs in '/proc'.
+func ListPIDs() ([]int64, error) {
+	ds, err := ioutil.ReadDir("/proc")
+	if err != nil {
+		return nil, err
+	}
+
+	pids := make([]int64, 0, len(ds))
+	for _, f := range ds {
+		if f.IsDir() && isInt(f.Name()) {
+			id, err := strconv.ParseInt(f.Name(), 10, 64)
+			if err != nil {
+				return nil, err
+			}
+			pids = append(pids, id)
+		}
+	}
+	return pids, nil
+}
 
 // ListProcFds reads '/proc/*/fd/*' to grab process IDs.
 func ListProcFds() ([]string, error) {

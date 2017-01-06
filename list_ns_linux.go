@@ -23,19 +23,6 @@ type NSEntry struct {
 	TransmitBytesNum uint64
 }
 
-const columnsNSToShow = 5
-
-var columnsNSEntry = []string{
-	"INTERFACE",
-
-	"RECEIVE-BYTES", "RECEIVE-PACKETS",
-	"TRANSMIT-BYTES", "TRANSMIT-PACKETS",
-
-	// extra for sorting
-	"RECEIVE-BYTES-NUM",
-	"TRANSMIT-BYTES-NUM",
-}
-
 // GetNS lists all '/proc/net/dev' statistics.
 func GetNS() ([]NSEntry, error) {
 	ss, err := GetNetDev()
@@ -57,6 +44,19 @@ func GetNS() ([]NSEntry, error) {
 		}
 	}
 	return ds, nil
+}
+
+const columnsNSToShow = 5
+
+var columnsNSEntry = []string{
+	"INTERFACE",
+
+	"RECEIVE-BYTES", "RECEIVE-PACKETS",
+	"TRANSMIT-BYTES", "TRANSMIT-PACKETS",
+
+	// extra for sorting
+	"RECEIVE-BYTES-NUM",
+	"TRANSMIT-BYTES-NUM",
 }
 
 // ConvertNS converts to rows.

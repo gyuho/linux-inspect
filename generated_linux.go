@@ -1,6 +1,6 @@
 package psn
 
-// updated at 2017-01-05 20:45:22.77683144 -0800 PST
+// updated at 2017-01-06 14:10:47.525231468 -0800 PST
 
 // Proc represents '/proc' in Linux.
 type Proc struct {
@@ -312,13 +312,13 @@ type Status struct {
 	// Groups is supplementary group list.
 	Groups string `yaml:"Groups"`
 	// NStgid is thread group ID (i.e., PID) in each of the PID namespaces of which [pid] is a member.
-	NStgid int64 `yaml:"NStgid"`
+	NStgid string `yaml:"NStgid"`
 	// NSpid is thread ID (i.e., PID) in each of the PID namespaces of which [pid] is a member.
-	NSpid int64 `yaml:"NSpid"`
+	NSpid string `yaml:"NSpid"`
 	// NSpgid is process group ID (i.e., PID) in each of the PID namespaces of which [pid] is a member.
-	NSpgid int64 `yaml:"NSpgid"`
+	NSpgid string `yaml:"NSpgid"`
 	// NSsid is descendant namespace session ID hierarchy Session ID in each of the PID namespaces of which [pid] is a member.
-	NSsid int64 `yaml:"NSsid"`
+	NSsid string `yaml:"NSsid"`
 	// VmPeak is peak virtual memory usage. Vm includes physical memory and swap.
 	VmPeak            string `yaml:"VmPeak"`
 	VmPeakBytesN      uint64 `yaml:"VmPeak_bytes_n"`

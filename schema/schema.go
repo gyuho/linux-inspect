@@ -242,10 +242,10 @@ var Status = RawData{
 
 		{"Groups", "supplementary group list", reflect.String},
 
-		{"NStgid", "thread group ID (i.e., PID) in each of the PID namespaces of which [pid] is a member", reflect.Int64},
-		{"NSpid", "thread ID (i.e., PID) in each of the PID namespaces of which [pid] is a member", reflect.Int64},
-		{"NSpgid", "process group ID (i.e., PID) in each of the PID namespaces of which [pid] is a member", reflect.Int64},
-		{"NSsid", "descendant namespace session ID hierarchy Session ID in each of the PID namespaces of which [pid] is a member", reflect.Int64},
+		{"NStgid", "thread group ID (i.e., PID) in each of the PID namespaces of which [pid] is a member", reflect.String},
+		{"NSpid", "thread ID (i.e., PID) in each of the PID namespaces of which [pid] is a member", reflect.String},
+		{"NSpgid", "process group ID (i.e., PID) in each of the PID namespaces of which [pid] is a member", reflect.String},
+		{"NSsid", "descendant namespace session ID hierarchy Session ID in each of the PID namespaces of which [pid] is a member", reflect.String},
 
 		{"VmPeak", "peak virtual memory usage. Vm includes physical memory and swap", reflect.String},
 		{"VmSize", "current virtual memory usage. VmSize is the total amount of memory required for this process", reflect.String},
