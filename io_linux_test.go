@@ -31,4 +31,8 @@ func TestGetIO(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Printf("GetIO: %+v\n", ns)
+
+	if ns.WriteBytes != ns.WriteBytesBytesN {
+		t.Fatalf("expected same, got %d, %d", ns.WriteBytes, ns.WriteBytesBytesN)
+	}
 }
