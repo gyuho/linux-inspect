@@ -3,5 +3,5 @@
 psn is set of CLIs and libraries to programmatically inspect Linux processes, sockets (ps, ss, netstat).
 
 ```
-go get -v -u -f github.com/gyuho/psn/cmd/psn
+go get -v github.com/gyuho/psn/cmd/psn
 ```
