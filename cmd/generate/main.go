@@ -100,19 +100,32 @@ func main() {
 
 // Proc represents '/proc' in Linux.
 type Proc struct {
-	PID      int64
-	NetTCP  NetTCP
+	PID int64
+
+	NetDev NetDev
+	NetTCP NetTCP
+
 	Uptime   Uptime
+
 	DiskStat DiskStat
 	IO       IO
-	Stat     Stat
-	Status   Status
+
+	Stat   Stat
+	Status Status
 }
 
 `)
+	// '/proc/net/dev'
+	buf.WriteString(`// NetDev is '/proc/net/dev' in Linux.
+// The dev pseudo-file contains network device status information.
+type NetDev struct {
+`)
+	buf.WriteString(generate(schema.NetDev))
+	buf.WriteString("}\n\n")
 
 	// '/proc/net/tcp', '/proc/net/tcp6'
 	buf.WriteString(`// NetTCP is '/proc/net/tcp', '/proc/net/tcp6' in Linux.
+// Holds a dump of the TCP socket table.
 type NetTCP struct {
 `)
 	for _, line := range additionalFieldsNetTCP {
