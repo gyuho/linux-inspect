@@ -66,6 +66,7 @@ func GetNetDev() ([]NetDev, error) {
 		d := NetDev{}
 
 		d.Interface = strings.TrimSpace(ds[proc_net_dev_idx_interface])
+		d.Interface = d.Interface[:len(d.Interface)-1] // remove ':' from 'wlp2s0:'
 
 		mn, err := strconv.ParseUint(ds[proc_net_dev_idx_receive_bytes], 10, 64)
 		if err != nil {

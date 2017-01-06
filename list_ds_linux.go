@@ -26,8 +26,11 @@ type DSEntry struct {
 	TimeSpentOnWritingMs uint64
 }
 
+const columnsDSToShow = 7
+
 var columnsDSEntry = []string{
 	"DEVICE",
+
 	"READS-COMPLETED", "SECTORS-READ", "TIME(READS)",
 	"WRITES-COMPLETED", "SECTORS-WRITE", "TIME(WRITES)",
 
@@ -85,8 +88,8 @@ func ConvertDS(dss ...DSEntry) (header []string, rows [][]string) {
 	}
 	dataframe.SortBy(
 		rows,
-		dataframe.NumberDescendingFunc(5), // SECTORS-WRITE
-		dataframe.NumberDescendingFunc(4), // SECTORS-READ
+		dataframe.NumberDescendingFunc(5), // SectorsWritten
+		dataframe.NumberDescendingFunc(4), // SectorsRead
 	).Sort(rows)
 
 	return
@@ -96,14 +99,14 @@ func ConvertDS(dss ...DSEntry) (header []string, rows [][]string) {
 func StringDS(header []string, rows [][]string, topLimit int) string {
 	buf := new(bytes.Buffer)
 	tw := tablewriter.NewWriter(buf)
-	tw.SetHeader(header[:7:7])
+	tw.SetHeader(header[:columnsDSToShow:columnsDSToShow])
 
 	if topLimit > 0 && len(rows) > topLimit {
 		rows = rows[:topLimit:topLimit]
 	}
 
 	for _, row := range rows {
-		tw.Append(row[:7:7])
+		tw.Append(row[:columnsDSToShow:columnsDSToShow])
 	}
 	tw.Render()
 
