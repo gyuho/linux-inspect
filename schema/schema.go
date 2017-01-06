@@ -29,6 +29,37 @@ type Column struct {
 	Kind  reflect.Kind
 }
 
+// NetDev represents '/proc/net/dev'
+// (See http://man7.org/linux/man-pages/man5/proc.5.html
+// or http://www.onlamp.com/pub/a/linux/2000/11/16/LinuxAdmin.html).
+var NetDev = RawData{
+	IsYAML: false,
+	Columns: []Column{
+		{"interface", "network interface", reflect.String},
+
+		{"receive_bytes", "total number of bytes of data received by the interface", reflect.Uint64},
+		{"receive_packets", "total number of packets of data received by the interface", reflect.Uint64},
+		{"receive_errs", "total number of receive errors detected by the device driver", reflect.Uint64},
+		{"receive_drop", "total number of packets dropped by the device driver", reflect.Uint64},
+		{"receive_fifo", "number of FIFO buffer errors", reflect.Uint64},
+		{"receive_frame", "number of packet framing errors", reflect.Uint64},
+		{"receive_compressed", "number of compressed packets received by the device driver", reflect.Uint64},
+		{"receive_multicast", "number of multicast frames received by the device driver", reflect.Uint64},
+
+		{"transmit_bytes", "total number of bytes of data transmitted by the interface", reflect.Uint64},
+		{"transmit_packets", "total number of packets of data transmitted by the interface", reflect.Uint64},
+		{"transmit_errs", "total number of receive errors detected by the device driver", reflect.Uint64},
+		{"transmit_drop", "total number of packets dropped by the device driver", reflect.Uint64},
+		{"transmit_fifo", "number of FIFO buffer errors", reflect.Uint64},
+		{"transmit_colls", "number of collisions detected on the interface", reflect.Uint64},
+		{"transmit_carrier", "number of carrier losses detected by the device driver", reflect.Uint64},
+	},
+	ColumnsToParse: map[string]RawDataType{
+		"receive_bytes":  TypeBytes,
+		"transmit_bytes": TypeBytes,
+	},
+}
+
 // NetTCP represents '/proc/net/tcp' and '/proc/net/tcp6'
 // (See http://man7.org/linux/man-pages/man5/proc.5.html
 // and http://www.onlamp.com/pub/a/linux/2000/11/16/LinuxAdmin.html).

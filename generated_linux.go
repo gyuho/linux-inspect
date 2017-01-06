@@ -1,19 +1,66 @@
 package psn
 
-// updated at 2017-01-05 19:46:04.132860545 -0800 PST
+// updated at 2017-01-05 20:01:11.132200249 -0800 PST
 
 // Proc represents '/proc' in Linux.
 type Proc struct {
-	PID      int64
-	NetTCP   NetTCP
-	Uptime   Uptime
+	PID int64
+
+	NetDev NetDev
+	NetTCP NetTCP
+
+	Uptime Uptime
+
 	DiskStat DiskStat
 	IO       IO
-	Stat     Stat
-	Status   Status
+
+	Stat   Stat
+	Status Status
+}
+
+// NetDev is '/proc/net/dev' in Linux.
+// The dev pseudo-file contains network device status information.
+type NetDev struct {
+	// Interface is network interface.
+	Interface string `column:"interface"`
+	// ReceiveBytes is total number of bytes of data received by the interface.
+	ReceiveBytes            uint64 `column:"receive_bytes"`
+	ReceiveBytesBytesN      uint64 `column:"receive_bytes_bytes_n"`
+	ReceiveBytesParsedBytes string `column:"receive_bytes_parsed_bytes"`
+	// ReceivePackets is total number of packets of data received by the interface.
+	ReceivePackets uint64 `column:"receive_packets"`
+	// ReceiveErrs is total number of receive errors detected by the device driver.
+	ReceiveErrs uint64 `column:"receive_errs"`
+	// ReceiveDrop is total number of packets dropped by the device driver.
+	ReceiveDrop uint64 `column:"receive_drop"`
+	// ReceiveFifo is number of FIFO buffer errors.
+	ReceiveFifo uint64 `column:"receive_fifo"`
+	// ReceiveFrame is number of packet framing errors.
+	ReceiveFrame uint64 `column:"receive_frame"`
+	// ReceiveCompressed is number of compressed packets received by the device driver.
+	ReceiveCompressed uint64 `column:"receive_compressed"`
+	// ReceiveMulticast is number of multicast frames received by the device driver.
+	ReceiveMulticast uint64 `column:"receive_multicast"`
+	// TransmitBytes is total number of bytes of data transmitted by the interface.
+	TransmitBytes            uint64 `column:"transmit_bytes"`
+	TransmitBytesBytesN      uint64 `column:"transmit_bytes_bytes_n"`
+	TransmitBytesParsedBytes string `column:"transmit_bytes_parsed_bytes"`
+	// TransmitPackets is total number of packets of data transmitted by the interface.
+	TransmitPackets uint64 `column:"transmit_packets"`
+	// TransmitErrs is total number of receive errors detected by the device driver.
+	TransmitErrs uint64 `column:"transmit_errs"`
+	// TransmitDrop is total number of packets dropped by the device driver.
+	TransmitDrop uint64 `column:"transmit_drop"`
+	// TransmitFifo is number of FIFO buffer errors.
+	TransmitFifo uint64 `column:"transmit_fifo"`
+	// TransmitColls is number of collisions detected on the interface.
+	TransmitColls uint64 `column:"transmit_colls"`
+	// TransmitCarrier is number of carrier losses detected by the device driver.
+	TransmitCarrier uint64 `column:"transmit_carrier"`
 }
 
 // NetTCP is '/proc/net/tcp', '/proc/net/tcp6' in Linux.
+// Holds a dump of the TCP socket table.
 type NetTCP struct {
 	Type string `column:"type"`
 	// Sl is kernel hash slot.
