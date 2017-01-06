@@ -11,11 +11,17 @@ import (
 
 // GetUptime reads '/proc/uptime'.
 func GetUptime() (Uptime, error) {
-	f, err := ioutil.ReadFile("/proc/uptime")
+	f, err := openToRead("/proc/uptime")
 	if err != nil {
 		return Uptime{}, err
 	}
-	fields := strings.Fields(strings.TrimSpace(string(f)))
+	defer f.Close()
+
+	b, err := ioutil.ReadAll(f)
+	if err != nil {
+		return Uptime{}, err
+	}
+	fields := strings.Fields(strings.TrimSpace(string(b)))
 
 	now := time.Now()
 
