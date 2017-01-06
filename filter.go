@@ -11,6 +11,12 @@ type EntryFilter struct {
 	program          string
 	PID              int64
 	TopLimit         int
+
+	// for ss
+	TCP        bool
+	TCP6       bool
+	LocalPort  int64
+	RemotePort int64
 }
 
 // FilterFunc applies each filter.
@@ -41,6 +47,28 @@ func WithTopLimit(limit int) FilterFunc {
 	return func(ft *EntryFilter) { ft.TopLimit = limit }
 }
 
+// WithLocalPort to filter entries by local port.
+func WithLocalPort(port int64) FilterFunc {
+	return func(ft *EntryFilter) { ft.LocalPort = port }
+}
+
+// WithRemotePort to filter entries by remote port.
+func WithRemotePort(port int64) FilterFunc {
+	return func(ft *EntryFilter) { ft.RemotePort = port }
+}
+
+// WithTCP to filter entries by TCP.
+// Can be used with 'WithTCP6'.
+func WithTCP() FilterFunc {
+	return func(ft *EntryFilter) { ft.TCP = true }
+}
+
+// WithTCP6 to filter entries by TCP6.
+// Can be used with 'WithTCP'.
+func WithTCP6() FilterFunc {
+	return func(ft *EntryFilter) { ft.TCP6 = true }
+}
+
 // applyOpts panics when ft.Program != "" && ft.PID > 0.
 func (ft *EntryFilter) applyOpts(opts []FilterFunc) {
 	for _, opt := range opts {
@@ -49,5 +77,12 @@ func (ft *EntryFilter) applyOpts(opts []FilterFunc) {
 
 	if (ft.program != "" || ft.ProgramMatchFunc != nil) && ft.PID > 0 {
 		panic(fmt.Errorf("can't filter both by program(%q or %p) and PID(%d)", ft.program, ft.ProgramMatchFunc, ft.PID))
+	}
+	if !ft.TCP && !ft.TCP6 {
+		// choose both
+		ft.TCP, ft.TCP6 = true, true
+	}
+	if ft.LocalPort != 0 && ft.RemotePort != 0 {
+		panic(fmt.Errorf("can't query by both local(%d) and remote(%d) ports", ft.LocalPort, ft.RemotePort))
 	}
 }

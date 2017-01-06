@@ -26,7 +26,7 @@ func GetStatus(pid int64) (s Status, err error) {
 	return
 }
 
-func parseProcStatus(pid int64) (Status, error) {
+func rawProcStatus(pid int64) (Status, error) {
 	fpath := fmt.Sprintf("/proc/%d/status", pid)
 	f, err := openToRead(fpath)
 	if err != nil {
@@ -43,6 +43,15 @@ func parseProcStatus(pid int64) (Status, error) {
 	if err := yaml.Unmarshal(b, &rs); err != nil {
 		return rs, err
 	}
+	return rs, nil
+}
+
+func parseProcStatus(pid int64) (Status, error) {
+	rs, err := rawProcStatus(pid)
+	if err != nil {
+		return rs, err
+	}
+
 	rs.StateParsedStatus = strings.TrimSpace(rs.State)
 
 	u, _ := humanize.ParseBytes(rs.VmPeak)

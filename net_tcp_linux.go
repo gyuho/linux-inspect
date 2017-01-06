@@ -19,6 +19,17 @@ const (
 	TypeTCP6
 )
 
+func (tp TransportProtocol) String() string {
+	switch tp {
+	case TypeTCP:
+		return "tcp"
+	case TypeTCP6:
+		return "tcp6"
+	default:
+		panic(fmt.Errorf("unknown %v", tp))
+	}
+}
+
 // GetNetTCP reads '/proc/$PID/net/tcp(6)' data.
 func GetNetTCP(pid int64, tp TransportProtocol) (ss []NetTCP, err error) {
 	for i := 0; i < 5; i++ {
@@ -66,10 +77,7 @@ var (
 )
 
 func parseProcNetTCP(pid int64, tp TransportProtocol) ([]NetTCP, error) {
-	fpath := fmt.Sprintf("/proc/%d/net/tcp", pid)
-	if tp == TypeTCP6 {
-		fpath += "6"
-	}
+	fpath := fmt.Sprintf("/proc/%d/net/%s", pid, tp.String())
 	f, err := openToRead(fpath)
 	if err != nil {
 		return nil, err
@@ -121,10 +129,7 @@ func parseProcNetTCP(pid int64, tp TransportProtocol) ([]NetTCP, error) {
 		go func(row []string) {
 			ns := NetTCP{}
 
-			ns.Type = "tcp"
-			if tp == TypeTCP6 {
-				ns.Type += "6"
-			}
+			ns.Type = tp.String()
 
 			sn, err := strconv.ParseUint(strings.Replace(row[proc_net_tcp_idx_sl], ":", "", -1), 10, 64)
 			if err != nil {

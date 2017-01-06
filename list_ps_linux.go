@@ -64,8 +64,9 @@ func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
 	var pmu sync.RWMutex
 	var wg sync.WaitGroup
 	if len(pids) > 0 {
-		wg.Add(len(pids))
+		// we already know PIDs to query
 
+		wg.Add(len(pids))
 		for _, pid := range pids {
 			go func(pid int64) {
 				defer wg.Done()
@@ -100,8 +101,8 @@ func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
 		if err != nil {
 			return
 		}
-		wg.Add(len(pids))
 
+		wg.Add(len(pids))
 		for _, pid := range pids {
 			go func(pid int64) {
 				defer wg.Done()
@@ -111,15 +112,14 @@ func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
 					log.Printf("GetStat error %v for PID %d", err, pid)
 					return
 				}
+				if !ft.ProgramMatchFunc(stat.Comm) {
+					return
+				}
 
 				pmu.RLock()
 				done := ft.TopLimit > 0 && len(pss) >= ft.TopLimit
 				pmu.RUnlock()
 				if done {
-					return
-				}
-
-				if !ft.ProgramMatchFunc(stat.Comm) {
 					return
 				}
 

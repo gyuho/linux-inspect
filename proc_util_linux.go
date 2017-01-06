@@ -1,9 +1,7 @@
 package psn
 
 import (
-	"fmt"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -47,5 +45,11 @@ func pidFromFd(s string) (int64, error) {
 
 // GetProgram returns the program name.
 func GetProgram(pid int64) (string, error) {
-	return os.Readlink(fmt.Sprintf("/proc/%d/exe", pid))
+	// Readlink needs root permission
+	// return os.Readlink(fmt.Sprintf("/proc/%d/exe", pid))
+	rs, err := rawProcStatus(pid)
+	if err != nil {
+		return "", err
+	}
+	return rs.Name, nil
 }
