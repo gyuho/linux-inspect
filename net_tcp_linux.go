@@ -15,14 +15,14 @@ import (
 type TransportProtocol int
 
 const (
-	TCP TransportProtocol = iota
-	TCP6
+	TypeTCP TransportProtocol = iota
+	TypeTCP6
 )
 
-// GetNetstats reads '/proc/$PID/net/tcp(6)' data.
-func GetNetstats(pid int64, tp TransportProtocol) (ss []NetStat, err error) {
+// GetNetTCP reads '/proc/$PID/net/tcp(6)' data.
+func GetNetTCP(pid int64, tp TransportProtocol) (ss []NetTCP, err error) {
 	for i := 0; i < 5; i++ {
-		ss, err = parseProcNetStats(pid, tp)
+		ss, err = parseProcNetTCP(pid, tp)
 		if err == nil {
 			return ss, nil
 		}
@@ -35,22 +35,22 @@ func GetNetstats(pid int64, tp TransportProtocol) (ss []NetStat, err error) {
 type procNetColumnIndex int
 
 const (
-	proc_net_idx_sl procNetColumnIndex = iota
-	proc_net_idx_local_address
-	proc_net_idx_remote_address
-	proc_net_idx_st
-	proc_net_idx_tx_queue_rx_queue
-	proc_net_idx_tr_tm_when
-	proc_net_idx_retrnsmt
-	proc_net_idx_uid
-	proc_net_idx_timeout
-	proc_net_idx_inode
+	proc_net_tcp_idx_sl procNetColumnIndex = iota
+	proc_net_tcp_idx_local_address
+	proc_net_tcp_idx_remote_address
+	proc_net_tcp_idx_st
+	proc_net_tcp_idx_tx_queue_rx_queue
+	proc_net_tcp_idx_tr_tm_when
+	proc_net_tcp_idx_retrnsmt
+	proc_net_tcp_idx_uid
+	proc_net_tcp_idx_timeout
+	proc_net_tcp_idx_inode
 )
 
 var (
 	// RPC_SHOW_SOCK
 	// https://github.com/torvalds/linux/blob/master/include/trace/events/sunrpc.h
-	netstatStatus = map[string]string{
+	netTCPStatus = map[string]string{
 		"01": "ESTABLISHED",
 		"02": "SYN_SENT",
 		"03": "SYN_RECV",
@@ -65,9 +65,9 @@ var (
 	}
 )
 
-func parseProcNetStats(pid int64, tp TransportProtocol) ([]NetStat, error) {
+func parseProcNetTCP(pid int64, tp TransportProtocol) ([]NetTCP, error) {
 	fpath := fmt.Sprintf("/proc/%d/net/tcp", pid)
-	if tp == TCP6 {
+	if tp == TypeTCP6 {
 		fpath += "6"
 	}
 	f, err := openToRead(fpath)
@@ -87,7 +87,7 @@ func parseProcNetStats(pid int64, tp TransportProtocol) ([]NetStat, error) {
 		}
 
 		fs := strings.Fields(txt)
-		if len(fs) < int(proc_net_idx_inode+1) {
+		if len(fs) < int(proc_net_tcp_idx_inode+1) {
 			return nil, fmt.Errorf("not enough columns at %v", fs)
 		}
 
@@ -100,7 +100,7 @@ func parseProcNetStats(pid int64, tp TransportProtocol) ([]NetStat, error) {
 		}
 
 		row := make([]string, 10)
-		copy(row, fs[:proc_net_idx_inode+1])
+		copy(row, fs[:proc_net_tcp_idx_inode+1])
 
 		rows = append(rows, row)
 	}
@@ -110,31 +110,31 @@ func parseProcNetStats(pid int64, tp TransportProtocol) ([]NetStat, error) {
 
 	var ipParse func(string) (string, int64, error)
 	switch tp {
-	case TCP:
+	case TypeTCP:
 		ipParse = parseLittleEndianIpv4
-	case TCP6:
+	case TypeTCP6:
 		ipParse = parseLittleEndianIpv6
 	}
 
-	nch, errc := make(chan NetStat), make(chan error)
+	nch, errc := make(chan NetTCP), make(chan error)
 	for _, row := range rows {
 		go func(row []string) {
-			ns := NetStat{}
+			ns := NetTCP{}
 
-			ns.Protocol = "tcp"
-			if tp == TCP6 {
-				ns.Protocol += "6"
+			ns.Type = "tcp"
+			if tp == TypeTCP6 {
+				ns.Type += "6"
 			}
 
-			sn, err := strconv.ParseUint(strings.Replace(row[proc_net_idx_sl], ":", "", -1), 10, 64)
+			sn, err := strconv.ParseUint(strings.Replace(row[proc_net_tcp_idx_sl], ":", "", -1), 10, 64)
 			if err != nil {
 				errc <- err
 				return
 			}
 			ns.Sl = sn
 
-			ns.LocalAddress = strings.TrimSpace(row[proc_net_idx_local_address])
-			lp, lt, err := ipParse(row[proc_net_idx_local_address])
+			ns.LocalAddress = strings.TrimSpace(row[proc_net_tcp_idx_local_address])
+			lp, lt, err := ipParse(row[proc_net_tcp_idx_local_address])
 			if err != nil {
 				errc <- err
 				return
@@ -142,8 +142,8 @@ func parseProcNetStats(pid int64, tp TransportProtocol) ([]NetStat, error) {
 			ns.LocalAddressParsedIPHost = strings.TrimSpace(lp)
 			ns.LocalAddressParsedIPPort = lt
 
-			ns.RemAddress = strings.TrimSpace(row[proc_net_idx_remote_address])
-			rp, rt, err := ipParse(row[proc_net_idx_remote_address])
+			ns.RemAddress = strings.TrimSpace(row[proc_net_tcp_idx_remote_address])
+			rp, rt, err := ipParse(row[proc_net_tcp_idx_remote_address])
 			if err != nil {
 				errc <- err
 				return
@@ -151,43 +151,43 @@ func parseProcNetStats(pid int64, tp TransportProtocol) ([]NetStat, error) {
 			ns.RemAddressParsedIPHost = strings.TrimSpace(rp)
 			ns.RemAddressParsedIPPort = rt
 
-			ns.St = strings.TrimSpace(row[proc_net_idx_st])
-			ns.StParsedStatus = strings.TrimSpace(netstatStatus[row[proc_net_idx_st]])
+			ns.St = strings.TrimSpace(row[proc_net_tcp_idx_st])
+			ns.StParsedStatus = strings.TrimSpace(netTCPStatus[row[proc_net_tcp_idx_st]])
 
-			qs := strings.Split(row[proc_net_idx_tx_queue_rx_queue], ":")
+			qs := strings.Split(row[proc_net_tcp_idx_tx_queue_rx_queue], ":")
 			if len(qs) == 2 {
 				ns.TxQueue = qs[0]
 				ns.RxQueue = qs[1]
 			}
-			trs := strings.Split(row[proc_net_idx_tr_tm_when], ":")
+			trs := strings.Split(row[proc_net_tcp_idx_tr_tm_when], ":")
 			if len(trs) == 2 {
 				ns.Tr = trs[0]
 				ns.TmWhen = trs[1]
 			}
-			ns.Retrnsmt = row[proc_net_idx_retrnsmt]
+			ns.Retrnsmt = row[proc_net_tcp_idx_retrnsmt]
 
-			un, err := strconv.ParseUint(row[proc_net_idx_uid], 10, 64)
+			un, err := strconv.ParseUint(row[proc_net_tcp_idx_uid], 10, 64)
 			if err != nil {
 				errc <- err
 				return
 			}
 			ns.Uid = un
 
-			to, err := strconv.ParseUint(row[proc_net_idx_timeout], 10, 64)
+			to, err := strconv.ParseUint(row[proc_net_tcp_idx_timeout], 10, 64)
 			if err != nil {
 				errc <- err
 				return
 			}
 			ns.Timeout = to
 
-			ns.Inode = strings.TrimSpace(row[proc_net_idx_inode])
+			ns.Inode = strings.TrimSpace(row[proc_net_tcp_idx_inode])
 
 			nch <- ns
 		}(row)
 
 	}
 
-	nss := make([]NetStat, 0, len(rows))
+	nss := make([]NetTCP, 0, len(rows))
 	cn, limit := 0, len(rows)
 	for cn != limit {
 		select {

@@ -1,11 +1,11 @@
 package psn
 
-// updated at 2017-01-05 16:56:34.732317207 -0800 PST
+// updated at 2017-01-05 19:46:04.132860545 -0800 PST
 
 // Proc represents '/proc' in Linux.
 type Proc struct {
 	PID      int64
-	NetStat  NetStat
+	NetTCP   NetTCP
 	Uptime   Uptime
 	DiskStat DiskStat
 	IO       IO
@@ -13,9 +13,9 @@ type Proc struct {
 	Status   Status
 }
 
-// NetStat is '/proc/net/tcp', '/proc/net/tcp6' in Linux.
-type NetStat struct {
-	Protocol string `column:"protocol"`
+// NetTCP is '/proc/net/tcp', '/proc/net/tcp6' in Linux.
+type NetTCP struct {
+	Type string `column:"type"`
 	// Sl is kernel hash slot.
 	Sl uint64 `column:"sl"`
 	// LocalAddress is local-address:port.

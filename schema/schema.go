@@ -29,10 +29,10 @@ type Column struct {
 	Kind  reflect.Kind
 }
 
-// NetStat represents '/proc/net/tcp' and '/proc/net/tcp6'
+// NetTCP represents '/proc/net/tcp' and '/proc/net/tcp6'
 // (See http://man7.org/linux/man-pages/man5/proc.5.html
 // and http://www.onlamp.com/pub/a/linux/2000/11/16/LinuxAdmin.html).
-var NetStat = RawData{
+var NetTCP = RawData{
 	IsYAML: false,
 	Columns: []Column{
 		{"sl", "kernel hash slot", reflect.Uint64},

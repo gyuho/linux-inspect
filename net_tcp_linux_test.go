@@ -5,13 +5,13 @@ import (
 	"testing"
 )
 
-func TestGetNetstats(t *testing.T) {
+func TestGetNetTCP(t *testing.T) {
 	fds, err := ListProcFds()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	fd := fds[len(fds)/2]
+	fd := fds[len(fds)/5]
 	fmt.Println("Chosen FD:", fd)
 
 	pid, err := pidFromFd(fd)
@@ -26,17 +26,17 @@ func TestGetNetstats(t *testing.T) {
 	}
 	fmt.Println("GetProgram:", nm)
 
-	ns, err := GetNetstats(pid, TCP)
+	ns, err := GetNetTCP(pid, TypeTCP)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("GetNetstats TCP: %+v\n", ns)
+	fmt.Printf("GetNetTCP TypeTCP: %+v\n", ns)
 
-	nss, err := GetNetstats(pid, TCP6)
+	nss, err := GetNetTCP(pid, TypeTCP6)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("GetNetstats TCP6: %+v\n", ns)
+	fmt.Printf("GetNetTCP TypeTCP: %+v\n", ns)
 
 	for _, ns := range nss {
 		pid2 := SearchInode(fds, ns.Inode)

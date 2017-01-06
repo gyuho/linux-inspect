@@ -101,7 +101,7 @@ func main() {
 // Proc represents '/proc' in Linux.
 type Proc struct {
 	PID      int64
-	NetStat  NetStat
+	NetTCP  NetTCP
 	Uptime   Uptime
 	DiskStat DiskStat
 	IO       IO
@@ -112,13 +112,13 @@ type Proc struct {
 `)
 
 	// '/proc/net/tcp', '/proc/net/tcp6'
-	buf.WriteString(`// NetStat is '/proc/net/tcp', '/proc/net/tcp6' in Linux.
-type NetStat struct {
+	buf.WriteString(`// NetTCP is '/proc/net/tcp', '/proc/net/tcp6' in Linux.
+type NetTCP struct {
 `)
-	for _, line := range additionalFieldsNetstat {
+	for _, line := range additionalFieldsNetTCP {
 		buf.WriteString(fmt.Sprintf("\t%s\n", line))
 	}
-	buf.WriteString(generate(schema.NetStat))
+	buf.WriteString(generate(schema.NetTCP))
 	buf.WriteString("}\n\n")
 
 	// '/proc/uptime'
@@ -202,8 +202,8 @@ func toFile(txt, fpath string) error {
 	return nil
 }
 
-var additionalFieldsNetstat = [...]string{
-	"Protocol string `column:\"protocol\"`",
+var additionalFieldsNetTCP = [...]string{
+	"Type string `column:\"type\"`",
 }
 
 var additionalFieldsStat = [...]string{
