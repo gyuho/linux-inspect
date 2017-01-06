@@ -99,8 +99,7 @@ func parseProcNetStat(pid int64, tp TransportProtocol) ([]NetStat, error) {
 		}
 
 		row := make([]string, 10)
-		copy(row, fs[:idx_inode])
-		row[idx_inode] = strings.Join(fs[idx_inode:], " ")
+		copy(row, fs[:idx_inode+1])
 
 		rows = append(rows, row)
 	}
@@ -221,11 +220,12 @@ func SearchInode(fds []string, inode string) (pid int64) {
 				return
 			}
 
+			// '/proc/[pid]/fd' contains type:[inode]
 			sym, err := os.Readlink(fdpath)
 			if err != nil {
 				return
 			}
-			if !strings.Contains(sym, inode) {
+			if !strings.Contains(strings.TrimSpace(sym), inode) {
 				return
 			}
 

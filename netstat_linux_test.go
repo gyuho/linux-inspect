@@ -28,16 +28,26 @@ func TestGetNetstat(t *testing.T) {
 
 	ns, err := GetNetstat(pid, TCP)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	fmt.Printf("GetNetstat TCP: %+v\n", ns)
 
-	ns, err = GetNetstat(pid, TCP6)
+	nss, err := GetNetstat(pid, TCP6)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	fmt.Printf("GetNetstat TCP6: %+v\n", ns)
 
-	pid2 := SearchInode(fds, ns[0].Inode)
-	fmt.Println("PID from Inode:", pid2)
+	for _, ns := range nss {
+		pid2 := SearchInode(fds, ns.Inode)
+		pn, err := GetProgram(pid2)
+		if err != nil {
+			fmt.Println("error:", err)
+			continue
+		}
+		fmt.Printf("PID %d for Inode %6s, Program %s\n", pid2, ns.Inode, pn)
+		if pn != nm {
+			t.Fatalf("program name expected %q, got %q", nm, pn)
+		}
+	}
 }
