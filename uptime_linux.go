@@ -26,7 +26,7 @@ func GetUptime() (Uptime, error) {
 			return Uptime{}, err
 		}
 		u.UptimeTotal = v
-		u.UptimeTotalHumanizedTime = humanize.Time(now.Add(-1 * time.Duration(u.UptimeTotal) * time.Second))
+		u.UptimeTotalParsedTime = humanize.Time(now.Add(-1 * time.Duration(u.UptimeTotal) * time.Second))
 	}
 	if len(fields) > 1 {
 		v, err := strconv.ParseFloat(fields[1], 64)
@@ -34,7 +34,7 @@ func GetUptime() (Uptime, error) {
 			return Uptime{}, err
 		}
 		u.UptimeIdle = v
-		u.UptimeIdleHumanizedTime = humanize.Time(now.Add(-1 * time.Duration(u.UptimeIdle) * time.Second))
+		u.UptimeIdleParsedTime = humanize.Time(now.Add(-1 * time.Duration(u.UptimeIdle) * time.Second))
 	}
 	return u, nil
 }

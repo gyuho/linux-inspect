@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"strings"
 	"text/template"
 	"time"
 
@@ -13,12 +14,8 @@ import (
 )
 
 // GetStatus reads /proc/$PID/status data.
-func GetStatus(pid int64) (Status, error) {
-	var (
-		s   Status
-		err error
-	)
-	for i := 0; i < 3; i++ {
+func GetStatus(pid int64) (s Status, err error) {
+	for i := 0; i < 5; i++ {
 		s, err = getStatus(pid)
 		if err == nil {
 			return s, nil
@@ -26,7 +23,7 @@ func GetStatus(pid int64) (Status, error) {
 		log.Println(err)
 		time.Sleep(5 * time.Millisecond)
 	}
-	return s, err
+	return
 }
 
 func getStatus(pid int64) (Status, error) {
@@ -46,43 +43,50 @@ func getStatus(pid int64) (Status, error) {
 	if err := yaml.Unmarshal(b, &rs); err != nil {
 		return Status{}, err
 	}
+	rs.StateParsedStatus = strings.TrimSpace(rs.State)
 
 	u, _ := humanize.ParseBytes(rs.VmPeak)
 	rs.VmPeakBytesN = u
-	rs.VmPeakHumanizedBytes = humanize.Bytes(u)
+	rs.VmPeakParsedBytes = humanize.Bytes(u)
 	u, _ = humanize.ParseBytes(rs.VmSize)
 	rs.VmSizeBytesN = u
-	rs.VmSizeHumanizedBytes = humanize.Bytes(u)
+	rs.VmSizeParsedBytes = humanize.Bytes(u)
 	u, _ = humanize.ParseBytes(rs.VmLck)
 	rs.VmLckBytesN = u
-	rs.VmLckHumanizedBytes = humanize.Bytes(u)
+	rs.VmLckParsedBytes = humanize.Bytes(u)
 	u, _ = humanize.ParseBytes(rs.VmPin)
 	rs.VmPinBytesN = u
-	rs.VmPinHumanizedBytes = humanize.Bytes(u)
+	rs.VmPinParsedBytes = humanize.Bytes(u)
 	u, _ = humanize.ParseBytes(rs.VmHWM)
 	rs.VmHWMBytesN = u
-	rs.VmHWMHumanizedBytes = humanize.Bytes(u)
+	rs.VmHWMParsedBytes = humanize.Bytes(u)
 	u, _ = humanize.ParseBytes(rs.VmRSS)
 	rs.VmRSSBytesN = u
-	rs.VmRSSHumanizedBytes = humanize.Bytes(u)
+	rs.VmRSSParsedBytes = humanize.Bytes(u)
 	u, _ = humanize.ParseBytes(rs.VmData)
 	rs.VmDataBytesN = u
-	rs.VmDataHumanizedBytes = humanize.Bytes(u)
+	rs.VmDataParsedBytes = humanize.Bytes(u)
 	u, _ = humanize.ParseBytes(rs.VmStk)
 	rs.VmStkBytesN = u
-	rs.VmStkHumanizedBytes = humanize.Bytes(u)
+	rs.VmStkParsedBytes = humanize.Bytes(u)
 	u, _ = humanize.ParseBytes(rs.VmExe)
 	rs.VmExeBytesN = u
-	rs.VmExeHumanizedBytes = humanize.Bytes(u)
+	rs.VmExeParsedBytes = humanize.Bytes(u)
 	u, _ = humanize.ParseBytes(rs.VmLib)
 	rs.VmLibBytesN = u
-	rs.VmLibHumanizedBytes = humanize.Bytes(u)
+	rs.VmLibParsedBytes = humanize.Bytes(u)
 	u, _ = humanize.ParseBytes(rs.VmPTE)
 	rs.VmPTEBytesN = u
-	rs.VmPTEHumanizedBytes = humanize.Bytes(u)
+	rs.VmPTEParsedBytes = humanize.Bytes(u)
+	u, _ = humanize.ParseBytes(rs.VmPMD)
+	rs.VmPMDBytesN = u
+	rs.VmPMDParsedBytes = humanize.Bytes(u)
 	u, _ = humanize.ParseBytes(rs.VmSwap)
 	rs.VmSwapBytesN = u
-	rs.VmSwapHumanizedBytes = humanize.Bytes(u)
+	rs.VmSwapParsedBytes = humanize.Bytes(u)
+	u, _ = humanize.ParseBytes(rs.HugetlbPages)
+	rs.HugetlbPagesBytesN = u
+	rs.HugetlbPagesParsedBytes = humanize.Bytes(u)
 
 	return rs, nil
 }
@@ -91,8 +95,9 @@ const statusTmpl = `
 ----------------------------------------
 [/proc/{{.Pid}}/status]
 
-Name:  {{.Name}}
-State: {{.State}}
+Name:   {{.Name}}
+Umask:  {{.Umask}}
+State:  {{.StateParsedStatus}}
 
 Tgid:      {{.Tgid}}
 Ngid:      {{.Ngid}}
@@ -102,18 +107,20 @@ TracerPid: {{.TracerPid}}
 
 FDSize:  {{.FDSize}}
 
-VmPeak:  {{.VmPeakHumanizedBytes}}
-VmSize:  {{.VmSizeHumanizedBytes}}
-VmLck:   {{.VmLckHumanizedBytes}}
-VmPin:   {{.VmPinHumanizedBytes}}
-VmHWM:   {{.VmHWMHumanizedBytes}}
-VmRSS:   {{.VmRSSHumanizedBytes}}
-VmData:  {{.VmDataHumanizedBytes}}
-VmStk:   {{.VmStkHumanizedBytes}}
-VmExe:   {{.VmExeHumanizedBytes}}
-VmLib:   {{.VmLibHumanizedBytes}}
-VmPTE:   {{.VmPTEHumanizedBytes}}
-VmSwap:  {{.VmSwapHumanizedBytes}}
+VmPeak:  {{.VmPeakParsedBytes}}
+VmSize:  {{.VmSizeParsedBytes}}
+VmLck:   {{.VmLckParsedBytes}}
+VmPin:   {{.VmPinParsedBytes}}
+VmHWM:   {{.VmHWMParsedBytes}}
+VmRSS:   {{.VmRSSParsedBytes}}
+VmData:  {{.VmDataParsedBytes}}
+VmStk:   {{.VmStkParsedBytes}}
+VmExe:   {{.VmExeParsedBytes}}
+VmLib:   {{.VmLibParsedBytes}}
+VmPTE:   {{.VmPTEParsedBytes}}
+VmPMD:   {{.VmPMDParsedBytes}}
+VmSwap:  {{.VmSwapParsedBytes}}
+HugetlbPages:  {{.HugetlbPagesParsedBytes}}
 
 Threads:   {{.Threads}}
 

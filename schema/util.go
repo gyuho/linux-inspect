@@ -21,8 +21,8 @@ func ToField(s string) string {
 	return strings.TrimSpace(strings.Join(ss, ""))
 }
 
-// ToField converts raw key to YAML field name.
-func ToYAMLField(s string) string {
+// ToFieldTag converts raw key to field name.
+func ToFieldTag(s string) string {
 	s = strings.ToLower(s)
 	s = strings.Replace(s, "-", "_", -1)
 	s = strings.Replace(s, "/", "", -1)

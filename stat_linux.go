@@ -17,12 +17,8 @@ import (
 )
 
 // GetStat reads /proc/$PID/stat data.
-func GetStat(pid int64, up Uptime) (Stat, error) {
-	var (
-		s   Stat
-		err error
-	)
-	for i := 0; i < 3; i++ {
+func GetStat(pid int64, up Uptime) (s Stat, err error) {
+	for i := 0; i < 5; i++ {
 		s, err = getStat(pid, up)
 		if err == nil {
 			return s, nil
@@ -30,7 +26,7 @@ func GetStat(pid int64, up Uptime) (Stat, error) {
 		log.Println("retrying;", err)
 		time.Sleep(5 * time.Millisecond)
 	}
-	return s, err
+	return
 }
 
 func getStat(pid int64, up Uptime) (Stat, error) {
@@ -51,13 +47,13 @@ func getStat(pid int64, up Uptime) (Stat, error) {
 
 		fds := strings.Fields(txt)
 		for i, fv := range fds {
-			column := schema.ToField(schema.Stat[i].Name)
+			column := schema.ToField(schema.Stat.Columns[i].Name)
 			s := reflect.ValueOf(st).Elem()
 			if s.Kind() == reflect.Struct {
 				f := s.FieldByName(column)
 				if f.IsValid() {
 					if f.CanSet() {
-						switch schema.Stat[i].Kind {
+						switch schema.Stat.Columns[i].Kind {
 
 						case reflect.Uint64:
 							value, err := strconv.ParseUint(fv, 10, 64)
@@ -74,11 +70,14 @@ func getStat(pid int64, up Uptime) (Stat, error) {
 									}
 								}
 
-								if schema.Stat[i].HumanizedBytes {
-									hF := s.FieldByName(column + "HumanizedBytes")
-									if hF.IsValid() {
-										if hF.CanSet() {
-											hF.SetString(humanize.Bytes(value))
+								if vv, ok := schema.Stat.ColumnsToParse[schema.Stat.Columns[i].Name]; ok {
+									switch vv {
+									case schema.TypeBytes:
+										hF := s.FieldByName(column + "ParsedBytes")
+										if hF.IsValid() {
+											if hF.CanSet() {
+												hF.SetString(humanize.Bytes(value))
+											}
 										}
 									}
 								}
@@ -99,11 +98,12 @@ func getStat(pid int64, up Uptime) (Stat, error) {
 									}
 								}
 
-								if schema.Stat[i].HumanizedBytes {
-									hF := s.FieldByName(column + "HumanizedBytes")
-									if hF.IsValid() {
-										if hF.CanSet() {
-											if value > 0 {
+								if vv, ok := schema.Stat.ColumnsToParse[schema.Stat.Columns[i].Name]; ok {
+									switch vv {
+									case schema.TypeBytes:
+										hF := s.FieldByName(column + "ParsedBytes")
+										if hF.IsValid() {
+											if hF.CanSet() {
 												hF.SetString(humanize.Bytes(uint64(value)))
 											}
 										}
@@ -113,6 +113,18 @@ func getStat(pid int64, up Uptime) (Stat, error) {
 
 						case reflect.String:
 							f.SetString(fv)
+
+							if vv, ok := schema.Stat.ColumnsToParse[schema.Stat.Columns[i].Name]; ok {
+								switch vv {
+								case schema.TypeStatus:
+									hF := s.FieldByName(column + "ParsedStatus")
+									if hF.IsValid() {
+										if hF.CanSet() {
+											hF.SetString(strings.TrimSpace(fv))
+										}
+									}
+								}
+							}
 						}
 					}
 				}
@@ -177,9 +189,9 @@ Pid:         {{.Pid}}
 Ppid:        {{.Ppid}}
 NumThreads:  {{.NumThreads}}
 
-Rss:       {{.RssHumanizedBytes}} ({{.RssBytesN}})
-Rsslim:    {{.RsslimHumanizedBytes}} ({{.RsslimBytesN}})
-Vsize:     {{.VsizeHumanizedBytes}} ({{.VsizeBytesN}})
+Rss:       {{.RssParsedBytes}} ({{.RssBytesN}})
+Rsslim:    {{.RsslimParsedBytes}} ({{.RsslimBytesN}})
+Vsize:     {{.VsizeParsedBytes}} ({{.VsizeBytesN}})
 CpuUsage:  {{.CpuUsage}} %
 
 Starttime:  {{.Starttime}}

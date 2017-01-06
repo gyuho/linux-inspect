@@ -1,15 +1,15 @@
 package psn
 
-// updated at 2017-01-05 15:58:52.340835782 -0800 PST
+// updated at 2017-01-05 16:21:26.618244069 -0800 PST
 
 // Proc represents '/proc' in Linux.
 type Proc struct {
-	NetStats  NetStats
-	Uptime    Uptime
-	DiskStats DiskStats
-	IO        IO
-	Stat      Stat
-	Status    Status
+	NetStat  NetStat
+	Uptime   Uptime
+	DiskStat DiskStat
+	IO       IO
+	Stat     Stat
+	Status   Status
 }
 
 // NetStat is '/proc/net/tcp', '/proc/net/tcp6' in Linux.
@@ -53,8 +53,8 @@ type Uptime struct {
 	UptimeIdleParsedTime string  `column:"uptime_idle_parsed_time"`
 }
 
-// DiskStats is '/proc/diskstats' in Linux.
-type DiskStats struct {
+// DiskStat is '/proc/diskstats' in Linux.
+type DiskStat struct {
 	// MajorNumber is major device number.
 	MajorNumber uint64 `column:"major_number"`
 	// MinorNumber is minor device number.
@@ -232,128 +232,128 @@ type Stat struct {
 // Status is '/proc/$PID/status' in Linux.
 type Status struct {
 	// Name is command run by this process.
-	Name string `yaml:"name"`
+	Name string `yaml:"Name"`
 	// Umask is process umask, expressed in octal with a leading.
-	Umask string `yaml:"umask"`
+	Umask string `yaml:"Umask"`
 	// State is current state of the process: R (running), S (sleeping), D (disk sleep), T (stopped), T (tracing stop), Z (zombie), or X (dead).
-	State             string `yaml:"state"`
+	State             string `yaml:"State"`
 	StateParsedStatus string `yaml:"State_parsed_status"`
 	// Tgid is thread group ID.
-	Tgid int64 `yaml:"tgid"`
+	Tgid int64 `yaml:"Tgid"`
 	// Ngid is NUMA group ID.
-	Ngid int64 `yaml:"ngid"`
+	Ngid int64 `yaml:"Ngid"`
 	// Pid is process ID.
-	Pid int64 `yaml:"pid"`
+	Pid int64 `yaml:"Pid"`
 	// PPid is parent process ID, which launches the Pid.
-	PPid int64 `yaml:"ppid"`
+	PPid int64 `yaml:"PPid"`
 	// TracerPid is PID of process tracing this process (0 if not being traced).
-	TracerPid int64 `yaml:"tracerpid"`
+	TracerPid int64 `yaml:"TracerPid"`
 	// Uid is real, effective, saved set, and filesystem UIDs.
-	Uid string `yaml:"uid"`
+	Uid string `yaml:"Uid"`
 	// Gid is real, effective, saved set, and filesystem UIDs.
-	Gid string `yaml:"gid"`
+	Gid string `yaml:"Gid"`
 	// FDSize is number of file descriptor slots currently allocated.
-	FDSize uint64 `yaml:"fdsize"`
+	FDSize uint64 `yaml:"FDSize"`
 	// Groups is supplementary group list.
-	Groups string `yaml:"groups"`
+	Groups string `yaml:"Groups"`
 	// NStgid is thread group ID (i.e., PID) in each of the PID namespaces of which [pid] is a member.
-	NStgid int64 `yaml:"nstgid"`
+	NStgid int64 `yaml:"NStgid"`
 	// NSpid is thread ID (i.e., PID) in each of the PID namespaces of which [pid] is a member.
-	NSpid int64 `yaml:"nspid"`
+	NSpid int64 `yaml:"NSpid"`
 	// NSpgid is process group ID (i.e., PID) in each of the PID namespaces of which [pid] is a member.
-	NSpgid int64 `yaml:"nspgid"`
+	NSpgid int64 `yaml:"NSpgid"`
 	// NSsid is descendant namespace session ID hierarchy Session ID in each of the PID namespaces of which [pid] is a member.
-	NSsid int64 `yaml:"nssid"`
+	NSsid int64 `yaml:"NSsid"`
 	// VmPeak is peak virtual memory usage. Vm includes physical memory and swap.
-	VmPeak            string `yaml:"vmpeak"`
-	VmPeakBytesN      uint64 `yaml:"vmpeak_bytes_n"`
-	VmPeakParsedBytes string `yaml:"vmpeak_parsed_bytes"`
+	VmPeak            string `yaml:"VmPeak"`
+	VmPeakBytesN      uint64 `yaml:"VmPeak_bytes_n"`
+	VmPeakParsedBytes string `yaml:"VmPeak_parsed_bytes"`
 	// VmSize is current virtual memory usage. VmSize is the total amount of memory required for this process.
-	VmSize            string `yaml:"vmsize"`
-	VmSizeBytesN      uint64 `yaml:"vmsize_bytes_n"`
-	VmSizeParsedBytes string `yaml:"vmsize_parsed_bytes"`
+	VmSize            string `yaml:"VmSize"`
+	VmSizeBytesN      uint64 `yaml:"VmSize_bytes_n"`
+	VmSizeParsedBytes string `yaml:"VmSize_parsed_bytes"`
 	// VmLck is locked memory size.
-	VmLck            string `yaml:"vmlck"`
-	VmLckBytesN      uint64 `yaml:"vmlck_bytes_n"`
-	VmLckParsedBytes string `yaml:"vmlck_parsed_bytes"`
+	VmLck            string `yaml:"VmLck"`
+	VmLckBytesN      uint64 `yaml:"VmLck_bytes_n"`
+	VmLckParsedBytes string `yaml:"VmLck_parsed_bytes"`
 	// VmPin is pinned memory size (pages can't be moved, requires direct-access to physical memory).
-	VmPin            string `yaml:"vmpin"`
-	VmPinBytesN      uint64 `yaml:"vmpin_bytes_n"`
-	VmPinParsedBytes string `yaml:"vmpin_parsed_bytes"`
+	VmPin            string `yaml:"VmPin"`
+	VmPinBytesN      uint64 `yaml:"VmPin_bytes_n"`
+	VmPinParsedBytes string `yaml:"VmPin_parsed_bytes"`
 	// VmHWM is peak resident set size ("high water mark").
-	VmHWM            string `yaml:"vmhwm"`
-	VmHWMBytesN      uint64 `yaml:"vmhwm_bytes_n"`
-	VmHWMParsedBytes string `yaml:"vmhwm_parsed_bytes"`
+	VmHWM            string `yaml:"VmHWM"`
+	VmHWMBytesN      uint64 `yaml:"VmHWM_bytes_n"`
+	VmHWMParsedBytes string `yaml:"VmHWM_parsed_bytes"`
 	// VmRSS is resident set size. VmRSS is the actual amount in memory. Some memory can be swapped out to physical disk. So this is the real memory usage of the process.
-	VmRSS            string `yaml:"vmrss"`
-	VmRSSBytesN      uint64 `yaml:"vmrss_bytes_n"`
-	VmRSSParsedBytes string `yaml:"vmrss_parsed_bytes"`
+	VmRSS            string `yaml:"VmRSS"`
+	VmRSSBytesN      uint64 `yaml:"VmRSS_bytes_n"`
+	VmRSSParsedBytes string `yaml:"VmRSS_parsed_bytes"`
 	// VmData is size of data segment.
-	VmData            string `yaml:"vmdata"`
-	VmDataBytesN      uint64 `yaml:"vmdata_bytes_n"`
-	VmDataParsedBytes string `yaml:"vmdata_parsed_bytes"`
+	VmData            string `yaml:"VmData"`
+	VmDataBytesN      uint64 `yaml:"VmData_bytes_n"`
+	VmDataParsedBytes string `yaml:"VmData_parsed_bytes"`
 	// VmStk is size of stack.
-	VmStk            string `yaml:"vmstk"`
-	VmStkBytesN      uint64 `yaml:"vmstk_bytes_n"`
-	VmStkParsedBytes string `yaml:"vmstk_parsed_bytes"`
+	VmStk            string `yaml:"VmStk"`
+	VmStkBytesN      uint64 `yaml:"VmStk_bytes_n"`
+	VmStkParsedBytes string `yaml:"VmStk_parsed_bytes"`
 	// VmExe is size of text segments.
-	VmExe            string `yaml:"vmexe"`
-	VmExeBytesN      uint64 `yaml:"vmexe_bytes_n"`
-	VmExeParsedBytes string `yaml:"vmexe_parsed_bytes"`
+	VmExe            string `yaml:"VmExe"`
+	VmExeBytesN      uint64 `yaml:"VmExe_bytes_n"`
+	VmExeParsedBytes string `yaml:"VmExe_parsed_bytes"`
 	// VmLib is shared library code size.
-	VmLib            string `yaml:"vmlib"`
-	VmLibBytesN      uint64 `yaml:"vmlib_bytes_n"`
-	VmLibParsedBytes string `yaml:"vmlib_parsed_bytes"`
+	VmLib            string `yaml:"VmLib"`
+	VmLibBytesN      uint64 `yaml:"VmLib_bytes_n"`
+	VmLibParsedBytes string `yaml:"VmLib_parsed_bytes"`
 	// VmPTE is page table entries size.
-	VmPTE            string `yaml:"vmpte"`
-	VmPTEBytesN      uint64 `yaml:"vmpte_bytes_n"`
-	VmPTEParsedBytes string `yaml:"vmpte_parsed_bytes"`
+	VmPTE            string `yaml:"VmPTE"`
+	VmPTEBytesN      uint64 `yaml:"VmPTE_bytes_n"`
+	VmPTEParsedBytes string `yaml:"VmPTE_parsed_bytes"`
 	// VmPMD is size of second-level page tables.
-	VmPMD            string `yaml:"vmpmd"`
-	VmPMDBytesN      uint64 `yaml:"vmpmd_bytes_n"`
-	VmPMDParsedBytes string `yaml:"vmpmd_parsed_bytes"`
+	VmPMD            string `yaml:"VmPMD"`
+	VmPMDBytesN      uint64 `yaml:"VmPMD_bytes_n"`
+	VmPMDParsedBytes string `yaml:"VmPMD_parsed_bytes"`
 	// VmSwap is swapped-out virtual memory size by anonymous private.
-	VmSwap            string `yaml:"vmswap"`
-	VmSwapBytesN      uint64 `yaml:"vmswap_bytes_n"`
-	VmSwapParsedBytes string `yaml:"vmswap_parsed_bytes"`
+	VmSwap            string `yaml:"VmSwap"`
+	VmSwapBytesN      uint64 `yaml:"VmSwap_bytes_n"`
+	VmSwapParsedBytes string `yaml:"VmSwap_parsed_bytes"`
 	// HugetlbPages is size of hugetlb memory portions.
-	HugetlbPages            string `yaml:"hugetlbpages"`
-	HugetlbPagesBytesN      uint64 `yaml:"hugetlbpages_bytes_n"`
-	HugetlbPagesParsedBytes string `yaml:"hugetlbpages_parsed_bytes"`
+	HugetlbPages            string `yaml:"HugetlbPages"`
+	HugetlbPagesBytesN      uint64 `yaml:"HugetlbPages_bytes_n"`
+	HugetlbPagesParsedBytes string `yaml:"HugetlbPages_parsed_bytes"`
 	// Threads is number of threads in process containing this thread (process).
-	Threads uint64 `yaml:"threads"`
+	Threads uint64 `yaml:"Threads"`
 	// SigQ is queued signals for the real user ID of this process (queued signals / limits).
-	SigQ string `yaml:"sigq"`
+	SigQ string `yaml:"SigQ"`
 	// SigPnd is number of signals pending for thread.
-	SigPnd string `yaml:"sigpnd"`
+	SigPnd string `yaml:"SigPnd"`
 	// ShdPnd is number of signals pending for process as a whole.
-	ShdPnd string `yaml:"shdpnd"`
+	ShdPnd string `yaml:"ShdPnd"`
 	// SigBlk is masks indicating signals being blocked.
-	SigBlk string `yaml:"sigblk"`
+	SigBlk string `yaml:"SigBlk"`
 	// SigIgn is masks indicating signals being ignored.
-	SigIgn string `yaml:"sigign"`
+	SigIgn string `yaml:"SigIgn"`
 	// SigCgt is masks indicating signals being caught.
-	SigCgt string `yaml:"sigcgt"`
+	SigCgt string `yaml:"SigCgt"`
 	// CapInh is masks of capabilities enabled in inheritable sets.
-	CapInh string `yaml:"capinh"`
+	CapInh string `yaml:"CapInh"`
 	// CapPrm is masks of capabilities enabled in permitted sets.
-	CapPrm string `yaml:"capprm"`
+	CapPrm string `yaml:"CapPrm"`
 	// CapEff is masks of capabilities enabled in effective sets.
-	CapEff string `yaml:"capeff"`
+	CapEff string `yaml:"CapEff"`
 	// CapBnd is capability Bounding set.
-	CapBnd string `yaml:"capbnd"`
+	CapBnd string `yaml:"CapBnd"`
 	// CapAmb is ambient capability set.
-	CapAmb string `yaml:"capamb"`
+	CapAmb string `yaml:"CapAmb"`
 	// Seccomp is seccomp mode of the process (0 means SECCOMP_MODE_DISABLED; 1 means SECCOMP_MODE_STRICT; 2 means SECCOMP_MODE_FILTER).
-	Seccomp uint64 `yaml:"seccomp"`
+	Seccomp uint64 `yaml:"Seccomp"`
 	// CpusAllowed is mask of CPUs on which this process may run.
-	CpusAllowed string `yaml:"cpus_allowed"`
+	CpusAllowed string `yaml:"Cpus_allowed"`
 	// CpusAllowedList is list of CPUs on which this process may run.
-	CpusAllowedList string `yaml:"cpus_allowed_list"`
+	CpusAllowedList string `yaml:"Cpus_allowed_list"`
 	// MemsAllowed is mask of memory nodes allowed to this process.
-	MemsAllowed string `yaml:"mems_allowed"`
+	MemsAllowed string `yaml:"Mems_allowed"`
 	// MemsAllowedList is list of memory nodes allowed to this process.
-	MemsAllowedList string `yaml:"mems_allowed_list"`
+	MemsAllowedList string `yaml:"Mems_allowed_list"`
 	// VoluntaryCtxtSwitches is number of voluntary context switches.
 	VoluntaryCtxtSwitches uint64 `yaml:"voluntary_ctxt_switches"`
 	// NonvoluntaryCtxtSwitches is number of involuntary context switches.

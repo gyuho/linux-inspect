@@ -22,14 +22,19 @@ func generate(raw schema.RawData) string {
 
 	buf := new(bytes.Buffer)
 	for _, col := range raw.Columns {
+		goFieldName := schema.ToField(col.Name)
+		goFieldTagName := col.Name
+		if !raw.IsYAML {
+			goFieldTagName = schema.ToFieldTag(goFieldTagName)
+		}
 		if col.Godoc != "" {
-			buf.WriteString(fmt.Sprintf("\t// %s is %s.\n", schema.ToField(col.Name), col.Godoc))
+			buf.WriteString(fmt.Sprintf("\t// %s is %s.\n", goFieldName, col.Godoc))
 		}
 		buf.WriteString(fmt.Sprintf("\t%s\t%s\t`%s:\"%s\"`\n",
-			schema.ToField(col.Name),
+			goFieldName,
 			schema.GoType(col.Kind),
 			tagstr,
-			schema.ToYAMLField(col.Name),
+			goFieldTagName,
 		))
 
 		// additional parsed column
@@ -41,36 +46,36 @@ func generate(raw schema.RawData) string {
 					ntstr = "int64"
 				}
 				buf.WriteString(fmt.Sprintf("\t%sBytesN\t%s\t`%s:\"%s_bytes_n\"`\n",
-					schema.ToField(col.Name),
+					goFieldName,
 					ntstr,
 					tagstr,
-					schema.ToYAMLField(col.Name),
+					goFieldTagName,
 				))
 				buf.WriteString(fmt.Sprintf("\t%sParsedBytes\tstring\t`%s:\"%s_parsed_bytes\"`\n",
-					schema.ToField(col.Name),
+					goFieldName,
 					tagstr,
-					schema.ToYAMLField(col.Name),
+					goFieldTagName,
 				))
 
 			case schema.TypeTimeSeconds:
 				buf.WriteString(fmt.Sprintf("\t%sParsedTime\tstring\t`%s:\"%s_parsed_time\"`\n",
-					schema.ToField(col.Name),
+					goFieldName,
 					tagstr,
-					schema.ToYAMLField(col.Name),
+					goFieldTagName,
 				))
 
 			case schema.TypeIPAddress:
 				buf.WriteString(fmt.Sprintf("\t%sParsedIPAddress\tstring\t`%s:\"%s_parsed_ip_address\"`\n",
-					schema.ToField(col.Name),
+					goFieldName,
 					tagstr,
-					schema.ToYAMLField(col.Name),
+					goFieldTagName,
 				))
 
 			case schema.TypeStatus:
 				buf.WriteString(fmt.Sprintf("\t%sParsedStatus\tstring\t`%s:\"%s_parsed_status\"`\n",
-					schema.ToField(col.Name),
+					goFieldName,
 					tagstr,
-					col.Name,
+					goFieldTagName,
 				))
 
 			default:
@@ -90,12 +95,12 @@ func main() {
 
 // Proc represents '/proc' in Linux.
 type Proc struct {
-	NetStats  NetStats
-	Uptime    Uptime
-	DiskStats DiskStats
-	IO        IO
-	Stat      Stat
-	Status    Status
+	NetStat  NetStat
+	Uptime   Uptime
+	DiskStat DiskStat
+	IO       IO
+	Stat     Stat
+	Status   Status
 }
 
 `)
@@ -115,8 +120,8 @@ type Uptime struct {
 	buf.WriteString("}\n\n")
 
 	// '/proc/diskstats'
-	buf.WriteString(`// DiskStats is '/proc/diskstats' in Linux.
-type DiskStats struct {
+	buf.WriteString(`// DiskStat is '/proc/diskstats' in Linux.
+type DiskStat struct {
 `)
 	buf.WriteString(generate(schema.DiskStat))
 	buf.WriteString("}\n\n")
