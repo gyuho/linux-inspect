@@ -16,7 +16,7 @@ import (
 	"github.com/gyuho/psn/schema"
 )
 
-// GetStat reads /proc/$PID/stat data.
+// GetStat reads '/proc/$PID/stat' data.
 func GetStat(pid int64, up Uptime) (s Stat, err error) {
 	for i := 0; i < 5; i++ {
 		s, err = parseProcStat(pid, up)

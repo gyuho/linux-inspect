@@ -19,7 +19,7 @@ const (
 	TCP6
 )
 
-// GetNetstat reads /proc/$PID/net/tcp(6) data.
+// GetNetstat reads '/proc/$PID/net/tcp(6)' data.
 func GetNetstat(pid int64, tp TransportProtocol) (ss []NetStat, err error) {
 	for i := 0; i < 5; i++ {
 		ss, err = parseProcNetStat(pid, tp)

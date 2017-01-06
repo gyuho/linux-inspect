@@ -13,7 +13,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// GetStatus reads /proc/$PID/status data.
+// GetStatus reads '/proc/$PID/status' data.
 func GetStatus(pid int64) (s Status, err error) {
 	for i := 0; i < 5; i++ {
 		s, err = parseProcStatus(pid)
@@ -41,7 +41,7 @@ func parseProcStatus(pid int64) (Status, error) {
 
 	rs := Status{}
 	if err := yaml.Unmarshal(b, &rs); err != nil {
-		return Status{}, err
+		return rs, err
 	}
 	rs.StateParsedStatus = strings.TrimSpace(rs.State)
 
