@@ -3,11 +3,31 @@ package psn
 import (
 	"os"
 	"strconv"
+	"strings"
+	"time"
+
+	humanize "github.com/dustin/go-humanize"
 )
 
 func isInt(s string) bool {
 	_, err := strconv.Atoi(s)
 	return err == nil
+}
+
+func humanizeDurationMs(sec uint64) string {
+	s := humanize.Time(time.Now().Add(-1 * time.Duration(sec) * time.Millisecond))
+	if s == "now" {
+		s = "0"
+	}
+	return strings.TrimSpace(strings.Replace(s, " ago", "", -1))
+}
+
+func humanizeDurationSecond(sec uint64) string {
+	s := humanize.Time(time.Now().Add(-1 * time.Duration(sec) * time.Second))
+	if s == "now" {
+		s = "0"
+	}
+	return strings.TrimSpace(strings.Replace(s, " ago", "", -1))
 }
 
 func openToRead(fpath string) (*os.File, error) {

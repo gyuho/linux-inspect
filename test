@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Reference:
-# https://github.com/coreos/etcd/blob/master/test
 
 TEST="./...";
 FMT="./*.go";

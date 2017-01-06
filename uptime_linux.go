@@ -4,9 +4,6 @@ import (
 	"io/ioutil"
 	"strconv"
 	"strings"
-	"time"
-
-	"github.com/dustin/go-humanize"
 )
 
 // GetUptime reads '/proc/uptime'.
@@ -23,8 +20,6 @@ func GetUptime() (Uptime, error) {
 	}
 	fields := strings.Fields(strings.TrimSpace(string(b)))
 
-	now := time.Now()
-
 	u := Uptime{}
 	if len(fields) > 0 {
 		v, err := strconv.ParseFloat(fields[0], 64)
@@ -32,7 +27,7 @@ func GetUptime() (Uptime, error) {
 			return Uptime{}, err
 		}
 		u.UptimeTotal = v
-		u.UptimeTotalParsedTime = humanize.Time(now.Add(-1 * time.Duration(u.UptimeTotal) * time.Second))
+		u.UptimeTotalParsedTime = humanizeDurationSecond(uint64(v))
 	}
 	if len(fields) > 1 {
 		v, err := strconv.ParseFloat(fields[1], 64)
@@ -40,7 +35,7 @@ func GetUptime() (Uptime, error) {
 			return Uptime{}, err
 		}
 		u.UptimeIdle = v
-		u.UptimeIdleParsedTime = humanize.Time(now.Add(-1 * time.Duration(u.UptimeIdle) * time.Second))
+		u.UptimeIdleParsedTime = humanizeDurationSecond(uint64(v))
 	}
 	return u, nil
 }

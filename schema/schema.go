@@ -8,6 +8,7 @@ type RawDataType int
 
 const (
 	TypeBytes RawDataType = iota
+	TypeTimeMicroseconds
 	TypeTimeSeconds
 	TypeIPAddress
 	TypeStatus
@@ -124,7 +125,12 @@ var DiskStat = RawData{
 		{"time-spent-on-I/O-ms", "milliseconds spent doing I/Os", reflect.Uint64},
 		{"weighted-time-spent-on-I/O-ms", "weighted milliseconds spent doing I/Os (incremented at each I/O start, I/O completion, I/O merge)", reflect.Uint64},
 	},
-	ColumnsToParse: map[string]RawDataType{},
+	ColumnsToParse: map[string]RawDataType{
+		"time-spent-on-reading-ms":      TypeTimeMicroseconds,
+		"time-spent-on-writing-ms":      TypeTimeMicroseconds,
+		"time-spent-on-I/O-ms":          TypeTimeMicroseconds,
+		"weighted-time-spent-on-I/O-ms": TypeTimeMicroseconds,
+	},
 }
 
 // IO represents 'proc/$PID/io'

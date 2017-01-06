@@ -87,6 +87,7 @@ func GetDiskstats() ([]DiskStat, error) {
 			return nil, err
 		}
 		d.TimeSpentOnReadingMs = mn
+		d.TimeSpentOnReadingMsParsedTime = humanizeDurationMs(mn)
 
 		mn, err = strconv.ParseUint(ds[proc_diskstats_idx_writes_completed], 10, 64)
 		if err != nil {
@@ -111,6 +112,7 @@ func GetDiskstats() ([]DiskStat, error) {
 			return nil, err
 		}
 		d.TimeSpentOnWritingMs = mn
+		d.TimeSpentOnWritingMsParsedTime = humanizeDurationMs(mn)
 
 		mn, err = strconv.ParseUint(ds[proc_diskstats_idx_io_in_progress], 10, 64)
 		if err != nil {
@@ -123,12 +125,14 @@ func GetDiskstats() ([]DiskStat, error) {
 			return nil, err
 		}
 		d.TimeSpentOnIOMs = mn
+		d.TimeSpentOnIOMsParsedTime = humanizeDurationMs(mn)
 
 		mn, err = strconv.ParseUint(ds[proc_diskstats_idx_weighted_time_spent_on_io_ms], 10, 64)
 		if err != nil {
 			return nil, err
 		}
 		d.WeightedTimeSpentOnIOMs = mn
+		d.WeightedTimeSpentOnIOMsParsedTime = humanizeDurationMs(mn)
 
 		dss = append(dss, d)
 	}

@@ -57,7 +57,7 @@ func generate(raw schema.RawData) string {
 					goFieldTagName,
 				))
 
-			case schema.TypeTimeSeconds:
+			case schema.TypeTimeMicroseconds, schema.TypeTimeSeconds:
 				buf.WriteString(fmt.Sprintf("\t%sParsedTime\tstring\t`%s:\"%s_parsed_time\"`\n",
 					goFieldName,
 					tagstr,

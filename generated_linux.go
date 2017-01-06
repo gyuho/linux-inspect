@@ -1,6 +1,6 @@
 package psn
 
-// updated at 2017-01-05 20:01:11.132200249 -0800 PST
+// updated at 2017-01-05 20:45:22.77683144 -0800 PST
 
 // Proc represents '/proc' in Linux.
 type Proc struct {
@@ -119,7 +119,8 @@ type DiskStat struct {
 	// SectorsRead is total number of sectors read successfully.
 	SectorsRead uint64 `column:"sectors_read"`
 	// TimeSpentOnReadingMs is total number of milliseconds spent by all reads.
-	TimeSpentOnReadingMs uint64 `column:"time_spent_on_reading_ms"`
+	TimeSpentOnReadingMs           uint64 `column:"time_spent_on_reading_ms"`
+	TimeSpentOnReadingMsParsedTime string `column:"time_spent_on_reading_ms_parsed_time"`
 	// WritesCompleted is total number of writes completed successfully.
 	WritesCompleted uint64 `column:"writes_completed"`
 	// WritesMerged is total number of writes merged when adjacent to each other.
@@ -127,13 +128,16 @@ type DiskStat struct {
 	// SectorsWritten is total number of sectors written successfully.
 	SectorsWritten uint64 `column:"sectors_written"`
 	// TimeSpentOnWritingMs is total number of milliseconds spent by all writes.
-	TimeSpentOnWritingMs uint64 `column:"time_spent_on_writing_ms"`
+	TimeSpentOnWritingMs           uint64 `column:"time_spent_on_writing_ms"`
+	TimeSpentOnWritingMsParsedTime string `column:"time_spent_on_writing_ms_parsed_time"`
 	// IOInProgress is only field that should go to zero (incremented as requests are on request_queue).
 	IOInProgress uint64 `column:"io_in_progress"`
 	// TimeSpentOnIOMs is milliseconds spent doing I/Os.
-	TimeSpentOnIOMs uint64 `column:"time_spent_on_io_ms"`
+	TimeSpentOnIOMs           uint64 `column:"time_spent_on_io_ms"`
+	TimeSpentOnIOMsParsedTime string `column:"time_spent_on_io_ms_parsed_time"`
 	// WeightedTimeSpentOnIOMs is weighted milliseconds spent doing I/Os (incremented at each I/O start, I/O completion, I/O merge).
-	WeightedTimeSpentOnIOMs uint64 `column:"weighted_time_spent_on_io_ms"`
+	WeightedTimeSpentOnIOMs           uint64 `column:"weighted_time_spent_on_io_ms"`
+	WeightedTimeSpentOnIOMsParsedTime string `column:"weighted_time_spent_on_io_ms_parsed_time"`
 }
 
 // IO is '/proc/$PID/io' in Linux.
