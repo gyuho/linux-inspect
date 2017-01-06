@@ -65,7 +65,12 @@ func generate(raw schema.RawData) string {
 				))
 
 			case schema.TypeIPAddress:
-				buf.WriteString(fmt.Sprintf("\t%sParsedIPAddress\tstring\t`%s:\"%s_parsed_ip_address\"`\n",
+				buf.WriteString(fmt.Sprintf("\t%sParsedIPHost\tstring\t`%s:\"%s_parsed_ip_host\"`\n",
+					goFieldName,
+					tagstr,
+					goFieldTagName,
+				))
+				buf.WriteString(fmt.Sprintf("\t%sParsedIPPort\tint64\t`%s:\"%s_parsed_ip_port\"`\n",
 					goFieldName,
 					tagstr,
 					goFieldTagName,
@@ -95,6 +100,7 @@ func main() {
 
 // Proc represents '/proc' in Linux.
 type Proc struct {
+	PID      int64
 	NetStat  NetStat
 	Uptime   Uptime
 	DiskStat DiskStat
@@ -109,6 +115,9 @@ type Proc struct {
 	buf.WriteString(`// NetStat is '/proc/net/tcp', '/proc/net/tcp6' in Linux.
 type NetStat struct {
 `)
+	for _, line := range additionalFieldsNetstat {
+		buf.WriteString(fmt.Sprintf("\t%s\n", line))
+	}
 	buf.WriteString(generate(schema.NetStat))
 	buf.WriteString("}\n\n")
 
@@ -191,6 +200,10 @@ func toFile(txt, fpath string) error {
 		return err
 	}
 	return nil
+}
+
+var additionalFieldsNetstat = [...]string{
+	"Protocol string `column:\"protocol\"`",
 }
 
 var additionalFieldsStat = [...]string{

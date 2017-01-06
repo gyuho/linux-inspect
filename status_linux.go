@@ -16,7 +16,7 @@ import (
 // GetStatus reads /proc/$PID/status data.
 func GetStatus(pid int64) (s Status, err error) {
 	for i := 0; i < 5; i++ {
-		s, err = getStatus(pid)
+		s, err = parseProcStatus(pid)
 		if err == nil {
 			return s, nil
 		}
@@ -26,7 +26,7 @@ func GetStatus(pid int64) (s Status, err error) {
 	return
 }
 
-func getStatus(pid int64) (Status, error) {
+func parseProcStatus(pid int64) (Status, error) {
 	fpath := fmt.Sprintf("/proc/%d/status", pid)
 	f, err := openToRead(fpath)
 	if err != nil {

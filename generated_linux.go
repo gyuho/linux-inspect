@@ -1,9 +1,10 @@
 package psn
 
-// updated at 2017-01-05 16:21:26.618244069 -0800 PST
+// updated at 2017-01-05 16:56:34.732317207 -0800 PST
 
 // Proc represents '/proc' in Linux.
 type Proc struct {
+	PID      int64
 	NetStat  NetStat
 	Uptime   Uptime
 	DiskStat DiskStat
@@ -14,14 +15,17 @@ type Proc struct {
 
 // NetStat is '/proc/net/tcp', '/proc/net/tcp6' in Linux.
 type NetStat struct {
+	Protocol string `column:"protocol"`
 	// Sl is kernel hash slot.
 	Sl uint64 `column:"sl"`
 	// LocalAddress is local-address:port.
-	LocalAddress                string `column:"local_address"`
-	LocalAddressParsedIPAddress string `column:"local_address_parsed_ip_address"`
+	LocalAddress             string `column:"local_address"`
+	LocalAddressParsedIPHost string `column:"local_address_parsed_ip_host"`
+	LocalAddressParsedIPPort int64  `column:"local_address_parsed_ip_port"`
 	// RemAddress is remote-address:port.
-	RemAddress                string `column:"rem_address"`
-	RemAddressParsedIPAddress string `column:"rem_address_parsed_ip_address"`
+	RemAddress             string `column:"rem_address"`
+	RemAddressParsedIPHost string `column:"rem_address_parsed_ip_host"`
+	RemAddressParsedIPPort int64  `column:"rem_address_parsed_ip_port"`
 	// St is internal status of socket.
 	St             string `column:"st"`
 	StParsedStatus string `column:"st_parsed_status"`

@@ -19,7 +19,7 @@ import (
 // GetStat reads /proc/$PID/stat data.
 func GetStat(pid int64, up Uptime) (s Stat, err error) {
 	for i := 0; i < 5; i++ {
-		s, err = getStat(pid, up)
+		s, err = parseProcStat(pid, up)
 		if err == nil {
 			return s, nil
 		}
@@ -29,7 +29,7 @@ func GetStat(pid int64, up Uptime) (s Stat, err error) {
 	return
 }
 
-func getStat(pid int64, up Uptime) (Stat, error) {
+func parseProcStat(pid int64, up Uptime) (Stat, error) {
 	fpath := fmt.Sprintf("/proc/%d/stat", pid)
 	f, err := openToRead(fpath)
 	if err != nil {
