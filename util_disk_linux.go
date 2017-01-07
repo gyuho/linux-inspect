@@ -9,7 +9,8 @@ import (
 
 // GetDevice returns the device name where dir is mounted.
 // It parses '/etc/mtab'.
-// TODO: use this just to make it easierto find!
+// TODO: this is only useful for making it easier to find
+// current device name.
 func GetDevice(mounted string) (string, error) {
 	f, err := openToRead("/etc/mtab")
 	if err != nil {
