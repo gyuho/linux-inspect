@@ -7,6 +7,8 @@ go:
 
 script:
 - ./test
-- go get -v -u -f github.com/gyuho/psn/cmd/psn
-- psn process
-- psn socket
+- go get -v github.com/gyuho/psn/cmd/psn
+- psn ds
+- psn ns
+- psn ps --top 5
+- psn ss --top 5
