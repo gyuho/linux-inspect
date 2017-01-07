@@ -6,6 +6,6 @@ import (
 )
 
 func TestGetDevice(t *testing.T) {
-	s, err := GetDevice("/")
+	s, err := GetDevice("/boot")
 	fmt.Println(s, err)
 }

@@ -3,13 +3,13 @@ package psn
 import (
 	"bufio"
 	"fmt"
+	"path/filepath"
 	"strings"
 )
 
 // GetDevice returns the device name where dir is mounted.
 // It parses '/etc/mtab'.
-//
-// TODO: fix this!
+// TODO: use this just to make it easierto find!
 func GetDevice(mounted string) (string, error) {
 	f, err := openToRead("/etc/mtab")
 	if err != nil {
@@ -32,7 +32,7 @@ func GetDevice(mounted string) (string, error) {
 		dev := strings.TrimSpace(fields[0])
 		at := strings.TrimSpace(fields[1])
 		if mounted == at {
-			return dev, nil
+			return filepath.Base(dev), nil
 		}
 	}
 

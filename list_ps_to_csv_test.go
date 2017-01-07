@@ -6,7 +6,7 @@ import (
 )
 
 func Test_getRow(t *testing.T) {
-	dn, err := GetDevice("/")
+	dn, err := GetDevice("/boot")
 	if err != nil {
 		fmt.Println(err)
 		t.Skip()
