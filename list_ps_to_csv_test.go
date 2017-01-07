@@ -3,12 +3,10 @@ package psn
 import (
 	"fmt"
 	"testing"
-
-	"github.com/coreos/etcd/pkg/netutil"
 )
 
 func Test_getRow(t *testing.T) {
-	nt, err := netutil.GetDefaultInterface()
+	nt, err := GetDefaultInterface()
 	if err != nil {
 		t.Fatal(err)
 	}
