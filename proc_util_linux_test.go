@@ -34,3 +34,8 @@ func TestGetProgram(t *testing.T) {
 	}
 	fmt.Println("GetProgram:", nm)
 }
+
+func TestGetDevice(t *testing.T) {
+	s, err := GetDevice("/")
+	fmt.Println(s, err)
+}

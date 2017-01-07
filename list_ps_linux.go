@@ -182,21 +182,22 @@ const columnsPSToShow = 9
 
 var columnsPSEntry = []string{
 	"PROGRAM",
+
 	"STATE",
 	"PID",
 	"PPID",
 
 	"CPU",
 	"VMRSS",
-	"VMSize",
+	"VMSIZE",
 
 	"FD",
-	"Threads",
+	"THREADS",
 
 	// extra for sorting
 	"CPU-NUM",
 	"VMRSS-NUM",
-	"VMSizeNum-NUM",
+	"VMSIZE-NUM",
 }
 
 // ConvertPS converts to rows.
@@ -206,6 +207,7 @@ func ConvertPS(nss ...PSEntry) (header []string, rows [][]string) {
 	for i, elem := range nss {
 		row := make([]string, len(columnsPSEntry))
 		row[0] = elem.Program
+
 		row[1] = elem.State
 		row[2] = fmt.Sprintf("%d", elem.PID)
 		row[3] = fmt.Sprintf("%d", elem.PPID)

@@ -1,6 +1,8 @@
 package psn
 
 import (
+	"bufio"
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"strconv"
@@ -47,9 +49,41 @@ func pidFromFd(s string) (int64, error) {
 func GetProgram(pid int64) (string, error) {
 	// Readlink needs root permission
 	// return os.Readlink(fmt.Sprintf("/proc/%d/exe", pid))
+
 	rs, err := rawProcStatus(pid)
 	if err != nil {
 		return "", err
 	}
 	return rs.Name, nil
+}
+
+// GetDevice returns the device name where dir is mounted.
+// It parses '/etc/mtab'.
+func GetDevice(mounted string) (string, error) {
+	f, err := openToRead("/etc/mtab")
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		txt := scanner.Text()
+		if len(txt) == 0 {
+			continue
+		}
+
+		fields := strings.Fields(txt)
+		if len(fields) < 2 {
+			continue
+		}
+
+		dev := strings.TrimSpace(fields[0])
+		at := strings.TrimSpace(fields[1])
+		if mounted == at {
+			return dev, nil
+		}
+	}
+
+	return "", fmt.Errorf("no device found, mounted at %q", mounted)
 }
