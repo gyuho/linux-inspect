@@ -116,41 +116,21 @@ func WriteSSCSVHeader(fpath string) error {
 // to collect all data wit psn utilities and keeps appending
 // rows to a CSV file. Optional columns (diskstats, network I/O stats)
 // may be added.
-func AppendSSCSV(pid int64, fpath string) error {
-	// get process stats
-	ets, err := GetPS(WithPID(pid))
-	if err != nil {
-		return err
-	}
-	if len(ets) != 1 {
-		return fmt.Errorf("len(PID=%d entries) != 1 (got %d)", pid, len(ets))
-	}
-	entry := ets[0]
-	fmt.Println(entry)
-
-	// get diskstats
-	ds, err := GetDS()
-	if err != nil {
-		return err
-	}
-	// TODO: filter by device name
-	fmt.Println(ds)
-
-	// get network I/O stats
-	ns, err := GetNS()
-	if err != nil {
-		return err
-	}
-	// TODO: filter by network interface
-	fmt.Println(ns)
-
+func AppendSSCSV(fpath string, pid int64, diskDevice string, networkInterface string) error {
 	f, err := openToAppend(fpath)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
+	row, err := getRow(pid, diskDevice, networkInterface)
+	if err != nil {
+		return err
+	}
 	wr := csv.NewWriter(f)
+	if err := wr.Write(row); err != nil {
+		return err
+	}
 
 	wr.Flush()
 	return wr.Error()
