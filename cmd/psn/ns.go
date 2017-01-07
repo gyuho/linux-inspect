@@ -9,24 +9,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type nsFlags struct {
-}
-
 var (
 	nsCommand = &cobra.Command{
 		Use:   "ns",
-		Short: "Inspects /proc/net/dev",
+		Short: "Inspects '/proc/net/dev'",
 		RunE:  nsCommandFunc,
 	}
-	nsCmdFlag = nsFlags{}
 )
-
-func init() {
-}
 
 func nsCommandFunc(cmd *cobra.Command, args []string) error {
 	color.Set(color.FgMagenta)
-	fmt.Fprintf(os.Stdout, "\n'ds' to inspect '/proc/net/dev'\n\n")
+	fmt.Fprintf(os.Stdout, "\n'ns' to inspect '/proc/net/dev'\n\n")
 	color.Unset()
 
 	ns, err := psn.GetNS()

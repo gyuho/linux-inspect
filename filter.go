@@ -82,7 +82,7 @@ func (ft *EntryFilter) applyOpts(opts []FilterFunc) {
 		// choose both
 		ft.TCP, ft.TCP6 = true, true
 	}
-	if ft.LocalPort != 0 && ft.RemotePort != 0 {
+	if ft.LocalPort > 0 && ft.RemotePort > 0 {
 		panic(fmt.Errorf("can't query by both local(%d) and remote(%d) ports", ft.LocalPort, ft.RemotePort))
 	}
 }

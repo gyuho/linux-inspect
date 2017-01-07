@@ -9,24 +9,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type dsFlags struct {
-}
-
 var (
 	dsCommand = &cobra.Command{
 		Use:   "ds",
-		Short: "Inspects disk statistics",
+		Short: "Inspects '/proc/diskstats'",
 		RunE:  dsCommandFunc,
 	}
-	dsCmdFlag = dsFlags{}
 )
-
-func init() {
-}
 
 func dsCommandFunc(cmd *cobra.Command, args []string) error {
 	color.Set(color.FgMagenta)
-	fmt.Fprintf(os.Stdout, "\n'ds' to inspect disk statistics\n\n")
+	fmt.Fprintf(os.Stdout, "\n'ds' to inspect '/proc/diskstats'\n\n")
 	color.Unset()
 
 	ds, err := psn.GetDS()

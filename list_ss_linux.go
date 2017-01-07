@@ -68,7 +68,7 @@ func GetSS(opts ...FilterFunc) (sss []SSEntry, err error) {
 				go func(pid int64) {
 					defer wg.Done()
 
-					ents, err := getSSEntry(pid, TypeTCP)
+					ents, err := getSSEntry(pid, TypeTCP, ft.LocalPort, ft.RemotePort)
 					if err != nil {
 						log.Printf("getSSEntry error %v for PID %d", err, pid)
 						return
@@ -90,7 +90,7 @@ func GetSS(opts ...FilterFunc) (sss []SSEntry, err error) {
 				go func(pid int64) {
 					defer wg.Done()
 
-					ents, err := getSSEntry(pid, TypeTCP6)
+					ents, err := getSSEntry(pid, TypeTCP6, ft.LocalPort, ft.RemotePort)
 					if err != nil {
 						log.Printf("getSSEntry error %v for PID %d", err, pid)
 						return
@@ -145,7 +145,7 @@ func GetSS(opts ...FilterFunc) (sss []SSEntry, err error) {
 						return
 					}
 
-					ents, err := getSSEntry(pid, TypeTCP)
+					ents, err := getSSEntry(pid, TypeTCP, ft.LocalPort, ft.RemotePort)
 					if err != nil {
 						log.Printf("getSSEntry error %v for PID %d", err, pid)
 						return
@@ -176,7 +176,7 @@ func GetSS(opts ...FilterFunc) (sss []SSEntry, err error) {
 						return
 					}
 
-					ents, err := getSSEntry(pid, TypeTCP6)
+					ents, err := getSSEntry(pid, TypeTCP6, ft.LocalPort, ft.RemotePort)
 					if err != nil {
 						log.Printf("getSSEntry error %v for PID %d", err, pid)
 						return
@@ -197,7 +197,7 @@ func GetSS(opts ...FilterFunc) (sss []SSEntry, err error) {
 	return
 }
 
-func getSSEntry(pid int64, tp TransportProtocol) (sss []SSEntry, err error) {
+func getSSEntry(pid int64, tp TransportProtocol, lport int64, rport int64) (sss []SSEntry, err error) {
 	nss, nerr := GetNetTCP(pid, tp)
 	if nerr != nil {
 		return nil, nerr
@@ -211,6 +211,12 @@ func getSSEntry(pid int64, tp TransportProtocol) (sss []SSEntry, err error) {
 		u, uerr := user.LookupId(fmt.Sprintf("%d", elem.Uid))
 		if uerr != nil {
 			return nil, uerr
+		}
+		if lport > 0 && lport != elem.LocalAddressParsedIPPort {
+			continue
+		}
+		if rport > 0 && rport != elem.RemAddressParsedIPPort {
+			continue
 		}
 		entry := SSEntry{
 			Protocol: elem.Type,

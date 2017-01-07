@@ -18,6 +18,8 @@ var (
 func init() {
 	command.AddCommand(dsCommand)
 	command.AddCommand(nsCommand)
+	command.AddCommand(psCommand)
+	command.AddCommand(ssCommand)
 }
 
 func init() {
