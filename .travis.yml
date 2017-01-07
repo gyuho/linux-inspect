@@ -9,3 +9,4 @@ script:
 - ./test
 - go get -v github.com/gyuho/psn/cmd/psn
 - psn ds
+- psn ns

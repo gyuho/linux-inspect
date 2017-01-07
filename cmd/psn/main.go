@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	Command = &cobra.Command{
+	command = &cobra.Command{
 		Use:        "psn",
 		Short:      "psn inspects Linux processes, sockets (ps, ss, netstat).",
 		SuggestFor: []string{"pssn", "psns", "snp"},
@@ -16,7 +16,8 @@ var (
 )
 
 func init() {
-	Command.AddCommand(dsCommand)
+	command.AddCommand(dsCommand)
+	command.AddCommand(nsCommand)
 }
 
 func init() {
@@ -24,7 +25,7 @@ func init() {
 }
 
 func main() {
-	if err := Command.Execute(); err != nil {
+	if err := command.Execute(); err != nil {
 		fmt.Fprintln(os.Stdout, err)
 		os.Exit(1)
 	}

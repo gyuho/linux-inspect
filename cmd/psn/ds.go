@@ -38,7 +38,7 @@ func dsCommandFunc(cmd *cobra.Command, args []string) error {
 	fmt.Print(txt)
 
 	color.Set(color.FgGreen)
-	fmt.Fprintf(os.Stdout, "\nDONE\n")
+	fmt.Fprintf(os.Stdout, "\nDONE!\n")
 	color.Unset()
 
 	return nil
