@@ -26,12 +26,7 @@ func TestAppendSSCSV(t *testing.T) {
 	fmt.Println(psCSVColumns)
 	fmt.Println(row)
 
-	if err = os.MkdirAll("testdata", 0777); err != nil {
-		fmt.Println(err)
-		t.Skip()
-	}
-
-	fpath := filepath.Join("testdata", fmt.Sprintf("test-%010d.csv", rand.Intn(999999)))
+	fpath := filepath.Join(os.TempDir(), fmt.Sprintf("test-%010d.csv", rand.Intn(999999)))
 	defer os.RemoveAll(fpath)
 
 	if err := WriteSSCSVHeader(fpath); err != nil {
