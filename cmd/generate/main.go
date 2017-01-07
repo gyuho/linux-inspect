@@ -1,4 +1,4 @@
-// generate generates ps struct based on the schema.
+// generate generates psn struct based on the schema.
 package main
 
 import (

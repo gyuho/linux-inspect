@@ -1,3 +1,4 @@
+// psn inspects Linux processes, sockets (ps, ss, netstat).
 package main
 
 import (
