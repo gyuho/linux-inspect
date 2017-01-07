@@ -34,13 +34,3 @@ func TestGetProgram(t *testing.T) {
 	}
 	fmt.Println("GetProgram:", nm)
 }
-
-func TestGetDevice(t *testing.T) {
-	s, err := GetDevice("/")
-	fmt.Println(s, err)
-}
-
-func TestGetDefaultInterface(t *testing.T) {
-	s, err := GetDefaultInterface()
-	fmt.Println(s, err)
-}
