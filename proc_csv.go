@@ -213,35 +213,102 @@ func NewCSV(fpath string, pid int64, diskDevice string, networkInterface string)
 }
 
 // Add is to be called periodically to add a row to CSV.
-// It only appends to CSV.
+// It only appends to CSV. And it estimates empty rows by unix timestamps(seconds).
 func (c *CSV) Add() error {
-	proc, err := GetProc(c.PID, c.DiskDevice, c.NetworkInterface)
+	cur, err := GetProc(c.PID, c.DiskDevice, c.NetworkInterface)
 	if err != nil {
 		return err
 	}
 	if len(c.Rows) == 0 {
-		c.MinUnixTS = proc.UnixTS
-		c.MaxUnixTS = proc.UnixTS
-		c.Rows = []Proc{proc}
+		c.MinUnixTS = cur.UnixTS
+		c.MaxUnixTS = cur.UnixTS
+		c.Rows = []Proc{cur}
 		return nil
 	}
-	c.MaxUnixTS = proc.UnixTS
-	last := c.Rows[len(c.Rows)-1]
+	prev := c.Rows[len(c.Rows)-1]
+	if prev.UnixTS >= cur.UnixTS {
+		// ignore data with wrong timestamps
+		return nil
+	}
+	c.MaxUnixTS = cur.UnixTS
 
-	proc.ReadsCompletedDiff = proc.DSEntry.ReadsCompleted - last.DSEntry.ReadsCompleted
-	proc.SectorsReadDiff = proc.DSEntry.SectorsRead - last.DSEntry.SectorsRead
-	proc.WritesCompletedDiff = proc.DSEntry.WritesCompleted - last.DSEntry.WritesCompleted
-	proc.SectorsWrittenDiff = proc.DSEntry.SectorsWritten - last.DSEntry.SectorsWritten
+	cur.ReadsCompletedDiff = cur.DSEntry.ReadsCompleted - prev.DSEntry.ReadsCompleted
+	cur.SectorsReadDiff = cur.DSEntry.SectorsRead - prev.DSEntry.SectorsRead
+	cur.WritesCompletedDiff = cur.DSEntry.WritesCompleted - prev.DSEntry.WritesCompleted
+	cur.SectorsWrittenDiff = cur.DSEntry.SectorsWritten - prev.DSEntry.SectorsWritten
 
-	proc.ReceiveBytesNumDiff = proc.NSEntry.ReceiveBytesNum - last.NSEntry.ReceiveBytesNum
-	proc.TransmitBytesNumDiff = proc.NSEntry.TransmitBytesNum - last.NSEntry.TransmitBytesNum
-	proc.ReceivePacketsDiff = proc.NSEntry.ReceivePackets - last.NSEntry.ReceivePackets
-	proc.TransmitPacketsDiff = proc.NSEntry.TransmitPackets - last.NSEntry.TransmitPackets
+	cur.ReceiveBytesNumDiff = cur.NSEntry.ReceiveBytesNum - prev.NSEntry.ReceiveBytesNum
+	cur.TransmitBytesNumDiff = cur.NSEntry.TransmitBytesNum - prev.NSEntry.TransmitBytesNum
+	cur.ReceivePacketsDiff = cur.NSEntry.ReceivePackets - prev.NSEntry.ReceivePackets
+	cur.TransmitPacketsDiff = cur.NSEntry.TransmitPackets - prev.NSEntry.TransmitPackets
 
-	proc.ReceiveBytesDiff = humanize.Bytes(proc.ReceiveBytesNumDiff)
-	proc.TransmitBytesDiff = humanize.Bytes(proc.TransmitBytesNumDiff)
+	cur.ReceiveBytesDiff = humanize.Bytes(cur.ReceiveBytesNumDiff)
+	cur.TransmitBytesDiff = humanize.Bytes(cur.TransmitBytesNumDiff)
 
-	c.Rows = append(c.Rows, proc)
+	var nexts []Proc
+
+	// see if there are empty rows between
+	if (cur.UnixTS - prev.UnixTS) > 1 {
+		tsDiff := cur.UnixTS - prev.UnixTS
+		nexts = make([]Proc, 0, tsDiff+1)
+
+		// estimate the previous ones based on 'prev' and 'cur'
+		prev2 := prev
+
+		// PSEntry; just use average since some metrisc might decrease
+		prev2.PSEntry.FD = prev.PSEntry.FD + (cur.PSEntry.FD-prev.PSEntry.FD)/2
+		prev2.PSEntry.Threads = prev.PSEntry.Threads + (cur.PSEntry.Threads-prev.PSEntry.Threads)/2
+		prev2.PSEntry.CPUNum = prev.PSEntry.CPUNum + (cur.PSEntry.CPUNum-prev.PSEntry.CPUNum)/2
+		prev2.PSEntry.VMRSSNum = prev.PSEntry.VMRSSNum + (cur.PSEntry.VMRSSNum-prev.PSEntry.VMRSSNum)/2
+		prev2.PSEntry.VMSizeNum = prev.PSEntry.VMSizeNum + (cur.PSEntry.VMSizeNum-prev.PSEntry.VMSizeNum)/2
+		prev2.PSEntry.CPU = fmt.Sprintf("%3.2f %%", prev2.PSEntry.CPUNum)
+		prev2.PSEntry.VMRSS = humanize.Bytes(prev2.PSEntry.VMRSSNum)
+		prev2.PSEntry.VMSize = humanize.Bytes(prev2.PSEntry.VMSizeNum)
+
+		// DSEntry; calculate delta assuming that metrics are cumulative
+		prev2.ReadsCompletedDiff = (cur.DSEntry.ReadsCompleted - prev.DSEntry.ReadsCompleted) / uint64(tsDiff)
+		prev2.SectorsReadDiff = (cur.DSEntry.SectorsRead - prev.DSEntry.SectorsRead) / uint64(tsDiff)
+		prev2.WritesCompletedDiff = (cur.DSEntry.WritesCompleted - prev.DSEntry.WritesCompleted) / uint64(tsDiff)
+		prev2.SectorsWrittenDiff = (cur.DSEntry.SectorsWritten - prev.DSEntry.SectorsWritten) / uint64(tsDiff)
+		timeSpentOnReadingMsDelta := (cur.DSEntry.TimeSpentOnReadingMs - prev.DSEntry.TimeSpentOnReadingMs) / uint64(tsDiff)
+		timeSpentOnWritingMsDelta := (cur.DSEntry.TimeSpentOnWritingMs - prev.DSEntry.TimeSpentOnWritingMs) / uint64(tsDiff)
+
+		// NSEntry; calculate delta assuming that metrics are cumulative
+		prev2.ReceiveBytesNumDiff = (cur.NSEntry.ReceiveBytesNum - prev.NSEntry.ReceiveBytesNum) / uint64(tsDiff)
+		prev2.ReceiveBytesDiff = humanize.Bytes(prev2.ReceiveBytesNumDiff)
+		prev2.ReceivePacketsDiff = (cur.NSEntry.ReceivePackets - prev.NSEntry.ReceivePackets) / uint64(tsDiff)
+		prev2.TransmitBytesNumDiff = (cur.NSEntry.TransmitBytesNum - prev.NSEntry.TransmitBytesNum) / uint64(tsDiff)
+		prev2.TransmitBytesDiff = humanize.Bytes(prev2.TransmitBytesNumDiff)
+		prev2.TransmitPacketsDiff = (cur.NSEntry.TransmitPackets - prev.NSEntry.TransmitPackets) / uint64(tsDiff)
+
+		for i := int64(1); i < tsDiff; i++ {
+			ev := prev2
+			ev.UnixTS = prev.UnixTS + i
+
+			ev.DSEntry.ReadsCompleted += prev2.ReadsCompletedDiff * uint64(i)
+			ev.DSEntry.SectorsRead += prev2.SectorsReadDiff * uint64(i)
+			ev.DSEntry.WritesCompleted += prev2.WritesCompletedDiff * uint64(i)
+			ev.DSEntry.SectorsWritten += prev2.SectorsWrittenDiff * uint64(i)
+			ev.DSEntry.TimeSpentOnReadingMs += timeSpentOnReadingMsDelta * uint64(i)
+			ev.DSEntry.TimeSpentOnWritingMs += timeSpentOnWritingMsDelta * uint64(i)
+			ev.DSEntry.TimeSpentOnReading = humanizeDurationMs(ev.DSEntry.TimeSpentOnReadingMs)
+			ev.DSEntry.TimeSpentOnWriting = humanizeDurationMs(ev.DSEntry.TimeSpentOnWritingMs)
+
+			ev.NSEntry.ReceiveBytesNum += prev2.ReceiveBytesNumDiff * uint64(i)
+			ev.NSEntry.ReceiveBytes = humanize.Bytes(ev.NSEntry.ReceiveBytesNum)
+			ev.NSEntry.ReceivePackets += prev2.ReceivePacketsDiff * uint64(i)
+			ev.NSEntry.TransmitBytesNum += prev2.TransmitBytesNumDiff * uint64(i)
+			ev.NSEntry.TransmitBytes = humanize.Bytes(ev.NSEntry.TransmitBytesNum)
+			ev.NSEntry.TransmitPackets += prev2.TransmitPacketsDiff * uint64(i)
+
+			nexts = append(nexts, ev)
+		}
+		nexts = append(nexts, cur)
+	} else {
+		nexts = []Proc{cur}
+	}
+
+	c.Rows = append(c.Rows, nexts...)
 	return nil
 }
 
@@ -258,7 +325,6 @@ func (c *CSV) Save() error {
 		return err
 	}
 
-	// TODO: get pre-processed delta
 	rows := make([][]string, len(c.Rows))
 	for i, row := range c.Rows {
 		rows[i] = row.ToRow()
