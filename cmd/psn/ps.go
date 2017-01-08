@@ -27,7 +27,7 @@ var (
 func init() {
 	psCommand.PersistentFlags().StringVarP(&psCmdFlag.program, "program", "s", "", "Specify the program name.")
 	psCommand.PersistentFlags().Int64VarP(&psCmdFlag.pid, "pid", "p", -1, "Specify the PID.")
-	psCommand.PersistentFlags().IntVarP(&psCmdFlag.top, "top", "t", -1, "Limit the number results to return.")
+	psCommand.PersistentFlags().IntVarP(&psCmdFlag.top, "top", "t", 5, "Limit the number results to return.")
 }
 
 func psCommandFunc(cmd *cobra.Command, args []string) error {
