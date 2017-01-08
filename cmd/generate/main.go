@@ -98,23 +98,8 @@ func main() {
 
 // updated at ` + nowPST().String() + `
 
-// Proc represents '/proc' in Linux.
-type Proc struct {
-	PID int64
-
-	NetDev NetDev
-	NetTCP NetTCP
-
-	Uptime   Uptime
-
-	DiskStat DiskStat
-	IO       IO
-
-	Stat   Stat
-	Status Status
-}
-
 `)
+
 	// '/proc/net/dev'
 	buf.WriteString(`// NetDev is '/proc/net/dev' in Linux.
 // The dev pseudo-file contains network device status information.

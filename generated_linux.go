@@ -1,22 +1,6 @@
 package psn
 
-// updated at 2017-01-06 14:10:47.525231468 -0800 PST
-
-// Proc represents '/proc' in Linux.
-type Proc struct {
-	PID int64
-
-	NetDev NetDev
-	NetTCP NetTCP
-
-	Uptime Uptime
-
-	DiskStat DiskStat
-	IO       IO
-
-	Stat   Stat
-	Status Status
-}
+// updated at 2017-01-08 13:43:03.746568457 -0800 PST
 
 // NetDev is '/proc/net/dev' in Linux.
 // The dev pseudo-file contains network device status information.
