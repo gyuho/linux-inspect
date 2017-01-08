@@ -22,6 +22,7 @@ func GetIO(pid int64) (s IO, err error) {
 	}
 	return
 }
+
 func parseProcIO(pid int64) (IO, error) {
 	fpath := fmt.Sprintf("/proc/%d/io", pid)
 	f, err := openToRead(fpath)

@@ -22,17 +22,22 @@ if [ -n "${vetRes}" ]; then
 fi
 
 echo "Checking govet -shadow..."
-vetRes=$(go tool vet -shadow ./ps/*.go)
+vetRes=$(go tool vet -shadow ./*.go)
 if [ -n "${vetRes}" ]; then
 	echo -e "govet -shadow checking failed:\n${vetRes}"
 	exit 255
 fi
-vetRes=$(go tool vet -shadow ./ss/*.go)
+vetRes=$(go tool vet -shadow ./schema/*.go)
 if [ -n "${vetRes}" ]; then
 	echo -e "govet -shadow checking failed:\n${vetRes}"
 	exit 255
 fi
-vetRes=$(go tool vet -shadow ./tablesorter/*.go)
+vetRes=$(go tool vet -shadow ./cmd/generate/*.go)
+if [ -n "${vetRes}" ]; then
+	echo -e "govet -shadow checking failed:\n${vetRes}"
+	exit 255
+fi
+vetRes=$(go tool vet -shadow ./cmd/psn/*.go)
 if [ -n "${vetRes}" ]; then
 	echo -e "govet -shadow checking failed:\n${vetRes}"
 	exit 255
