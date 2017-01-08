@@ -270,3 +270,9 @@ func (c *CSV) Save() error {
 	wr.Flush()
 	return wr.Error()
 }
+
+// ReadCSV reads a CSV file and convert to 'CSV'.
+func ReadCSV(fpath string) (*CSV, error) {
+	// TODO
+	return nil, nil
+}
