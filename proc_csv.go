@@ -3,6 +3,7 @@ package psn
 import (
 	"encoding/csv"
 	"fmt"
+	"strconv"
 	"time"
 
 	humanize "github.com/dustin/go-humanize"
@@ -10,7 +11,8 @@ import (
 
 // Proc represents an entry of various system statistics.
 type Proc struct {
-	UnixTS  int64
+	UnixTS int64
+
 	PSEntry PSEntry
 
 	DSEntry             DSEntry
@@ -97,18 +99,18 @@ func GetProc(pid int64, diskDevice string, networkInterface string) (Proc, error
 }
 
 var (
-	// ProcCSVHeader lists all Proc CSV columns.
-	ProcCSVHeader = append([]string{"UNIX-TS"}, columnsPSEntry...)
+	// CSVHeader lists all Proc CSV columns.
+	CSVHeader = append([]string{"UNIX-TS"}, columnsPSEntry...)
 
-	// ProcCSVHeaderIndex maps each column name to its index in row.
-	ProcCSVHeaderIndex = make(map[string]int)
+	// CSVHeaderIndex maps each column name to its index in row.
+	CSVHeaderIndex = make(map[string]int)
 )
 
 func init() {
-	// more columns to 'ProcCSVHeader'
-	ProcCSVHeader = append(ProcCSVHeader, columnsDSEntry...)
-	ProcCSVHeader = append(ProcCSVHeader, columnsNSEntry...)
-	ProcCSVHeader = append(ProcCSVHeader,
+	// more columns to 'CSVHeader'
+	CSVHeader = append(CSVHeader, columnsDSEntry...)
+	CSVHeader = append(CSVHeader, columnsNSEntry...)
+	CSVHeader = append(CSVHeader,
 		"READS-COMPLETED-DIFF",
 		"SECTORS-READ-DIFF",
 		"WRITES-COMPLETED-DIFF",
@@ -122,14 +124,14 @@ func init() {
 		"TRANSMIT-BYTES-NUM-DIFF",
 	)
 
-	for i, v := range ProcCSVHeader {
-		ProcCSVHeaderIndex[v] = i
+	for i, v := range CSVHeader {
+		CSVHeaderIndex[v] = i
 	}
 }
 
 // ToRow converts 'Proc' to string slice.
 func (p *Proc) ToRow() (row []string) {
-	row = make([]string, len(ProcCSVHeader))
+	row = make([]string, len(CSVHeader))
 	row[0] = fmt.Sprintf("%d", p.UnixTS) // UNIX-TS
 
 	row[1] = p.PSEntry.Program                       // PROGRAM
@@ -202,8 +204,8 @@ func NewCSV(fpath string, pid int64, diskDevice string, networkInterface string)
 		DiskDevice:       diskDevice,
 		NetworkInterface: networkInterface,
 
-		Header:      ProcCSVHeader,
-		HeaderIndex: ProcCSVHeaderIndex,
+		Header:      CSVHeader,
+		HeaderIndex: CSVHeaderIndex,
 
 		MinUnixTS: 0,
 		MaxUnixTS: 0,
@@ -339,6 +341,216 @@ func (c *CSV) Save() error {
 
 // ReadCSV reads a CSV file and convert to 'CSV'.
 func ReadCSV(fpath string) (*CSV, error) {
-	// TODO
-	return nil, nil
+	f, err := openToRead(fpath)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	rd := csv.NewReader(f)
+
+	// in case that rows have different number of fields
+	rd.FieldsPerRecord = -1
+
+	rows, err := rd.ReadAll()
+	if err != nil {
+		return nil, err
+	}
+	if len(rows) <= 1 {
+		return nil, fmt.Errorf("expected len(rows)>1, got %d", len(rows))
+	}
+	if rows[0][0] != "UNIX-TS" {
+		return nil, fmt.Errorf("expected header at top, got %+v", rows[0])
+	}
+
+	// remove header
+	rows = rows[1:len(rows):len(rows)]
+	min, err := strconv.ParseInt(rows[0][0], 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	max, err := strconv.ParseInt(rows[len(rows)-1][0], 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	c := &CSV{
+		FilePath:         fpath,
+		PID:              0,
+		DiskDevice:       "",
+		NetworkInterface: "",
+
+		Header:      CSVHeader,
+		HeaderIndex: CSVHeaderIndex,
+		MinUnixTS:   min,
+		MaxUnixTS:   max,
+
+		Rows: make([]Proc, 0, len(rows)),
+	}
+	for _, row := range rows {
+		ts, err := strconv.ParseInt(row[CSVHeaderIndex["UNIX-TS"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		pid, err := strconv.ParseInt(row[CSVHeaderIndex["PID"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		ppid, err := strconv.ParseInt(row[CSVHeaderIndex["PPID"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		fd, err := strconv.ParseUint(row[CSVHeaderIndex["FD"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		threads, err := strconv.ParseUint(row[CSVHeaderIndex["THREADS"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		cpuNum, err := strconv.ParseFloat(row[CSVHeaderIndex["CPU-NUM"]], 64)
+		if err != nil {
+			return nil, err
+		}
+		vmRssNum, err := strconv.ParseUint(row[CSVHeaderIndex["VMRSS-NUM"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		vmSizeNum, err := strconv.ParseUint(row[CSVHeaderIndex["VMSIZE-NUM"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		readsCompleted, err := strconv.ParseUint(row[CSVHeaderIndex["READS-COMPLETED"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		sectorsRead, err := strconv.ParseUint(row[CSVHeaderIndex["SECTORS-READ"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		writesCompleted, err := strconv.ParseUint(row[CSVHeaderIndex["WRITES-COMPLETED"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		sectorsWritten, err := strconv.ParseUint(row[CSVHeaderIndex["SECTORS-WRITTEN"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		timeSpentOnReadingMs, err := strconv.ParseUint(row[CSVHeaderIndex["MILLISECONDS(READS)"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		timeSpentOnWritingMs, err := strconv.ParseUint(row[CSVHeaderIndex["MILLISECONDS(WRITES)"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		readsCompletedDiff, err := strconv.ParseUint(row[CSVHeaderIndex["READS-COMPLETED-DIFF"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		sectorsReadDiff, err := strconv.ParseUint(row[CSVHeaderIndex["SECTORS-READ-DIFF"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		writesCompletedDiff, err := strconv.ParseUint(row[CSVHeaderIndex["WRITES-COMPLETED-DIFF"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		sectorsWrittenDiff, err := strconv.ParseUint(row[CSVHeaderIndex["SECTORS-WRITTEN-DIFF"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		receivePackets, err := strconv.ParseUint(row[CSVHeaderIndex["RECEIVE-PACKETS"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		transmitPackets, err := strconv.ParseUint(row[CSVHeaderIndex["TRANSMIT-PACKETS"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		receiveBytesNum, err := strconv.ParseUint(row[CSVHeaderIndex["RECEIVE-BYTES-NUM"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		transmitBytesNum, err := strconv.ParseUint(row[CSVHeaderIndex["TRANSMIT-BYTES-NUM"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		receivePacketsDiff, err := strconv.ParseUint(row[CSVHeaderIndex["RECEIVE-PACKETS-DIFF"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		transmitPacketsDiff, err := strconv.ParseUint(row[CSVHeaderIndex["TRANSMIT-PACKETS-DIFF"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		receiveBytesNumDiff, err := strconv.ParseUint(row[CSVHeaderIndex["RECEIVE-BYTES-NUM-DIFF"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		transmitBytesNumDiff, err := strconv.ParseUint(row[CSVHeaderIndex["TRANSMIT-BYTES-NUM-DIFF"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		proc := Proc{
+			UnixTS: ts,
+			PSEntry: PSEntry{
+				Program:   row[CSVHeaderIndex["PROGRAM"]],
+				State:     row[CSVHeaderIndex["STATE"]],
+				PID:       pid,
+				PPID:      ppid,
+				CPU:       row[CSVHeaderIndex["CPU"]],
+				VMRSS:     row[CSVHeaderIndex["VMRSS"]],
+				VMSize:    row[CSVHeaderIndex["VMSIZE"]],
+				FD:        fd,
+				Threads:   threads,
+				CPUNum:    cpuNum,
+				VMRSSNum:  vmRssNum,
+				VMSizeNum: vmSizeNum,
+			},
+
+			DSEntry: DSEntry{
+				Device:               row[CSVHeaderIndex["DEVICE"]],
+				ReadsCompleted:       readsCompleted,
+				SectorsRead:          sectorsRead,
+				TimeSpentOnReading:   row[CSVHeaderIndex["TIME(READS)"]],
+				WritesCompleted:      writesCompleted,
+				SectorsWritten:       sectorsWritten,
+				TimeSpentOnWriting:   row[CSVHeaderIndex["TIME(WRITES)"]],
+				TimeSpentOnReadingMs: timeSpentOnReadingMs,
+				TimeSpentOnWritingMs: timeSpentOnWritingMs,
+			},
+			ReadsCompletedDiff:  readsCompletedDiff,
+			SectorsReadDiff:     sectorsReadDiff,
+			WritesCompletedDiff: writesCompletedDiff,
+			SectorsWrittenDiff:  sectorsWrittenDiff,
+
+			NSEntry: NSEntry{
+				Interface:        row[CSVHeaderIndex["INTERFACE"]],
+				ReceiveBytes:     row[CSVHeaderIndex["RECEIVE-BYTES"]],
+				ReceivePackets:   receivePackets,
+				TransmitBytes:    row[CSVHeaderIndex["TRANSMIT-BYTES"]],
+				TransmitPackets:  transmitPackets,
+				ReceiveBytesNum:  receiveBytesNum,
+				TransmitBytesNum: transmitBytesNum,
+			},
+			ReceiveBytesDiff:     row[CSVHeaderIndex["RECEIVE-BYTES-DIFF"]],
+			ReceivePacketsDiff:   receivePacketsDiff,
+			TransmitBytesDiff:    row[CSVHeaderIndex["TRANSMIT-BYTES-DIFF"]],
+			TransmitPacketsDiff:  transmitPacketsDiff,
+			ReceiveBytesNumDiff:  receiveBytesNumDiff,
+			TransmitBytesNumDiff: transmitBytesNumDiff,
+		}
+		c.PID = proc.PSEntry.PID
+		c.DiskDevice = proc.DSEntry.Device
+		c.NetworkInterface = proc.NSEntry.Interface
+
+		c.Rows = append(c.Rows, proc)
+	}
+
+	return c, nil
 }
