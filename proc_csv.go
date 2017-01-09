@@ -143,24 +143,23 @@ func (c *CSV) Add() error {
 		nexts = append(nexts, ev)
 	}
 
-	readPrev := nexts[len(nexts)-1]
+	// now previous entry is estimated; update 'cur' diff metrics
+	realPrev := nexts[len(nexts)-1]
 
-	cur.ReadsCompletedDiff = cur.DSEntry.ReadsCompleted - readPrev.DSEntry.ReadsCompleted
-	cur.SectorsReadDiff = cur.DSEntry.SectorsRead - readPrev.DSEntry.SectorsRead
-	cur.WritesCompletedDiff = cur.DSEntry.WritesCompleted - readPrev.DSEntry.WritesCompleted
-	cur.SectorsWrittenDiff = cur.DSEntry.SectorsWritten - readPrev.DSEntry.SectorsWritten
+	cur.ReadsCompletedDiff = cur.DSEntry.ReadsCompleted - realPrev.DSEntry.ReadsCompleted
+	cur.SectorsReadDiff = cur.DSEntry.SectorsRead - realPrev.DSEntry.SectorsRead
+	cur.WritesCompletedDiff = cur.DSEntry.WritesCompleted - realPrev.DSEntry.WritesCompleted
+	cur.SectorsWrittenDiff = cur.DSEntry.SectorsWritten - realPrev.DSEntry.SectorsWritten
 
-	cur.ReceiveBytesNumDiff = cur.NSEntry.ReceiveBytesNum - readPrev.NSEntry.ReceiveBytesNum
-	cur.TransmitBytesNumDiff = cur.NSEntry.TransmitBytesNum - readPrev.NSEntry.TransmitBytesNum
-	cur.ReceivePacketsDiff = cur.NSEntry.ReceivePackets - readPrev.NSEntry.ReceivePackets
-	cur.TransmitPacketsDiff = cur.NSEntry.TransmitPackets - readPrev.NSEntry.TransmitPackets
+	cur.ReceiveBytesNumDiff = cur.NSEntry.ReceiveBytesNum - realPrev.NSEntry.ReceiveBytesNum
+	cur.TransmitBytesNumDiff = cur.NSEntry.TransmitBytesNum - realPrev.NSEntry.TransmitBytesNum
+	cur.ReceivePacketsDiff = cur.NSEntry.ReceivePackets - realPrev.NSEntry.ReceivePackets
+	cur.TransmitPacketsDiff = cur.NSEntry.TransmitPackets - realPrev.NSEntry.TransmitPackets
 
 	cur.ReceiveBytesDiff = humanize.Bytes(cur.ReceiveBytesNumDiff)
 	cur.TransmitBytesDiff = humanize.Bytes(cur.TransmitBytesNumDiff)
 
-	nexts = append(nexts, cur)
-
-	c.Rows = append(c.Rows, nexts...)
+	c.Rows = append(c.Rows, append(nexts, cur)...)
 	return nil
 }
 
