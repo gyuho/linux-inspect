@@ -1,4 +1,14 @@
 // psn inspects Linux processes, sockets (ps, ss, netstat).
+//
+//	Usage:
+//	psn [command]
+//
+//	Available Commands:
+//	ds          Inspects '/proc/diskstats'
+//	ns          Inspects '/proc/net/dev'
+//	ps          Inspects '/proc/$PID/stat,status'
+//	ss          Inspects '/proc/net/tcp,tcp6'
+//
 package main
 
 import (
