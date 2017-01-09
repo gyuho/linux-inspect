@@ -17,7 +17,7 @@ func isInt(s string) bool {
 func humanizeDurationMs(ms uint64) string {
 	s := humanize.Time(time.Now().Add(-1 * time.Duration(ms) * time.Millisecond))
 	if s == "now" {
-		s = "0 seconds"
+		s = "0 second(s)"
 	}
 	return strings.TrimSpace(strings.Replace(s, " ago", "", -1))
 }
@@ -25,7 +25,7 @@ func humanizeDurationMs(ms uint64) string {
 func humanizeDurationSecond(sec uint64) string {
 	s := humanize.Time(time.Now().Add(-1 * time.Duration(sec) * time.Second))
 	if s == "now" {
-		s = "0 seconds"
+		s = "0 second(s)"
 	}
 	return strings.TrimSpace(strings.Replace(s, " ago", "", -1))
 }
