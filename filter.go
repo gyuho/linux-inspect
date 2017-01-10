@@ -18,6 +18,11 @@ type EntryFilter struct {
 	TCP6       bool
 	LocalPort  int64
 	RemotePort int64
+
+	// for Proc
+	DiskDevice       string
+	NetworkInterface string
+	ExtraPath        string
 }
 
 // FilterFunc applies each filter.
@@ -70,12 +75,32 @@ func WithTCP6() FilterFunc {
 	return func(ft *EntryFilter) { ft.TCP6 = true }
 }
 
+// WithDiskDevice to filter entries by disk device.
+func WithDiskDevice(name string) FilterFunc {
+	return func(ft *EntryFilter) { ft.DiskDevice = name }
+}
+
+// WithNetworkInterface to filter entries by disk device.
+func WithNetworkInterface(name string) FilterFunc {
+	return func(ft *EntryFilter) { ft.NetworkInterface = name }
+}
+
+// WithExtraPath to filter entries by disk device.
+func WithExtraPath(path string) FilterFunc {
+	return func(ft *EntryFilter) { ft.ExtraPath = path }
+}
+
 // applyOpts panics when ft.Program != "" && ft.PID > 0.
 func (ft *EntryFilter) applyOpts(opts []FilterFunc) {
 	for _, opt := range opts {
 		opt(ft)
 	}
 
+	if ft.DiskDevice != "" || ft.NetworkInterface != "" || ft.ExtraPath != "" {
+		if (ft.program != "" || ft.ProgramMatchFunc != nil) || ft.TopLimit > 0 || ft.LocalPort > 0 || ft.RemotePort > 0 || ft.TCP || ft.TCP6 {
+			panic(fmt.Errorf("not-valid Proc fileter; disk device %q or network interface %q or extra path %q", ft.DiskDevice, ft.NetworkInterface, ft.ExtraPath))
+		}
+	}
 	if (ft.program != "" || ft.ProgramMatchFunc != nil) && ft.PID > 0 {
 		panic(fmt.Errorf("can't filter both by program(%q or %p) and PID(%d)", ft.program, ft.ProgramMatchFunc, ft.PID))
 	}
