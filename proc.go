@@ -2,6 +2,7 @@ package psn
 
 import (
 	"fmt"
+	"io/ioutil"
 	"time"
 )
 
@@ -24,10 +25,13 @@ type Proc struct {
 	TransmitPacketsDiff  uint64
 	ReceiveBytesNumDiff  uint64
 	TransmitBytesNumDiff uint64
+
+	// Extra exists to support customized data query.
+	Extra []byte
 }
 
 // GetProc returns current 'Proc' data.
-func GetProc(pid int64, diskDevice string, networkInterface string) (Proc, error) {
+func GetProc(pid int64, diskDevice string, networkInterface string, extraPath string) (Proc, error) {
 	proc := Proc{UnixTS: time.Now().Unix()}
 
 	errc := make(chan error)
@@ -75,9 +79,23 @@ func GetProc(pid int64, diskDevice string, networkInterface string) (Proc, error
 		}
 		errc <- nil
 	}()
+	go func() {
+		f, err := openToRead(extraPath)
+		if err != nil {
+			errc <- err
+			return
+		}
+		b, err := ioutil.ReadAll(f)
+		if err != nil {
+			errc <- err
+			return
+		}
+		proc.Extra = b
+		errc <- nil
+	}()
 
 	cnt := 0
-	for cnt != 3 {
+	for cnt != 4 {
 		err := <-errc
 		if err != nil {
 			return Proc{}, err
@@ -118,6 +136,8 @@ func init() {
 		"TRANSMIT-PACKETS-DIFF",
 		"RECEIVE-BYTES-NUM-DIFF",
 		"TRANSMIT-BYTES-NUM-DIFF",
+
+		"EXTRA",
 	)
 
 	for i, v := range ProcHeader {
@@ -172,6 +192,8 @@ func (p *Proc) ToRow() (row []string) {
 	row[36] = fmt.Sprintf("%d", p.TransmitPacketsDiff)  // TRANSMIT-PACKETS-DIFF
 	row[37] = fmt.Sprintf("%d", p.ReceiveBytesNumDiff)  // RECEIVE-BYTES-NUM-DIFF
 	row[38] = fmt.Sprintf("%d", p.TransmitBytesNumDiff) // TRANSMIT-BYTES-NUM-DIFF
+
+	row[39] = string(p.Extra) // EXTRA
 
 	return
 }

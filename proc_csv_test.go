@@ -24,8 +24,20 @@ func TestProcCSV(t *testing.T) {
 	fpath := filepath.Join(os.TempDir(), fmt.Sprintf("test-%010d.csv", time.Now().UnixNano()))
 	defer os.RemoveAll(fpath)
 
-	c := NewCSV(fpath, 1, dn, nt)
+	epath := filepath.Join(homeDir(), "etcd-client-num")
+	defer os.RemoveAll(epath)
+
+	if err := toFile([]byte("10"), epath); err != nil {
+		t.Fatal(err)
+	}
+	c := NewCSV(fpath, 1, dn, nt, epath)
 	for i := 0; i < 3; i++ {
+		if i > 0 {
+			if err := toFile([]byte(fmt.Sprintf("%d", 100*i)), epath); err != nil {
+				t.Fatal(err)
+			}
+		}
+
 		fmt.Printf("#%d: collecting data with %s and %s at %s\n", i, dn, nt, fpath)
 		if err := c.Add(); err != nil {
 			t.Fatal(err)
@@ -33,13 +45,12 @@ func TestProcCSV(t *testing.T) {
 		time.Sleep(time.Second)
 	}
 
-	// fill-in empty rows
+	// test if Add fills in empty rows
 	time.Sleep(2*time.Second + 50*time.Millisecond)
 
 	if err := c.Add(); err != nil {
 		t.Fatal(err)
 	}
-
 	if err := c.Save(); err != nil {
 		t.Fatal(err)
 	}
@@ -75,6 +86,13 @@ func TestProcCSV(t *testing.T) {
 	}
 
 	for i := range c.Rows {
+		if i == 0 && string(c.Rows[i].Extra) != "10" {
+			t.Fatalf("Rows[%d].Extra expected 10, got %s", i, c.Rows[i].Extra)
+		} else if i > 0 && i < 3 && string(c.Rows[i].Extra) != fmt.Sprintf("%d", 100*i) {
+			t.Fatalf("Rows[%d].Extra expected %d, got %s", i, 100*i, c.Rows[i].Extra)
+		} else if i >= 3 && string(c.Rows[i].Extra) != "200" {
+			t.Fatalf("Rows[%d].Extra expected 200, got %s", i, c.Rows[i].Extra)
+		}
 		if c.Rows[i].PSEntry.Program != cv.Rows[i].PSEntry.Program {
 			t.Fatalf("Rows[%d].PSEntry.Program expected %s, got %s", i, c.Rows[i].PSEntry.Program, cv.Rows[i].PSEntry.Program)
 		}

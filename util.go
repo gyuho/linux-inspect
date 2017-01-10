@@ -2,6 +2,7 @@ package psn
 
 import (
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -52,4 +53,28 @@ func openToOverwrite(fpath string) (*os.File, error) {
 		return nil, err
 	}
 	return f, nil
+}
+
+func toFile(data []byte, fpath string) error {
+	f, err := openToOverwrite(fpath)
+	if err != nil {
+		f, err = os.Create(fpath)
+		if err != nil {
+			return err
+		}
+	}
+	_, err = f.Write(data)
+	f.Close()
+	return err
+}
+
+func homeDir() string {
+	if runtime.GOOS == "windows" {
+		home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
+		if home == "" {
+			home = os.Getenv("USERPROFILE")
+		}
+		return home
+	}
+	return os.Getenv("HOME")
 }

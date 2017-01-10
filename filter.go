@@ -9,8 +9,9 @@ import (
 type EntryFilter struct {
 	ProgramMatchFunc func(string) bool
 	program          string
-	PID              int64
-	TopLimit         int
+
+	PID      int64
+	TopLimit int
 
 	// for ss
 	TCP        bool
