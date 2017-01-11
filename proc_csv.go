@@ -405,6 +405,8 @@ func ReadCSV(fpath string) (*CSV, error) {
 			TransmitPacketsDiff:  transmitPacketsDiff,
 			ReceiveBytesNumDiff:  receiveBytesNumDiff,
 			TransmitBytesNumDiff: transmitBytesNumDiff,
+
+			Extra: []byte(row[ProcHeaderIndex["EXTRA"]]),
 		}
 		c.PID = proc.PSEntry.PID
 		c.DiskDevice = proc.DSEntry.Device

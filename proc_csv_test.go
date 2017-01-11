@@ -1,6 +1,7 @@
 package psn
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -93,6 +94,7 @@ func TestProcCSV(t *testing.T) {
 		} else if i >= 3 && string(c.Rows[i].Extra) != "200" {
 			t.Fatalf("Rows[%d].Extra expected 200, got %s", i, c.Rows[i].Extra)
 		}
+
 		if c.Rows[i].PSEntry.Program != cv.Rows[i].PSEntry.Program {
 			t.Fatalf("Rows[%d].PSEntry.Program expected %s, got %s", i, c.Rows[i].PSEntry.Program, cv.Rows[i].PSEntry.Program)
 		}
@@ -204,6 +206,10 @@ func TestProcCSV(t *testing.T) {
 		}
 		if c.Rows[i].TransmitBytesNumDiff != cv.Rows[i].TransmitBytesNumDiff {
 			t.Fatalf("Rows[%d].TransmitBytesNumDiff expected %d, got %d", i, c.Rows[i].TransmitBytesNumDiff, cv.Rows[i].TransmitBytesNumDiff)
+		}
+
+		if !bytes.Equal(c.Rows[i].Extra, cv.Rows[i].Extra) {
+			t.Fatalf("Rows[%d].Extra expected %q, got %q", i, c.Rows[i].Extra, cv.Rows[i].Extra)
 		}
 	}
 }
