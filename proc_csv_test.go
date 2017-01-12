@@ -157,17 +157,17 @@ func TestProcCSV(t *testing.T) {
 			t.Fatalf("Rows[%d].DSEntry.TimeSpentOnWritingMs expected %d, got %d", i, c.Rows[i].DSEntry.TimeSpentOnWritingMs, cv.Rows[i].DSEntry.TimeSpentOnWritingMs)
 		}
 
-		if c.Rows[i].ReadsCompletedDiff != cv.Rows[i].ReadsCompletedDiff {
-			t.Fatalf("Rows[%d].ReadsCompletedDiff expected %d, got %d", i, c.Rows[i].ReadsCompletedDiff, cv.Rows[i].ReadsCompletedDiff)
+		if c.Rows[i].ReadsCompletedDelta != cv.Rows[i].ReadsCompletedDelta {
+			t.Fatalf("Rows[%d].ReadsCompletedDelta expected %d, got %d", i, c.Rows[i].ReadsCompletedDelta, cv.Rows[i].ReadsCompletedDelta)
 		}
-		if c.Rows[i].SectorsReadDiff != cv.Rows[i].SectorsReadDiff {
-			t.Fatalf("Rows[%d].SectorsReadDiff expected %d, got %d", i, c.Rows[i].SectorsReadDiff, cv.Rows[i].SectorsReadDiff)
+		if c.Rows[i].SectorsReadDelta != cv.Rows[i].SectorsReadDelta {
+			t.Fatalf("Rows[%d].SectorsReadDelta expected %d, got %d", i, c.Rows[i].SectorsReadDelta, cv.Rows[i].SectorsReadDelta)
 		}
-		if c.Rows[i].WritesCompletedDiff != cv.Rows[i].WritesCompletedDiff {
-			t.Fatalf("Rows[%d].WritesCompletedDiff expected %d, got %d", i, c.Rows[i].WritesCompletedDiff, cv.Rows[i].WritesCompletedDiff)
+		if c.Rows[i].WritesCompletedDelta != cv.Rows[i].WritesCompletedDelta {
+			t.Fatalf("Rows[%d].WritesCompletedDelta expected %d, got %d", i, c.Rows[i].WritesCompletedDelta, cv.Rows[i].WritesCompletedDelta)
 		}
-		if c.Rows[i].SectorsWrittenDiff != cv.Rows[i].SectorsWrittenDiff {
-			t.Fatalf("Rows[%d].SectorsWrittenDiff expected %d, got %d", i, c.Rows[i].SectorsWrittenDiff, cv.Rows[i].SectorsWrittenDiff)
+		if c.Rows[i].SectorsWrittenDelta != cv.Rows[i].SectorsWrittenDelta {
+			t.Fatalf("Rows[%d].SectorsWrittenDelta expected %d, got %d", i, c.Rows[i].SectorsWrittenDelta, cv.Rows[i].SectorsWrittenDelta)
 		}
 
 		if c.Rows[i].NSEntry.ReceiveBytes != cv.Rows[i].NSEntry.ReceiveBytes {
@@ -189,23 +189,23 @@ func TestProcCSV(t *testing.T) {
 			t.Fatalf("Rows[%d].NSEntry.TransmitPackets expected %d, got %d", i, c.Rows[i].NSEntry.TransmitPackets, cv.Rows[i].NSEntry.TransmitPackets)
 		}
 
-		if c.Rows[i].ReceiveBytesDiff != cv.Rows[i].ReceiveBytesDiff {
-			t.Fatalf("Rows[%d].ReceiveBytesDiff expected %s, got %s", i, c.Rows[i].ReceiveBytesDiff, cv.Rows[i].ReceiveBytesDiff)
+		if c.Rows[i].ReceiveBytesDelta != cv.Rows[i].ReceiveBytesDelta {
+			t.Fatalf("Rows[%d].ReceiveBytesDelta expected %s, got %s", i, c.Rows[i].ReceiveBytesDelta, cv.Rows[i].ReceiveBytesDelta)
 		}
-		if c.Rows[i].ReceivePacketsDiff != cv.Rows[i].ReceivePacketsDiff {
-			t.Fatalf("Rows[%d].ReceivePacketsDiff expected %d, got %d", i, c.Rows[i].ReceivePacketsDiff, cv.Rows[i].ReceivePacketsDiff)
+		if c.Rows[i].ReceivePacketsDelta != cv.Rows[i].ReceivePacketsDelta {
+			t.Fatalf("Rows[%d].ReceivePacketsDelta expected %d, got %d", i, c.Rows[i].ReceivePacketsDelta, cv.Rows[i].ReceivePacketsDelta)
 		}
-		if c.Rows[i].TransmitBytesDiff != cv.Rows[i].TransmitBytesDiff {
-			t.Fatalf("Rows[%d].TransmitBytesDiff expected %s, got %s", i, c.Rows[i].TransmitBytesDiff, cv.Rows[i].TransmitBytesDiff)
+		if c.Rows[i].TransmitBytesDelta != cv.Rows[i].TransmitBytesDelta {
+			t.Fatalf("Rows[%d].TransmitBytesDelta expected %s, got %s", i, c.Rows[i].TransmitBytesDelta, cv.Rows[i].TransmitBytesDelta)
 		}
-		if c.Rows[i].TransmitPacketsDiff != cv.Rows[i].TransmitPacketsDiff {
-			t.Fatalf("Rows[%d].TransmitPacketsDiff expected %d, got %d", i, c.Rows[i].TransmitPacketsDiff, cv.Rows[i].TransmitPacketsDiff)
+		if c.Rows[i].TransmitPacketsDelta != cv.Rows[i].TransmitPacketsDelta {
+			t.Fatalf("Rows[%d].TransmitPacketsDelta expected %d, got %d", i, c.Rows[i].TransmitPacketsDelta, cv.Rows[i].TransmitPacketsDelta)
 		}
-		if c.Rows[i].ReceiveBytesNumDiff != cv.Rows[i].ReceiveBytesNumDiff {
-			t.Fatalf("Rows[%d].ReceiveBytesNumDiff expected %d, got %d", i, c.Rows[i].ReceiveBytesNumDiff, cv.Rows[i].ReceiveBytesNumDiff)
+		if c.Rows[i].ReceiveBytesNumDelta != cv.Rows[i].ReceiveBytesNumDelta {
+			t.Fatalf("Rows[%d].ReceiveBytesNumDelta expected %d, got %d", i, c.Rows[i].ReceiveBytesNumDelta, cv.Rows[i].ReceiveBytesNumDelta)
 		}
-		if c.Rows[i].TransmitBytesNumDiff != cv.Rows[i].TransmitBytesNumDiff {
-			t.Fatalf("Rows[%d].TransmitBytesNumDiff expected %d, got %d", i, c.Rows[i].TransmitBytesNumDiff, cv.Rows[i].TransmitBytesNumDiff)
+		if c.Rows[i].TransmitBytesNumDelta != cv.Rows[i].TransmitBytesNumDelta {
+			t.Fatalf("Rows[%d].TransmitBytesNumDelta expected %d, got %d", i, c.Rows[i].TransmitBytesNumDelta, cv.Rows[i].TransmitBytesNumDelta)
 		}
 
 		if !bytes.Equal(c.Rows[i].Extra, cv.Rows[i].Extra) {

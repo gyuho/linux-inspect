@@ -79,26 +79,26 @@ func (c *CSV) Add() error {
 	c.MaxUnixTS = cur.UnixTS
 
 	if cur.UnixTS-prev.UnixTS == 1 {
-		cur.ReadsCompletedDiff = cur.DSEntry.ReadsCompleted - prev.DSEntry.ReadsCompleted
-		cur.SectorsReadDiff = cur.DSEntry.SectorsRead - prev.DSEntry.SectorsRead
-		cur.WritesCompletedDiff = cur.DSEntry.WritesCompleted - prev.DSEntry.WritesCompleted
-		cur.SectorsWrittenDiff = cur.DSEntry.SectorsWritten - prev.DSEntry.SectorsWritten
+		cur.ReadsCompletedDelta = cur.DSEntry.ReadsCompleted - prev.DSEntry.ReadsCompleted
+		cur.SectorsReadDelta = cur.DSEntry.SectorsRead - prev.DSEntry.SectorsRead
+		cur.WritesCompletedDelta = cur.DSEntry.WritesCompleted - prev.DSEntry.WritesCompleted
+		cur.SectorsWrittenDelta = cur.DSEntry.SectorsWritten - prev.DSEntry.SectorsWritten
 
-		cur.ReceiveBytesNumDiff = cur.NSEntry.ReceiveBytesNum - prev.NSEntry.ReceiveBytesNum
-		cur.TransmitBytesNumDiff = cur.NSEntry.TransmitBytesNum - prev.NSEntry.TransmitBytesNum
-		cur.ReceivePacketsDiff = cur.NSEntry.ReceivePackets - prev.NSEntry.ReceivePackets
-		cur.TransmitPacketsDiff = cur.NSEntry.TransmitPackets - prev.NSEntry.TransmitPackets
+		cur.ReceiveBytesNumDelta = cur.NSEntry.ReceiveBytesNum - prev.NSEntry.ReceiveBytesNum
+		cur.TransmitBytesNumDelta = cur.NSEntry.TransmitBytesNum - prev.NSEntry.TransmitBytesNum
+		cur.ReceivePacketsDelta = cur.NSEntry.ReceivePackets - prev.NSEntry.ReceivePackets
+		cur.TransmitPacketsDelta = cur.NSEntry.TransmitPackets - prev.NSEntry.TransmitPackets
 
-		cur.ReceiveBytesDiff = humanize.Bytes(cur.ReceiveBytesNumDiff)
-		cur.TransmitBytesDiff = humanize.Bytes(cur.TransmitBytesNumDiff)
+		cur.ReceiveBytesDelta = humanize.Bytes(cur.ReceiveBytesNumDelta)
+		cur.TransmitBytesDelta = humanize.Bytes(cur.TransmitBytesNumDelta)
 
 		c.Rows = append(c.Rows, cur)
 		return nil
 	}
 
 	// there are empty rows between; estimate and fill-in
-	tsDiff := cur.UnixTS - prev.UnixTS
-	nexts := make([]Proc, 0, tsDiff+1)
+	tsDelta := cur.UnixTS - prev.UnixTS
+	nexts := make([]Proc, 0, tsDelta+1)
 
 	// estimate the previous ones based on 'prev' and 'cur'
 	mid := prev
@@ -117,59 +117,59 @@ func (c *CSV) Add() error {
 	mid.PSEntry.VMSize = humanize.Bytes(mid.PSEntry.VMSizeNum)
 
 	// DSEntry; calculate delta assuming that metrics are cumulative
-	mid.ReadsCompletedDiff = (cur.DSEntry.ReadsCompleted - prev.DSEntry.ReadsCompleted) / uint64(tsDiff)
-	mid.SectorsReadDiff = (cur.DSEntry.SectorsRead - prev.DSEntry.SectorsRead) / uint64(tsDiff)
-	mid.WritesCompletedDiff = (cur.DSEntry.WritesCompleted - prev.DSEntry.WritesCompleted) / uint64(tsDiff)
-	mid.SectorsWrittenDiff = (cur.DSEntry.SectorsWritten - prev.DSEntry.SectorsWritten) / uint64(tsDiff)
-	timeSpentOnReadingMsDelta := (cur.DSEntry.TimeSpentOnReadingMs - prev.DSEntry.TimeSpentOnReadingMs) / uint64(tsDiff)
-	timeSpentOnWritingMsDelta := (cur.DSEntry.TimeSpentOnWritingMs - prev.DSEntry.TimeSpentOnWritingMs) / uint64(tsDiff)
+	mid.ReadsCompletedDelta = (cur.DSEntry.ReadsCompleted - prev.DSEntry.ReadsCompleted) / uint64(tsDelta)
+	mid.SectorsReadDelta = (cur.DSEntry.SectorsRead - prev.DSEntry.SectorsRead) / uint64(tsDelta)
+	mid.WritesCompletedDelta = (cur.DSEntry.WritesCompleted - prev.DSEntry.WritesCompleted) / uint64(tsDelta)
+	mid.SectorsWrittenDelta = (cur.DSEntry.SectorsWritten - prev.DSEntry.SectorsWritten) / uint64(tsDelta)
+	timeSpentOnReadingMsDelta := (cur.DSEntry.TimeSpentOnReadingMs - prev.DSEntry.TimeSpentOnReadingMs) / uint64(tsDelta)
+	timeSpentOnWritingMsDelta := (cur.DSEntry.TimeSpentOnWritingMs - prev.DSEntry.TimeSpentOnWritingMs) / uint64(tsDelta)
 
 	// NSEntry; calculate delta assuming that metrics are cumulative
-	mid.ReceiveBytesNumDiff = (cur.NSEntry.ReceiveBytesNum - prev.NSEntry.ReceiveBytesNum) / uint64(tsDiff)
-	mid.ReceiveBytesDiff = humanize.Bytes(mid.ReceiveBytesNumDiff)
-	mid.ReceivePacketsDiff = (cur.NSEntry.ReceivePackets - prev.NSEntry.ReceivePackets) / uint64(tsDiff)
-	mid.TransmitBytesNumDiff = (cur.NSEntry.TransmitBytesNum - prev.NSEntry.TransmitBytesNum) / uint64(tsDiff)
-	mid.TransmitBytesDiff = humanize.Bytes(mid.TransmitBytesNumDiff)
-	mid.TransmitPacketsDiff = (cur.NSEntry.TransmitPackets - prev.NSEntry.TransmitPackets) / uint64(tsDiff)
+	mid.ReceiveBytesNumDelta = (cur.NSEntry.ReceiveBytesNum - prev.NSEntry.ReceiveBytesNum) / uint64(tsDelta)
+	mid.ReceiveBytesDelta = humanize.Bytes(mid.ReceiveBytesNumDelta)
+	mid.ReceivePacketsDelta = (cur.NSEntry.ReceivePackets - prev.NSEntry.ReceivePackets) / uint64(tsDelta)
+	mid.TransmitBytesNumDelta = (cur.NSEntry.TransmitBytesNum - prev.NSEntry.TransmitBytesNum) / uint64(tsDelta)
+	mid.TransmitBytesDelta = humanize.Bytes(mid.TransmitBytesNumDelta)
+	mid.TransmitPacketsDelta = (cur.NSEntry.TransmitPackets - prev.NSEntry.TransmitPackets) / uint64(tsDelta)
 
-	for i := int64(1); i < tsDiff; i++ {
+	for i := int64(1); i < tsDelta; i++ {
 		ev := mid
 		ev.UnixTS = prev.UnixTS + i
 
-		ev.DSEntry.ReadsCompleted += mid.ReadsCompletedDiff * uint64(i)
-		ev.DSEntry.SectorsRead += mid.SectorsReadDiff * uint64(i)
-		ev.DSEntry.WritesCompleted += mid.WritesCompletedDiff * uint64(i)
-		ev.DSEntry.SectorsWritten += mid.SectorsWrittenDiff * uint64(i)
+		ev.DSEntry.ReadsCompleted += mid.ReadsCompletedDelta * uint64(i)
+		ev.DSEntry.SectorsRead += mid.SectorsReadDelta * uint64(i)
+		ev.DSEntry.WritesCompleted += mid.WritesCompletedDelta * uint64(i)
+		ev.DSEntry.SectorsWritten += mid.SectorsWrittenDelta * uint64(i)
 		ev.DSEntry.TimeSpentOnReadingMs += timeSpentOnReadingMsDelta * uint64(i)
 		ev.DSEntry.TimeSpentOnWritingMs += timeSpentOnWritingMsDelta * uint64(i)
 		ev.DSEntry.TimeSpentOnReading = humanizeDurationMs(ev.DSEntry.TimeSpentOnReadingMs)
 		ev.DSEntry.TimeSpentOnWriting = humanizeDurationMs(ev.DSEntry.TimeSpentOnWritingMs)
 
-		ev.NSEntry.ReceiveBytesNum += mid.ReceiveBytesNumDiff * uint64(i)
+		ev.NSEntry.ReceiveBytesNum += mid.ReceiveBytesNumDelta * uint64(i)
 		ev.NSEntry.ReceiveBytes = humanize.Bytes(ev.NSEntry.ReceiveBytesNum)
-		ev.NSEntry.ReceivePackets += mid.ReceivePacketsDiff * uint64(i)
-		ev.NSEntry.TransmitBytesNum += mid.TransmitBytesNumDiff * uint64(i)
+		ev.NSEntry.ReceivePackets += mid.ReceivePacketsDelta * uint64(i)
+		ev.NSEntry.TransmitBytesNum += mid.TransmitBytesNumDelta * uint64(i)
 		ev.NSEntry.TransmitBytes = humanize.Bytes(ev.NSEntry.TransmitBytesNum)
-		ev.NSEntry.TransmitPackets += mid.TransmitPacketsDiff * uint64(i)
+		ev.NSEntry.TransmitPackets += mid.TransmitPacketsDelta * uint64(i)
 
 		nexts = append(nexts, ev)
 	}
 
-	// now previous entry is estimated; update 'cur' diff metrics
+	// now previous entry is estimated; update 'cur' Delta metrics
 	realPrev := nexts[len(nexts)-1]
 
-	cur.ReadsCompletedDiff = cur.DSEntry.ReadsCompleted - realPrev.DSEntry.ReadsCompleted
-	cur.SectorsReadDiff = cur.DSEntry.SectorsRead - realPrev.DSEntry.SectorsRead
-	cur.WritesCompletedDiff = cur.DSEntry.WritesCompleted - realPrev.DSEntry.WritesCompleted
-	cur.SectorsWrittenDiff = cur.DSEntry.SectorsWritten - realPrev.DSEntry.SectorsWritten
+	cur.ReadsCompletedDelta = cur.DSEntry.ReadsCompleted - realPrev.DSEntry.ReadsCompleted
+	cur.SectorsReadDelta = cur.DSEntry.SectorsRead - realPrev.DSEntry.SectorsRead
+	cur.WritesCompletedDelta = cur.DSEntry.WritesCompleted - realPrev.DSEntry.WritesCompleted
+	cur.SectorsWrittenDelta = cur.DSEntry.SectorsWritten - realPrev.DSEntry.SectorsWritten
 
-	cur.ReceiveBytesNumDiff = cur.NSEntry.ReceiveBytesNum - realPrev.NSEntry.ReceiveBytesNum
-	cur.TransmitBytesNumDiff = cur.NSEntry.TransmitBytesNum - realPrev.NSEntry.TransmitBytesNum
-	cur.ReceivePacketsDiff = cur.NSEntry.ReceivePackets - realPrev.NSEntry.ReceivePackets
-	cur.TransmitPacketsDiff = cur.NSEntry.TransmitPackets - realPrev.NSEntry.TransmitPackets
+	cur.ReceiveBytesNumDelta = cur.NSEntry.ReceiveBytesNum - realPrev.NSEntry.ReceiveBytesNum
+	cur.TransmitBytesNumDelta = cur.NSEntry.TransmitBytesNum - realPrev.NSEntry.TransmitBytesNum
+	cur.ReceivePacketsDelta = cur.NSEntry.ReceivePackets - realPrev.NSEntry.ReceivePackets
+	cur.TransmitPacketsDelta = cur.NSEntry.TransmitPackets - realPrev.NSEntry.TransmitPackets
 
-	cur.ReceiveBytesDiff = humanize.Bytes(cur.ReceiveBytesNumDiff)
-	cur.TransmitBytesDiff = humanize.Bytes(cur.TransmitBytesNumDiff)
+	cur.ReceiveBytesDelta = humanize.Bytes(cur.ReceiveBytesNumDelta)
+	cur.TransmitBytesDelta = humanize.Bytes(cur.TransmitBytesNumDelta)
 
 	c.Rows = append(c.Rows, append(nexts, cur)...)
 	return nil
@@ -210,7 +210,7 @@ func ReadCSV(fpath string) (*CSV, error) {
 
 	rd := csv.NewReader(f)
 
-	// in case that rows have different number of fields
+	// in case that rows have Deltaerent number of fields
 	rd.FieldsPerRecord = -1
 
 	rows, err := rd.ReadAll()
@@ -306,19 +306,19 @@ func ReadCSV(fpath string) (*CSV, error) {
 			return nil, err
 		}
 
-		readsCompletedDiff, err := strconv.ParseUint(row[ProcHeaderIndex["READS-COMPLETED-DIFF"]], 10, 64)
+		readsCompletedDelta, err := strconv.ParseUint(row[ProcHeaderIndex["READS-COMPLETED-DELTA"]], 10, 64)
 		if err != nil {
 			return nil, err
 		}
-		sectorsReadDiff, err := strconv.ParseUint(row[ProcHeaderIndex["SECTORS-READ-DIFF"]], 10, 64)
+		sectorsReadDelta, err := strconv.ParseUint(row[ProcHeaderIndex["SECTORS-READ-DELTA"]], 10, 64)
 		if err != nil {
 			return nil, err
 		}
-		writesCompletedDiff, err := strconv.ParseUint(row[ProcHeaderIndex["WRITES-COMPLETED-DIFF"]], 10, 64)
+		writesCompletedDelta, err := strconv.ParseUint(row[ProcHeaderIndex["WRITES-COMPLETED-DELTA"]], 10, 64)
 		if err != nil {
 			return nil, err
 		}
-		sectorsWrittenDiff, err := strconv.ParseUint(row[ProcHeaderIndex["SECTORS-WRITTEN-DIFF"]], 10, 64)
+		sectorsWrittenDelta, err := strconv.ParseUint(row[ProcHeaderIndex["SECTORS-WRITTEN-DELTA"]], 10, 64)
 		if err != nil {
 			return nil, err
 		}
@@ -340,19 +340,19 @@ func ReadCSV(fpath string) (*CSV, error) {
 			return nil, err
 		}
 
-		receivePacketsDiff, err := strconv.ParseUint(row[ProcHeaderIndex["RECEIVE-PACKETS-DIFF"]], 10, 64)
+		receivePacketsDelta, err := strconv.ParseUint(row[ProcHeaderIndex["RECEIVE-PACKETS-DELTA"]], 10, 64)
 		if err != nil {
 			return nil, err
 		}
-		transmitPacketsDiff, err := strconv.ParseUint(row[ProcHeaderIndex["TRANSMIT-PACKETS-DIFF"]], 10, 64)
+		transmitPacketsDelta, err := strconv.ParseUint(row[ProcHeaderIndex["TRANSMIT-PACKETS-DELTA"]], 10, 64)
 		if err != nil {
 			return nil, err
 		}
-		receiveBytesNumDiff, err := strconv.ParseUint(row[ProcHeaderIndex["RECEIVE-BYTES-NUM-DIFF"]], 10, 64)
+		receiveBytesNumDelta, err := strconv.ParseUint(row[ProcHeaderIndex["RECEIVE-BYTES-NUM-DELTA"]], 10, 64)
 		if err != nil {
 			return nil, err
 		}
-		transmitBytesNumDiff, err := strconv.ParseUint(row[ProcHeaderIndex["TRANSMIT-BYTES-NUM-DIFF"]], 10, 64)
+		transmitBytesNumDelta, err := strconv.ParseUint(row[ProcHeaderIndex["TRANSMIT-BYTES-NUM-DELTA"]], 10, 64)
 		if err != nil {
 			return nil, err
 		}
@@ -385,10 +385,10 @@ func ReadCSV(fpath string) (*CSV, error) {
 				TimeSpentOnReadingMs: timeSpentOnReadingMs,
 				TimeSpentOnWritingMs: timeSpentOnWritingMs,
 			},
-			ReadsCompletedDiff:  readsCompletedDiff,
-			SectorsReadDiff:     sectorsReadDiff,
-			WritesCompletedDiff: writesCompletedDiff,
-			SectorsWrittenDiff:  sectorsWrittenDiff,
+			ReadsCompletedDelta:  readsCompletedDelta,
+			SectorsReadDelta:     sectorsReadDelta,
+			WritesCompletedDelta: writesCompletedDelta,
+			SectorsWrittenDelta:  sectorsWrittenDelta,
 
 			NSEntry: NSEntry{
 				Interface:        row[ProcHeaderIndex["INTERFACE"]],
@@ -399,12 +399,12 @@ func ReadCSV(fpath string) (*CSV, error) {
 				ReceiveBytesNum:  receiveBytesNum,
 				TransmitBytesNum: transmitBytesNum,
 			},
-			ReceiveBytesDiff:     row[ProcHeaderIndex["RECEIVE-BYTES-DIFF"]],
-			ReceivePacketsDiff:   receivePacketsDiff,
-			TransmitBytesDiff:    row[ProcHeaderIndex["TRANSMIT-BYTES-DIFF"]],
-			TransmitPacketsDiff:  transmitPacketsDiff,
-			ReceiveBytesNumDiff:  receiveBytesNumDiff,
-			TransmitBytesNumDiff: transmitBytesNumDiff,
+			ReceiveBytesDelta:     row[ProcHeaderIndex["RECEIVE-BYTES-DELTA"]],
+			ReceivePacketsDelta:   receivePacketsDelta,
+			TransmitBytesDelta:    row[ProcHeaderIndex["TRANSMIT-BYTES-DELTA"]],
+			TransmitPacketsDelta:  transmitPacketsDelta,
+			ReceiveBytesNumDelta:  receiveBytesNumDelta,
+			TransmitBytesNumDelta: transmitBytesNumDelta,
 
 			Extra: []byte(row[ProcHeaderIndex["EXTRA"]]),
 		}
