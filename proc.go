@@ -12,19 +12,19 @@ type Proc struct {
 
 	PSEntry PSEntry
 
-	DSEntry             DSEntry
-	ReadsCompletedDiff  uint64
-	SectorsReadDiff     uint64
-	WritesCompletedDiff uint64
-	SectorsWrittenDiff  uint64
+	DSEntry              DSEntry
+	ReadsCompletedDelta  uint64
+	SectorsReadDelta     uint64
+	WritesCompletedDelta uint64
+	SectorsWrittenDelta  uint64
 
-	NSEntry              NSEntry
-	ReceiveBytesDiff     string
-	ReceivePacketsDiff   uint64
-	TransmitBytesDiff    string
-	TransmitPacketsDiff  uint64
-	ReceiveBytesNumDiff  uint64
-	TransmitBytesNumDiff uint64
+	NSEntry               NSEntry
+	ReceiveBytesDelta     string
+	ReceivePacketsDelta   uint64
+	TransmitBytesDelta    string
+	TransmitPacketsDelta  uint64
+	ReceiveBytesNumDelta  uint64
+	TransmitBytesNumDelta uint64
 
 	// Extra exists to support customized data query.
 	Extra []byte
@@ -146,17 +146,17 @@ func init() {
 	ProcHeader = append(ProcHeader, columnsDSEntry...)
 	ProcHeader = append(ProcHeader, columnsNSEntry...)
 	ProcHeader = append(ProcHeader,
-		"READS-COMPLETED-DIFF",
-		"SECTORS-READ-DIFF",
-		"WRITES-COMPLETED-DIFF",
-		"SECTORS-WRITTEN-DIFF",
+		"READS-COMPLETED-DELTA",
+		"SECTORS-READ-DELTA",
+		"WRITES-COMPLETED-DELTA",
+		"SECTORS-WRITTEN-DELTA",
 
-		"RECEIVE-BYTES-DIFF",
-		"RECEIVE-PACKETS-DIFF",
-		"TRANSMIT-BYTES-DIFF",
-		"TRANSMIT-PACKETS-DIFF",
-		"RECEIVE-BYTES-NUM-DIFF",
-		"TRANSMIT-BYTES-NUM-DIFF",
+		"RECEIVE-BYTES-DELTA",
+		"RECEIVE-PACKETS-DELTA",
+		"TRANSMIT-BYTES-DELTA",
+		"TRANSMIT-PACKETS-DELTA",
+		"RECEIVE-BYTES-NUM-DELTA",
+		"TRANSMIT-BYTES-NUM-DELTA",
 
 		"EXTRA",
 	)
@@ -202,17 +202,17 @@ func (p *Proc) ToRow() (row []string) {
 	row[27] = fmt.Sprintf("%d", p.NSEntry.ReceiveBytesNum)  // RECEIVE-BYTES-NUM
 	row[28] = fmt.Sprintf("%d", p.NSEntry.TransmitBytesNum) // TRANSMIT-BYTES-NUM
 
-	row[29] = fmt.Sprintf("%d", p.ReadsCompletedDiff)  // READS-COMPLETED-DIFF
-	row[30] = fmt.Sprintf("%d", p.SectorsReadDiff)     // SECTORS-READ-DIFF
-	row[31] = fmt.Sprintf("%d", p.WritesCompletedDiff) // WRITES-COMPLETED-DIFF
-	row[32] = fmt.Sprintf("%d", p.SectorsWrittenDiff)  // SECTORS-WRITTEN-DIFF
+	row[29] = fmt.Sprintf("%d", p.ReadsCompletedDelta)  // READS-COMPLETED-DELTA
+	row[30] = fmt.Sprintf("%d", p.SectorsReadDelta)     // SECTORS-READ-DELTA
+	row[31] = fmt.Sprintf("%d", p.WritesCompletedDelta) // WRITES-COMPLETED-DELTA
+	row[32] = fmt.Sprintf("%d", p.SectorsWrittenDelta)  // SECTORS-WRITTEN-DELTA
 
-	row[33] = p.ReceiveBytesDiff                        // RECEIVE-BYTES-DIFF
-	row[34] = fmt.Sprintf("%d", p.ReceivePacketsDiff)   // RECEIVE-PACKETS-DIFF
-	row[35] = p.TransmitBytesDiff                       // TRANSMIT-BYTES-DIFF
-	row[36] = fmt.Sprintf("%d", p.TransmitPacketsDiff)  // TRANSMIT-PACKETS-DIFF
-	row[37] = fmt.Sprintf("%d", p.ReceiveBytesNumDiff)  // RECEIVE-BYTES-NUM-DIFF
-	row[38] = fmt.Sprintf("%d", p.TransmitBytesNumDiff) // TRANSMIT-BYTES-NUM-DIFF
+	row[33] = p.ReceiveBytesDelta                        // RECEIVE-BYTES-DELTA
+	row[34] = fmt.Sprintf("%d", p.ReceivePacketsDelta)   // RECEIVE-PACKETS-DELTA
+	row[35] = p.TransmitBytesDelta                       // TRANSMIT-BYTES-DELTA
+	row[36] = fmt.Sprintf("%d", p.TransmitPacketsDelta)  // TRANSMIT-PACKETS-DELTA
+	row[37] = fmt.Sprintf("%d", p.ReceiveBytesNumDelta)  // RECEIVE-BYTES-NUM-DELTA
+	row[38] = fmt.Sprintf("%d", p.TransmitBytesNumDelta) // TRANSMIT-BYTES-NUM-DELTA
 
 	row[39] = string(p.Extra) // EXTRA
 
