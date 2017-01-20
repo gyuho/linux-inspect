@@ -28,7 +28,7 @@ var (
 func init() {
 	ssCommand.PersistentFlags().StringVarP(&ssCmdFlag.protocol, "protocol", "c", "tcp", "Specify the protocol ('tcp' or 'tcp6').")
 	ssCommand.PersistentFlags().StringVarP(&ssCmdFlag.program, "program", "s", "", "Specify the program name.")
-	ssCommand.PersistentFlags().Int64VarP(&ssCmdFlag.localPort, "local-port", "l", -1, "Specify the PID.")
+	ssCommand.PersistentFlags().Int64VarP(&ssCmdFlag.localPort, "local-port", "l", -1, "Specify the local port.")
 	ssCommand.PersistentFlags().IntVarP(&ssCmdFlag.top, "top", "t", 5, "Limit the number results to return.")
 }
 
