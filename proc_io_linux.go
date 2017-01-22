@@ -10,10 +10,10 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-// GetIO reads '/proc/$PID/io' data.
-func GetIO(pid int64) (s IO, err error) {
+// GetProcIOByPID reads '/proc/$PID/io' data.
+func GetProcIOByPID(pid int64) (s IO, err error) {
 	for i := 0; i < 5; i++ {
-		s, err = parseProcIO(pid)
+		s, err = parseProcIOByPID(pid)
 		if err == nil {
 			return s, nil
 		}
@@ -23,7 +23,7 @@ func GetIO(pid int64) (s IO, err error) {
 	return
 }
 
-func parseProcIO(pid int64) (IO, error) {
+func parseProcIOByPID(pid int64) (IO, error) {
 	fpath := fmt.Sprintf("/proc/%d/io", pid)
 	f, err := openToRead(fpath)
 	if err != nil {

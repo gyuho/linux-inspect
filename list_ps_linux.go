@@ -25,6 +25,9 @@ type PSEntry struct {
 	FD      uint64
 	Threads uint64
 
+	VoluntaryCtxtSwitches    uint64
+	NonvoluntaryCtxtSwitches uint64
+
 	// extra fields for sorting
 	CPUNum    float64
 	VMRSSNum  uint64
@@ -71,9 +74,9 @@ func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
 			go func(pid int64) {
 				defer wg.Done()
 
-				stat, err := GetStat(pid, up)
+				stat, err := GetProcStatByPID(pid, up)
 				if err != nil {
-					log.Printf("GetStat error %v for PID %d", err, pid)
+					log.Printf("GetProcStatByPID error %v for PID %d", err, pid)
 					return
 				}
 
@@ -107,9 +110,9 @@ func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
 			go func(pid int64) {
 				defer wg.Done()
 
-				stat, err := GetStat(pid, up)
+				stat, err := GetProcStatByPID(pid, up)
 				if err != nil {
-					log.Printf("GetStat error %v for PID %d", err, pid)
+					log.Printf("GetProcStatByPID error %v for PID %d", err, pid)
 					return
 				}
 				if !ft.ProgramMatchFunc(stat.Comm) {
@@ -144,7 +147,7 @@ func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
 }
 
 func getPSEntry(pid int64, stat Stat) (PSEntry, error) {
-	status, err := GetStatus(pid)
+	status, err := GetProcStatusByPID(pid)
 	if err != nil {
 		return PSEntry{}, err
 	}
@@ -163,6 +166,9 @@ func getPSEntry(pid int64, stat Stat) (PSEntry, error) {
 		FD:      status.FDSize,
 		Threads: status.Threads,
 
+		VoluntaryCtxtSwitches:    status.VoluntaryCtxtSwitches,
+		NonvoluntaryCtxtSwitches: status.NonvoluntaryCtxtSwitches,
+
 		CPUNum:    stat.CpuUsage,
 		VMRSSNum:  status.VmRSSBytesN,
 		VMSizeNum: status.VmSizeBytesN,
@@ -178,7 +184,7 @@ func getPSEntry(pid int64, stat Stat) (PSEntry, error) {
 	return entry, nil
 }
 
-const columnsPSToShow = 9
+const columnsPSToShow = 11
 
 var columnsPSEntry = []string{
 	"PROGRAM",
@@ -193,6 +199,9 @@ var columnsPSEntry = []string{
 
 	"FD",
 	"THREADS",
+
+	"VOLUNTARY-CTXT-SWITCHES",
+	"NON-VOLUNTARY-CTXT-SWITCHES",
 
 	// extra for sorting
 	"CPU-NUM",
@@ -219,17 +228,20 @@ func ConvertPS(nss ...PSEntry) (header []string, rows [][]string) {
 		row[7] = fmt.Sprintf("%d", elem.FD)
 		row[8] = fmt.Sprintf("%d", elem.Threads)
 
-		row[9] = fmt.Sprintf("%3.2f", elem.CPUNum)
-		row[10] = fmt.Sprintf("%d", elem.VMRSSNum)
-		row[11] = fmt.Sprintf("%d", elem.VMSizeNum)
+		row[9] = fmt.Sprintf("%d", elem.VoluntaryCtxtSwitches)
+		row[10] = fmt.Sprintf("%d", elem.NonvoluntaryCtxtSwitches)
+
+		row[11] = fmt.Sprintf("%3.2f", elem.CPUNum)
+		row[12] = fmt.Sprintf("%d", elem.VMRSSNum)
+		row[13] = fmt.Sprintf("%d", elem.VMSizeNum)
 
 		rows[i] = row
 	}
 	dataframe.SortBy(
 		rows,
-		dataframe.NumberDescendingFunc(10), // VMRSSNum
-		dataframe.NumberDescendingFunc(9),  // CPUNum
-		dataframe.NumberDescendingFunc(11), // VMSizeNum
+		dataframe.NumberDescendingFunc(12), // VMRSSNum
+		dataframe.NumberDescendingFunc(11), // CPUNum
+		dataframe.NumberDescendingFunc(13), // VMSizeNum
 	).Sort(rows)
 
 	return

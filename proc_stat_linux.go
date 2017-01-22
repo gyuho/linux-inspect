@@ -16,8 +16,8 @@ import (
 	"github.com/gyuho/psn/schema"
 )
 
-// GetStat reads '/proc/$PID/stat' data.
-func GetStat(pid int64, up Uptime) (s Stat, err error) {
+// GetProcStatByPID reads '/proc/$PID/stat' data.
+func GetProcStatByPID(pid int64, up Uptime) (s Stat, err error) {
 	for i := 0; i < 5; i++ {
 		s, err = parseProcStat(pid, up)
 		if err == nil {

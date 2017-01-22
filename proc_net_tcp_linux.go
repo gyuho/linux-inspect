@@ -30,10 +30,10 @@ func (tp TransportProtocol) String() string {
 	}
 }
 
-// GetNetTCP reads '/proc/$PID/net/tcp(6)' data.
-func GetNetTCP(pid int64, tp TransportProtocol) (ss []NetTCP, err error) {
+// GetProcNetTCPByPID reads '/proc/$PID/net/tcp(6)' data.
+func GetProcNetTCPByPID(pid int64, tp TransportProtocol) (ss []NetTCP, err error) {
 	for i := 0; i < 5; i++ {
-		ss, err = parseProcNetTCP(pid, tp)
+		ss, err = parseProcNetTCPByPID(pid, tp)
 		if err == nil {
 			return ss, nil
 		}
@@ -76,7 +76,7 @@ var (
 	}
 )
 
-func parseProcNetTCP(pid int64, tp TransportProtocol) ([]NetTCP, error) {
+func parseProcNetTCPByPID(pid int64, tp TransportProtocol) ([]NetTCP, error) {
 	fpath := fmt.Sprintf("/proc/%d/net/%s", pid, tp.String())
 	f, err := openToRead(fpath)
 	if err != nil {

@@ -5,8 +5,8 @@ import (
 	"testing"
 )
 
-func TestGetDiskstats(t *testing.T) {
-	ds, err := GetDiskstats()
+func TestGetProcDiskstats(t *testing.T) {
+	ds, err := GetProcDiskstats()
 	if err != nil {
 		t.Error(err)
 	}

@@ -129,9 +129,9 @@ func GetSS(opts ...FilterFunc) (sss []SSEntry, err error) {
 				go func(pid int64) {
 					defer wg.Done()
 
-					stat, err := GetStat(pid, up)
+					stat, err := GetProcStatByPID(pid, up)
 					if err != nil {
-						log.Printf("GetStat error %v for PID %d", err, pid)
+						log.Printf("GetProcStatByPID error %v for PID %d", err, pid)
 						return
 					}
 					if !ft.ProgramMatchFunc(stat.Comm) {
@@ -160,9 +160,9 @@ func GetSS(opts ...FilterFunc) (sss []SSEntry, err error) {
 				go func(pid int64) {
 					defer wg.Done()
 
-					stat, err := GetStat(pid, up)
+					stat, err := GetProcStatByPID(pid, up)
 					if err != nil {
-						log.Printf("GetStat error %v for PID %d", err, pid)
+						log.Printf("GetProcStatByPID error %v for PID %d", err, pid)
 						return
 					}
 					if !ft.ProgramMatchFunc(stat.Comm) {
@@ -198,7 +198,7 @@ func GetSS(opts ...FilterFunc) (sss []SSEntry, err error) {
 }
 
 func getSSEntry(pid int64, tp TransportProtocol, lport int64, rport int64) (sss []SSEntry, err error) {
-	nss, nerr := GetNetTCP(pid, tp)
+	nss, nerr := GetProcNetTCPByPID(pid, tp)
 	if nerr != nil {
 		return nil, nerr
 	}

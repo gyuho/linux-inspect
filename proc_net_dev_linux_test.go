@@ -5,8 +5,8 @@ import (
 	"testing"
 )
 
-func TestGetNetDev(t *testing.T) {
-	ns, err := GetNetDev()
+func TestGetProcNetDev(t *testing.T) {
+	ns, err := GetProcNetDev()
 	if err != nil {
 		t.Error(err)
 	}

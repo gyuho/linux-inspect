@@ -25,7 +25,7 @@ type NSEntry struct {
 
 // GetNS lists all '/proc/net/dev' statistics.
 func GetNS() ([]NSEntry, error) {
-	ss, err := GetNetDev()
+	ss, err := GetProcNetDev()
 	if err != nil {
 		return nil, err
 	}
