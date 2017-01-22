@@ -13,10 +13,10 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// GetStatus reads '/proc/$PID/status' data.
-func GetStatus(pid int64) (s Status, err error) {
+// GetProcStatusByPID reads '/proc/$PID/status' data.
+func GetProcStatusByPID(pid int64) (s Status, err error) {
 	for i := 0; i < 5; i++ {
-		s, err = parseProcStatus(pid)
+		s, err = parseProcStatusByPID(pid)
 		if err == nil {
 			return s, nil
 		}
@@ -46,7 +46,7 @@ func rawProcStatus(pid int64) (Status, error) {
 	return rs, nil
 }
 
-func parseProcStatus(pid int64) (Status, error) {
+func parseProcStatusByPID(pid int64) (Status, error) {
 	rs, err := rawProcStatus(pid)
 	if err != nil {
 		return rs, err

@@ -29,8 +29,8 @@ const (
 	proc_diskstats_idx_weighted_time_spent_on_io_ms
 )
 
-// GetDiskstats reads '/proc/diskstats'.
-func GetDiskstats() ([]DiskStat, error) {
+// GetProcDiskstats reads '/proc/diskstats'.
+func GetProcDiskstats() ([]DiskStat, error) {
 	f, err := openToRead("/proc/diskstats")
 	if err != nil {
 		return nil, err

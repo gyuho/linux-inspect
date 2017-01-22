@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestGetIO(t *testing.T) {
+func TestGetProcIOByPID(t *testing.T) {
 	fds, err := ListProcFds()
 	if err != nil {
 		t.Fatal(err)
@@ -26,11 +26,11 @@ func TestGetIO(t *testing.T) {
 	}
 	fmt.Println("GetProgram:", nm)
 
-	ns, err := GetIO(pid)
+	ns, err := GetProcIOByPID(pid)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("GetIO: %+v\n", ns)
+	fmt.Printf("GetProcIOByPID: %+v\n", ns)
 
 	if ns.WriteBytes != ns.WriteBytesBytesN {
 		t.Fatalf("expected same, got %d, %d", ns.WriteBytes, ns.WriteBytesBytesN)

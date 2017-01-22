@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestGetNetTCP(t *testing.T) {
+func TestGetProcNetTCPByPID(t *testing.T) {
 	fds, err := ListProcFds()
 	if err != nil {
 		t.Fatal(err)
@@ -26,17 +26,17 @@ func TestGetNetTCP(t *testing.T) {
 	}
 	fmt.Println("GetProgram:", nm)
 
-	ns, err := GetNetTCP(pid, TypeTCP)
+	ns, err := GetProcNetTCPByPID(pid, TypeTCP)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("GetNetTCP TypeTCP: %+v\n", ns)
+	fmt.Printf("GetProcNetTCPByPID TypeTCP: %+v\n", ns)
 
-	nss, err := GetNetTCP(pid, TypeTCP6)
+	nss, err := GetProcNetTCPByPID(pid, TypeTCP6)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("GetNetTCP TypeTCP: %+v\n", ns)
+	fmt.Printf("GetProcNetTCPByPID TypeTCP: %+v\n", ns)
 
 	for _, ns := range nss {
 		pid2 := SearchInode(fds, ns.Inode)

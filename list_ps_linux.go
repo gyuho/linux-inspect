@@ -71,9 +71,9 @@ func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
 			go func(pid int64) {
 				defer wg.Done()
 
-				stat, err := GetStat(pid, up)
+				stat, err := GetProcStatByPID(pid, up)
 				if err != nil {
-					log.Printf("GetStat error %v for PID %d", err, pid)
+					log.Printf("GetProcStatByPID error %v for PID %d", err, pid)
 					return
 				}
 
@@ -107,9 +107,9 @@ func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
 			go func(pid int64) {
 				defer wg.Done()
 
-				stat, err := GetStat(pid, up)
+				stat, err := GetProcStatByPID(pid, up)
 				if err != nil {
-					log.Printf("GetStat error %v for PID %d", err, pid)
+					log.Printf("GetProcStatByPID error %v for PID %d", err, pid)
 					return
 				}
 				if !ft.ProgramMatchFunc(stat.Comm) {
@@ -144,7 +144,7 @@ func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
 }
 
 func getPSEntry(pid int64, stat Stat) (PSEntry, error) {
-	status, err := GetStatus(pid)
+	status, err := GetProcStatusByPID(pid)
 	if err != nil {
 		return PSEntry{}, err
 	}

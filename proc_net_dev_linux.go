@@ -32,8 +32,8 @@ const (
 	proc_net_dev_idx_transmit_carrier
 )
 
-// GetNetDev reads '/proc/net/dev'.
-func GetNetDev() ([]NetDev, error) {
+// GetProcNetDev reads '/proc/net/dev'.
+func GetProcNetDev() ([]NetDev, error) {
 	f, err := openToRead("/proc/net/dev")
 	if err != nil {
 		return nil, err

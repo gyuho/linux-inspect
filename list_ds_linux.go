@@ -28,7 +28,7 @@ type DSEntry struct {
 
 // GetDS lists all disk statistics.
 func GetDS() ([]DSEntry, error) {
-	ss, err := GetDiskstats()
+	ss, err := GetProcDiskstats()
 	if err != nil {
 		return nil, err
 	}
