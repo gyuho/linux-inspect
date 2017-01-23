@@ -59,7 +59,7 @@ func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
 		// applyOpts already panic when ft.ProgramMatchFunc != nil && ft.PID > 0
 	}
 
-	up, err := GetUptime()
+	up, err := GetProcUptime()
 	if err != nil {
 		return nil, err
 	}

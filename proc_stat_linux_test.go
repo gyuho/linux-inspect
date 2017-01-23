@@ -6,7 +6,7 @@ import (
 )
 
 func TestGetProcStatByPID(t *testing.T) {
-	u, err := GetUptime()
+	u, err := GetProcUptime()
 	if err != nil {
 		t.Fatal(err)
 	}

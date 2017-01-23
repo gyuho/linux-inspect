@@ -6,8 +6,8 @@ import (
 	"strings"
 )
 
-// GetUptime reads '/proc/uptime'.
-func GetUptime() (Uptime, error) {
+// GetProcUptime reads '/proc/uptime'.
+func GetProcUptime() (Uptime, error) {
 	f, err := openToRead("/proc/uptime")
 	if err != nil {
 		return Uptime{}, err

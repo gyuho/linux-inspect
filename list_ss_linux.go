@@ -116,7 +116,7 @@ func GetSS(opts ...FilterFunc) (sss []SSEntry, err error) {
 			return
 		}
 
-		up, err := GetUptime()
+		up, err := GetProcUptime()
 		if err != nil {
 			return nil, err
 		}
