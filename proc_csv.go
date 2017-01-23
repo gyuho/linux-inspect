@@ -268,6 +268,14 @@ func ReadCSV(fpath string) (*CSV, error) {
 		if err != nil {
 			return nil, err
 		}
+		volCtxNum, err := strconv.ParseUint(row[ProcHeaderIndex["VOLUNTARY-CTXT-SWITCHES"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		nonVolCtxNum, err := strconv.ParseUint(row[ProcHeaderIndex["NON-VOLUNTARY-CTXT-SWITCHES"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
 		cpuNum, err := strconv.ParseFloat(row[ProcHeaderIndex["CPU-NUM"]], 64)
 		if err != nil {
 			return nil, err
@@ -360,15 +368,17 @@ func ReadCSV(fpath string) (*CSV, error) {
 		proc := Proc{
 			UnixTS: ts,
 			PSEntry: PSEntry{
-				Program:   row[ProcHeaderIndex["PROGRAM"]],
-				State:     row[ProcHeaderIndex["STATE"]],
-				PID:       pid,
-				PPID:      ppid,
-				CPU:       row[ProcHeaderIndex["CPU"]],
-				VMRSS:     row[ProcHeaderIndex["VMRSS"]],
-				VMSize:    row[ProcHeaderIndex["VMSIZE"]],
-				FD:        fd,
-				Threads:   threads,
+				Program:                  row[ProcHeaderIndex["PROGRAM"]],
+				State:                    row[ProcHeaderIndex["STATE"]],
+				PID:                      pid,
+				PPID:                     ppid,
+				CPU:                      row[ProcHeaderIndex["CPU"]],
+				VMRSS:                    row[ProcHeaderIndex["VMRSS"]],
+				VMSize:                   row[ProcHeaderIndex["VMSIZE"]],
+				FD:                       fd,
+				Threads:                  threads,
+				VoluntaryCtxtSwitches:    volCtxNum,
+				NonvoluntaryCtxtSwitches: nonVolCtxNum,
 				CPUNum:    cpuNum,
 				VMRSSNum:  vmRssNum,
 				VMSizeNum: vmSizeNum,
