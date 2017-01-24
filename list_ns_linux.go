@@ -99,6 +99,7 @@ func StringNS(header []string, rows [][]string, topLimit int) string {
 	for _, row := range rows {
 		tw.Append(row[:columnsNSToShow:columnsNSToShow])
 	}
+	tw.SetAlignment(tablewriter.ALIGN_CENTER)
 	tw.Render()
 
 	return buf.String()
