@@ -305,7 +305,7 @@ func StringSS(header []string, rows [][]string, topLimit int) string {
 		tw.Append(row[:columnsSSToShow:columnsSSToShow])
 	}
 	tw.SetAutoFormatHeaders(false)
-	tw.SetAlignment(tablewriter.ALIGN_CENTER)
+	tw.SetAlignment(tablewriter.ALIGN_RIGHT)
 	tw.Render()
 
 	return buf.String()

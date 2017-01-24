@@ -100,7 +100,7 @@ func StringNS(header []string, rows [][]string, topLimit int) string {
 		tw.Append(row[:columnsNSToShow:columnsNSToShow])
 	}
 	tw.SetAutoFormatHeaders(false)
-	tw.SetAlignment(tablewriter.ALIGN_CENTER)
+	tw.SetAlignment(tablewriter.ALIGN_RIGHT)
 	tw.Render()
 
 	return buf.String()
