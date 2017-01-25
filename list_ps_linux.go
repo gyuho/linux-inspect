@@ -239,9 +239,9 @@ func ConvertPS(nss ...PSEntry) (header []string, rows [][]string) {
 	}
 	dataframe.SortBy(
 		rows,
-		dataframe.NumberDescendingFunc(12), // VMRSSNum
-		dataframe.NumberDescendingFunc(11), // CPUNum
-		dataframe.NumberDescendingFunc(13), // VMSizeNum
+		dataframe.Float64DescendingFunc(12), // VMRSSNum
+		dataframe.Float64DescendingFunc(11), // CPUNum
+		dataframe.Float64DescendingFunc(13), // VMSizeNum
 	).Sort(rows)
 
 	return

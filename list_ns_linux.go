@@ -79,8 +79,8 @@ func ConvertNS(nss ...NSEntry) (header []string, rows [][]string) {
 	}
 	dataframe.SortBy(
 		rows,
-		dataframe.NumberDescendingFunc(5), // ReceiveBytesNum
-		dataframe.NumberDescendingFunc(6), // TransmitBytesNum
+		dataframe.Float64DescendingFunc(5), // ReceiveBytesNum
+		dataframe.Float64DescendingFunc(6), // TransmitBytesNum
 	).Sort(rows)
 
 	return
