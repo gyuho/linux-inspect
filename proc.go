@@ -40,7 +40,7 @@ func GetProc(opts ...FilterFunc) (Proc, error) {
 	if ft.PID == 0 {
 		return Proc{}, fmt.Errorf("unknown PID %d", ft.PID)
 	}
-	proc := Proc{UnixTS: time.Now().Unix()}
+	proc := Proc{UnixTS: time.Now().UnixNano()}
 
 	errc := make(chan error)
 	go func() {
