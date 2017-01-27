@@ -18,15 +18,7 @@ import (
 
 // GetProcStatByPID reads '/proc/$PID/stat' data.
 func GetProcStatByPID(pid int64, up Uptime) (s Stat, err error) {
-	for i := 0; i < 5; i++ {
-		s, err = parseProcStat(pid, up)
-		if err == nil {
-			return s, nil
-		}
-		log.Println("retrying;", err)
-		time.Sleep(5 * time.Millisecond)
-	}
-	return
+	return parseProcStat(pid, up)
 }
 
 func parseProcStat(pid int64, up Uptime) (Stat, error) {

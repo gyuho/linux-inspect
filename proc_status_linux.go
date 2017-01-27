@@ -15,15 +15,7 @@ import (
 
 // GetProcStatusByPID reads '/proc/$PID/status' data.
 func GetProcStatusByPID(pid int64) (s Status, err error) {
-	for i := 0; i < 5; i++ {
-		s, err = parseProcStatusByPID(pid)
-		if err == nil {
-			return s, nil
-		}
-		log.Println(err)
-		time.Sleep(5 * time.Millisecond)
-	}
-	return
+	return parseProcStatusByPID(pid)
 }
 
 func rawProcStatus(pid int64) (Status, error) {

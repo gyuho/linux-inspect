@@ -32,15 +32,7 @@ func (tp TransportProtocol) String() string {
 
 // GetProcNetTCPByPID reads '/proc/$PID/net/tcp(6)' data.
 func GetProcNetTCPByPID(pid int64, tp TransportProtocol) (ss []NetTCP, err error) {
-	for i := 0; i < 5; i++ {
-		ss, err = parseProcNetTCPByPID(pid, tp)
-		if err == nil {
-			return ss, nil
-		}
-		log.Println("retrying;", err)
-		time.Sleep(5 * time.Millisecond)
-	}
-	return
+	return parseProcNetTCPByPID(pid, tp)
 }
 
 type procNetColumnIndex int
