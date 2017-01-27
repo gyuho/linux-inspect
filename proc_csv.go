@@ -24,7 +24,9 @@ type CSV struct {
 	// ExtraPath contains extra information.
 	ExtraPath string
 
-	// Rows are sorted by unix seconds.
+	// Rows are sorted by unix time in nanoseconds.
+	// It's the number of nanoseconds (not seconds) elapsed
+	// since January 1, 1970 UTC.
 	Rows []Proc
 }
 
