@@ -47,8 +47,9 @@ func NewCSV(fpath string, pid int64, diskDevice string, networkInterface string,
 	}
 }
 
-// Add is to be called periodically to add a row to CSV.
-// It only appends to CSV. And it estimates empty rows by unix seconds.
+// Add is called periodically to append a new entry to CSV; it only appends.
+// If the data is used for time series, make sure to handle missing time stamps between.
+// e.g. interpolate by estimating the averages between last row and new row to be inserted.
 func (c *CSV) Add() error {
 	cur, err := GetProc(
 		WithPID(c.PID),
