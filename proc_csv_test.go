@@ -46,12 +46,6 @@ func TestProcCSV(t *testing.T) {
 		time.Sleep(time.Second)
 	}
 
-	// test if Add fills in empty rows
-	time.Sleep(2*time.Second + 50*time.Millisecond)
-
-	if err := c.Add(); err != nil {
-		t.Fatal(err)
-	}
 	if err := c.Save(); err != nil {
 		t.Fatal(err)
 	}
