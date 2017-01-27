@@ -54,139 +54,69 @@ func GetSS(opts ...FilterFunc) (sss []SSEntry, err error) {
 		// applyOpts already panic when ft.ProgramMatchFunc != nil && ft.PID > 0
 	}
 
-	var pmu sync.RWMutex
-	var wg sync.WaitGroup
-	if len(pids) > 0 {
-		// we already know PIDs to query
+	up, err := GetProcUptime()
+	if err != nil {
+		return nil, err
+	}
 
-		wg.Add(len(pids))
-		if ft.TCP && ft.TCP6 {
-			wg.Add(len(pids))
-		}
-		for _, pid := range pids {
-			if ft.TCP {
-				go func(pid int64) {
-					defer wg.Done()
-
-					ents, err := getSSEntry(pid, TypeTCP, ft.LocalPort, ft.RemotePort)
-					if err != nil {
-						log.Printf("getSSEntry error %v for PID %d", err, pid)
-						return
-					}
-
-					pmu.RLock()
-					done := ft.TopLimit > 0 && len(sss) >= ft.TopLimit
-					pmu.RUnlock()
-					if done {
-						return
-					}
-
-					pmu.Lock()
-					sss = append(sss, ents...)
-					pmu.Unlock()
-				}(pid)
-			}
-			if ft.TCP6 {
-				go func(pid int64) {
-					defer wg.Done()
-
-					ents, err := getSSEntry(pid, TypeTCP6, ft.LocalPort, ft.RemotePort)
-					if err != nil {
-						log.Printf("getSSEntry error %v for PID %d", err, pid)
-						return
-					}
-
-					pmu.RLock()
-					done := ft.TopLimit > 0 && len(sss) >= ft.TopLimit
-					pmu.RUnlock()
-					if done {
-						return
-					}
-
-					pmu.Lock()
-					sss = append(sss, ents...)
-					pmu.Unlock()
-				}(pid)
-			}
+	if len(pids) == 0 {
+		// find PIDs by Program
+		if pids, err = ListPIDs(); err != nil {
+			return
 		}
 	} else {
-		// find PIDs by Program
-		pids, err = ListPIDs()
+		// already know PIDs to query
+		ft.ProgramMatchFunc = func(string) bool { return true }
+	}
+
+	var pmu sync.RWMutex
+	var wg sync.WaitGroup
+	limitc := make(chan struct{}, maxConcurrentProcStat)
+
+	f := func(pid int64, ttype TransportProtocol) {
+		defer func() {
+			<-limitc
+			wg.Done()
+		}()
+		limitc <- struct{}{}
+
+		stat, err := GetProcStatByPID(pid, up)
 		if err != nil {
+			log.Printf("GetProcStatByPID error %v for PID %d", err, pid)
+			return
+		}
+		if !ft.ProgramMatchFunc(stat.Comm) {
 			return
 		}
 
-		up, err := GetProcUptime()
+		pmu.RLock()
+		done := ft.TopLimit > 0 && len(sss) >= ft.TopLimit
+		pmu.RUnlock()
+		if done {
+			return
+		}
+
+		ents, err := getSSEntry(pid, ttype, ft.LocalPort, ft.RemotePort)
 		if err != nil {
-			return nil, err
+			log.Printf("getSSEntry error %v for PID %d", err, pid)
+			return
 		}
+
+		pmu.Lock()
+		sss = append(sss, ents...)
+		pmu.Unlock()
+	}
+
+	wg.Add(len(pids))
+	if ft.TCP && ft.TCP6 {
 		wg.Add(len(pids))
-		if ft.TCP && ft.TCP6 {
-			wg.Add(len(pids))
+	}
+	for _, pid := range pids {
+		if ft.TCP {
+			go f(pid, TypeTCP)
 		}
-		for _, pid := range pids {
-			if ft.TCP {
-				go func(pid int64) {
-					defer wg.Done()
-
-					stat, err := GetProcStatByPID(pid, up)
-					if err != nil {
-						log.Printf("GetProcStatByPID error %v for PID %d", err, pid)
-						return
-					}
-					if !ft.ProgramMatchFunc(stat.Comm) {
-						return
-					}
-
-					pmu.RLock()
-					done := ft.TopLimit > 0 && len(sss) >= ft.TopLimit
-					pmu.RUnlock()
-					if done {
-						return
-					}
-
-					ents, err := getSSEntry(pid, TypeTCP, ft.LocalPort, ft.RemotePort)
-					if err != nil {
-						log.Printf("getSSEntry error %v for PID %d", err, pid)
-						return
-					}
-
-					pmu.Lock()
-					sss = append(sss, ents...)
-					pmu.Unlock()
-				}(pid)
-			}
-			if ft.TCP6 {
-				go func(pid int64) {
-					defer wg.Done()
-
-					stat, err := GetProcStatByPID(pid, up)
-					if err != nil {
-						log.Printf("GetProcStatByPID error %v for PID %d", err, pid)
-						return
-					}
-					if !ft.ProgramMatchFunc(stat.Comm) {
-						return
-					}
-
-					pmu.RLock()
-					done := ft.TopLimit > 0 && len(sss) >= ft.TopLimit
-					pmu.RUnlock()
-					if done {
-						return
-					}
-
-					ents, err := getSSEntry(pid, TypeTCP6, ft.LocalPort, ft.RemotePort)
-					if err != nil {
-						log.Printf("getSSEntry error %v for PID %d", err, pid)
-						return
-					}
-
-					pmu.Lock()
-					sss = append(sss, ents...)
-					pmu.Unlock()
-				}(pid)
-			}
+		if ft.TCP6 {
+			go f(pid, TypeTCP6)
 		}
 	}
 	wg.Wait()
