@@ -3,8 +3,6 @@ package psn
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
-	"time"
 
 	humanize "github.com/dustin/go-humanize"
 	yaml "gopkg.in/yaml.v2"
@@ -12,18 +10,6 @@ import (
 
 // GetProcIOByPID reads '/proc/$PID/io' data.
 func GetProcIOByPID(pid int64) (s IO, err error) {
-	for i := 0; i < 5; i++ {
-		s, err = parseProcIOByPID(pid)
-		if err == nil {
-			return s, nil
-		}
-		log.Println(err)
-		time.Sleep(5 * time.Millisecond)
-	}
-	return
-}
-
-func parseProcIOByPID(pid int64) (IO, error) {
 	fpath := fmt.Sprintf("/proc/%d/io", pid)
 	f, err := openToRead(fpath)
 	if err != nil {
