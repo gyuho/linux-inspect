@@ -34,6 +34,8 @@ type PSEntry struct {
 	VMSizeNum uint64
 }
 
+const maxConcurrentProcStat = 32
+
 // GetPS finds all PSEntry by given filter.
 func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
 	ft := &EntryFilter{}
@@ -64,79 +66,54 @@ func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
 		return nil, err
 	}
 
-	var pmu sync.RWMutex
-	var wg sync.WaitGroup
-	if len(pids) > 0 {
-		// we already know PIDs to query
-
-		wg.Add(len(pids))
-		for _, pid := range pids {
-			go func(pid int64) {
-				defer wg.Done()
-
-				stat, err := GetProcStatByPID(pid, up)
-				if err != nil {
-					log.Printf("GetProcStatByPID error %v for PID %d", err, pid)
-					return
-				}
-
-				pmu.RLock()
-				done := ft.TopLimit > 0 && len(pss) >= ft.TopLimit
-				pmu.RUnlock()
-				if done {
-					return
-				}
-
-				ent, err := getPSEntry(pid, stat)
-				if err != nil {
-					log.Printf("getPSEntry error %v for PID %d", err, pid)
-					return
-				}
-
-				pmu.Lock()
-				pss = append(pss, ent)
-				pmu.Unlock()
-			}(pid)
-		}
-	} else {
+	if len(pids) == 0 {
 		// find PIDs by Program
-		pids, err = ListPIDs()
-		if err != nil {
+		if pids, err = ListPIDs(); err != nil {
 			return
 		}
+	} else {
+		ft.ProgramMatchFunc = func(string) bool { return true }
+	}
 
-		wg.Add(len(pids))
-		for _, pid := range pids {
-			go func(pid int64) {
-				defer wg.Done()
+	var pmu sync.RWMutex
+	var wg sync.WaitGroup
+	wg.Add(len(pids))
+	limitc := make(chan struct{}, maxConcurrentProcStat)
+	for _, pid := range pids {
+		go func(pid int64) {
+			defer func() {
+				<-limitc
+				wg.Done()
+			}()
 
-				stat, err := GetProcStatByPID(pid, up)
-				if err != nil {
-					log.Printf("GetProcStatByPID error %v for PID %d", err, pid)
-					return
-				}
-				if !ft.ProgramMatchFunc(stat.Comm) {
-					return
-				}
+			limitc <- struct{}{}
 
-				pmu.RLock()
-				done := ft.TopLimit > 0 && len(pss) >= ft.TopLimit
-				pmu.RUnlock()
-				if done {
-					return
-				}
+			stat, err := GetProcStatByPID(pid, up)
+			if err != nil {
+				log.Printf("GetProcStatByPID error %v for PID %d", err, pid)
+				return
+			}
+			if !ft.ProgramMatchFunc(stat.Comm) {
+				return
+			}
 
-				ent, err := getPSEntry(pid, stat)
-				if err != nil {
-					log.Printf("getPSEntry error %v for PID %d", err, pid)
-					return
-				}
+			pmu.RLock()
+			done := ft.TopLimit > 0 && len(pss) >= ft.TopLimit
+			pmu.RUnlock()
+			if done {
+				return
+			}
 
-				pmu.Lock()
-				pss = append(pss, ent)
-				pmu.Unlock()
-			}(pid)
-		}
+			ent, err := getPSEntry(pid, stat)
+			if err != nil {
+				log.Printf("getPSEntry error %v for PID %d", err, pid)
+				return
+			}
+
+			pmu.Lock()
+			pss = append(pss, ent)
+			pmu.Unlock()
+		}(pid)
 	}
 	wg.Wait()
 
