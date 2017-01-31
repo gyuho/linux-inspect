@@ -39,10 +39,12 @@ func TestProcCSV(t *testing.T) {
 			}
 		}
 
-		fmt.Printf("#%d: collecting data with %s and %s at %s\n", i, dn, nt, fpath)
+		now := time.Now()
 		if err := c.Add(); err != nil {
 			t.Fatal(err)
 		}
+		fmt.Printf("#%d: collected data with %s and %s at %s (c.Add took %v)\n", i, dn, nt, fpath, time.Since(now))
+
 		time.Sleep(time.Second)
 	}
 
