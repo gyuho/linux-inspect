@@ -13,7 +13,6 @@ Usage:
 Available Commands:
   ds          Inspects '/proc/diskstats'
   ns          Inspects '/proc/net/dev'
-  ps          Inspects '/proc/$PID/stat,status'
+  ps          Inspects '/proc/$PID/status', 'top' command output
   ss          Inspects '/proc/net/tcp,tcp6'
 ```
-

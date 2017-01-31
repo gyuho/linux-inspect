@@ -10,5 +10,5 @@ script:
 - go get -v github.com/gyuho/psn/cmd/psn
 - psn ds
 - psn ns
-- psn ps --top 5
-- psn ss --top 5
+- psn ps --top 10
+- psn ss --top 10

@@ -71,7 +71,7 @@ func GetSS(opts ...FilterFunc) (sss []SSEntry, err error) {
 
 	var pmu sync.RWMutex
 	var wg sync.WaitGroup
-	limitc := make(chan struct{}, maxConcurrentProcStat)
+	limitc := make(chan struct{}, maxConcurrentProcFDLimit)
 
 	f := func(pid int64, ttype TransportProtocol) {
 		defer func() {
