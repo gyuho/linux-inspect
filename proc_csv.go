@@ -123,6 +123,7 @@ func (c *CSV) Save() error {
 }
 
 // ReadCSV reads a CSV file and convert to 'CSV'.
+// Make sure to change this whenever 'Proc' fields are updated.
 func ReadCSV(fpath string) (*CSV, error) {
 	f, err := openToRead(fpath)
 	if err != nil {
@@ -207,6 +208,19 @@ func ReadCSV(fpath string) (*CSV, error) {
 			return nil, err
 		}
 		vmSizeNum, err := strconv.ParseUint(row[ProcHeaderIndex["VMSIZE-NUM"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		loadAvg1min, err := strconv.ParseFloat(row[ProcHeaderIndex["LOAD-AVERAGE-1-MINUTE"]], 64)
+		if err != nil {
+			return nil, err
+		}
+		loadAvg5min, err := strconv.ParseFloat(row[ProcHeaderIndex["LOAD-AVERAGE-5-MINUTE"]], 64)
+		if err != nil {
+			return nil, err
+		}
+		loadAvg15min, err := strconv.ParseFloat(row[ProcHeaderIndex["LOAD-AVERAGE-15-MINUTE"]], 64)
 		if err != nil {
 			return nil, err
 		}
@@ -304,6 +318,12 @@ func ReadCSV(fpath string) (*CSV, error) {
 				CPUNum:    cpuNum,
 				VMRSSNum:  vmRssNum,
 				VMSizeNum: vmSizeNum,
+			},
+
+			LoadAvg: LoadAvg{
+				LoadAvg1Minute:  loadAvg1min,
+				LoadAvg5Minute:  loadAvg5min,
+				LoadAvg15Minute: loadAvg15min,
 			},
 
 			DSEntry: DSEntry{

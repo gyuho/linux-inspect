@@ -79,6 +79,9 @@ func TestProcCSV(t *testing.T) {
 	if len(c.Rows) != len(cv.Rows) {
 		t.Fatalf("len(Rows) expected %d, got %d", len(c.Rows), len(cv.Rows))
 	}
+	if cv.Rows[0].LoadAvg.LoadAvg1Minute != c.Rows[0].LoadAvg.LoadAvg1Minute {
+		t.Fatalf("1-min laod average expected %f, got %f", c.Rows[0].LoadAvg.LoadAvg1Minute, cv.Rows[0].LoadAvg.LoadAvg1Minute)
+	}
 
 	for i := range c.Rows {
 		if i == 0 && string(c.Rows[i].Extra) != "10" {
