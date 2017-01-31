@@ -11,6 +11,7 @@ type Proc struct {
 	UnixTS int64
 
 	PSEntry PSEntry
+	LoadAvg LoadAvg
 
 	DSEntry              DSEntry
 	ReadsCompletedDelta  uint64
@@ -55,6 +56,16 @@ func GetProc(opts ...FilterFunc) (Proc, error) {
 			return
 		}
 		proc.PSEntry = ets[0]
+		errc <- nil
+	}()
+
+	go func() {
+		lvg, err := GetProcLoadAvg()
+		if err != nil {
+			errc <- err
+			return
+		}
+		proc.LoadAvg = lvg
 		errc <- nil
 	}()
 
@@ -112,7 +123,7 @@ func GetProc(opts ...FilterFunc) (Proc, error) {
 	}
 
 	cnt := 0
-	for cnt != len(opts) {
+	for cnt != len(opts)+1 { // include load avg query
 		err := <-errc
 		if err != nil {
 			return Proc{}, err
@@ -143,6 +154,11 @@ var (
 
 func init() {
 	// more columns to 'ProcHeader'
+	ProcHeader = append(ProcHeader,
+		"LOAD-AVERAGE-1-MINUTE",
+		"LOAD-AVERAGE-5-MINUTE",
+		"LOAD-AVERAGE-15-MINUTE",
+	)
 	ProcHeader = append(ProcHeader, columnsDSEntry...)
 	ProcHeader = append(ProcHeader, columnsNSEntry...)
 	ProcHeader = append(ProcHeader,
@@ -167,6 +183,7 @@ func init() {
 }
 
 // ToRow converts 'Proc' to string slice.
+// Make sure to change this whenever 'Proc' fields are updated.
 func (p *Proc) ToRow() (row []string) {
 	row = make([]string, len(ProcHeader))
 	row[0] = fmt.Sprintf("%d", p.UnixTS) // UNIX-TS
@@ -186,37 +203,41 @@ func (p *Proc) ToRow() (row []string) {
 	row[13] = fmt.Sprintf("%d", p.PSEntry.VMRSSNum)  // VMRSS-NUM
 	row[14] = fmt.Sprintf("%d", p.PSEntry.VMSizeNum) // VMSIZE-NUM
 
-	row[15] = p.DSEntry.Device                                  // DEVICE
-	row[16] = fmt.Sprintf("%d", p.DSEntry.ReadsCompleted)       // READS-COMPLETED
-	row[17] = fmt.Sprintf("%d", p.DSEntry.SectorsRead)          // SECTORS-READ
-	row[18] = p.DSEntry.TimeSpentOnReading                      // TIME(READS)
-	row[19] = fmt.Sprintf("%d", p.DSEntry.WritesCompleted)      // WRITES-COMPLETED
-	row[20] = fmt.Sprintf("%d", p.DSEntry.SectorsWritten)       // SECTORS-WRITTEN
-	row[21] = p.DSEntry.TimeSpentOnWriting                      // TIME(WRITES)
-	row[22] = fmt.Sprintf("%d", p.DSEntry.TimeSpentOnReadingMs) // MILLISECONDS(READS)
-	row[23] = fmt.Sprintf("%d", p.DSEntry.TimeSpentOnWritingMs) // MILLISECONDS(WRITES)
+	row[15] = fmt.Sprintf("%3.2f", p.LoadAvg.LoadAvg1Minute)  // LOAD-AVERAGE-1-MINUTE
+	row[16] = fmt.Sprintf("%3.2f", p.LoadAvg.LoadAvg5Minute)  // LOAD-AVERAGE-5-MINUTE
+	row[17] = fmt.Sprintf("%3.2f", p.LoadAvg.LoadAvg15Minute) // LOAD-AVERAGE-15-MINUTE
 
-	row[24] = p.NSEntry.Interface                           // INTERFACE
-	row[25] = p.NSEntry.ReceiveBytes                        // RECEIVE-BYTES
-	row[26] = fmt.Sprintf("%d", p.NSEntry.ReceivePackets)   // RECEIVE-PACKETS
-	row[27] = p.NSEntry.TransmitBytes                       // TRANSMIT-BYTES
-	row[28] = fmt.Sprintf("%d", p.NSEntry.TransmitPackets)  // TRANSMIT-PACKETS
-	row[29] = fmt.Sprintf("%d", p.NSEntry.ReceiveBytesNum)  // RECEIVE-BYTES-NUM
-	row[30] = fmt.Sprintf("%d", p.NSEntry.TransmitBytesNum) // TRANSMIT-BYTES-NUM
+	row[18] = p.DSEntry.Device                                  // DEVICE
+	row[19] = fmt.Sprintf("%d", p.DSEntry.ReadsCompleted)       // READS-COMPLETED
+	row[20] = fmt.Sprintf("%d", p.DSEntry.SectorsRead)          // SECTORS-READ
+	row[21] = p.DSEntry.TimeSpentOnReading                      // TIME(READS)
+	row[22] = fmt.Sprintf("%d", p.DSEntry.WritesCompleted)      // WRITES-COMPLETED
+	row[23] = fmt.Sprintf("%d", p.DSEntry.SectorsWritten)       // SECTORS-WRITTEN
+	row[24] = p.DSEntry.TimeSpentOnWriting                      // TIME(WRITES)
+	row[25] = fmt.Sprintf("%d", p.DSEntry.TimeSpentOnReadingMs) // MILLISECONDS(READS)
+	row[26] = fmt.Sprintf("%d", p.DSEntry.TimeSpentOnWritingMs) // MILLISECONDS(WRITES)
 
-	row[31] = fmt.Sprintf("%d", p.ReadsCompletedDelta)  // READS-COMPLETED-DELTA
-	row[32] = fmt.Sprintf("%d", p.SectorsReadDelta)     // SECTORS-READ-DELTA
-	row[33] = fmt.Sprintf("%d", p.WritesCompletedDelta) // WRITES-COMPLETED-DELTA
-	row[34] = fmt.Sprintf("%d", p.SectorsWrittenDelta)  // SECTORS-WRITTEN-DELTA
+	row[27] = p.NSEntry.Interface                           // INTERFACE
+	row[28] = p.NSEntry.ReceiveBytes                        // RECEIVE-BYTES
+	row[29] = fmt.Sprintf("%d", p.NSEntry.ReceivePackets)   // RECEIVE-PACKETS
+	row[30] = p.NSEntry.TransmitBytes                       // TRANSMIT-BYTES
+	row[31] = fmt.Sprintf("%d", p.NSEntry.TransmitPackets)  // TRANSMIT-PACKETS
+	row[32] = fmt.Sprintf("%d", p.NSEntry.ReceiveBytesNum)  // RECEIVE-BYTES-NUM
+	row[33] = fmt.Sprintf("%d", p.NSEntry.TransmitBytesNum) // TRANSMIT-BYTES-NUM
 
-	row[35] = p.ReceiveBytesDelta                        // RECEIVE-BYTES-DELTA
-	row[36] = fmt.Sprintf("%d", p.ReceivePacketsDelta)   // RECEIVE-PACKETS-DELTA
-	row[37] = p.TransmitBytesDelta                       // TRANSMIT-BYTES-DELTA
-	row[38] = fmt.Sprintf("%d", p.TransmitPacketsDelta)  // TRANSMIT-PACKETS-DELTA
-	row[39] = fmt.Sprintf("%d", p.ReceiveBytesNumDelta)  // RECEIVE-BYTES-NUM-DELTA
-	row[40] = fmt.Sprintf("%d", p.TransmitBytesNumDelta) // TRANSMIT-BYTES-NUM-DELTA
+	row[34] = fmt.Sprintf("%d", p.ReadsCompletedDelta)  // READS-COMPLETED-DELTA
+	row[35] = fmt.Sprintf("%d", p.SectorsReadDelta)     // SECTORS-READ-DELTA
+	row[36] = fmt.Sprintf("%d", p.WritesCompletedDelta) // WRITES-COMPLETED-DELTA
+	row[37] = fmt.Sprintf("%d", p.SectorsWrittenDelta)  // SECTORS-WRITTEN-DELTA
 
-	row[41] = string(p.Extra) // EXTRA
+	row[38] = p.ReceiveBytesDelta                        // RECEIVE-BYTES-DELTA
+	row[39] = fmt.Sprintf("%d", p.ReceivePacketsDelta)   // RECEIVE-PACKETS-DELTA
+	row[40] = p.TransmitBytesDelta                       // TRANSMIT-BYTES-DELTA
+	row[41] = fmt.Sprintf("%d", p.TransmitPacketsDelta)  // TRANSMIT-PACKETS-DELTA
+	row[42] = fmt.Sprintf("%d", p.ReceiveBytesNumDelta)  // RECEIVE-BYTES-NUM-DELTA
+	row[43] = fmt.Sprintf("%d", p.TransmitBytesNumDelta) // TRANSMIT-BYTES-NUM-DELTA
+
+	row[44] = string(p.Extra) // EXTRA
 
 	return
 }
