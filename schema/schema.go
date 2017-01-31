@@ -8,6 +8,8 @@ type RawDataType int
 
 const (
 	TypeBytes RawDataType = iota
+	TypeInt64
+	TypeFloat64
 	TypeTimeMicroseconds
 	TypeTimeSeconds
 	TypeIPAddress
@@ -84,6 +86,28 @@ var NetTCP = RawData{
 		"local_address": TypeIPAddress,
 		"rem_address":   TypeIPAddress,
 		"st":            TypeStatus,
+	},
+}
+
+// LoadAvg represents '/proc/loadavg'
+// (See http://man7.org/linux/man-pages/man5/proc.5.html).
+var LoadAvg = RawData{
+	IsYAML: false,
+	Columns: []Column{
+		{"load-avg-1-minute", "total uptime in seconds", reflect.Float64},
+		{"load-avg-5-minute", "total uptime in seconds", reflect.Float64},
+		{"load-avg-15-minute", "total uptime in seconds", reflect.Float64},
+		{"runnable-kernel-scheduling-entities", "number of currently runnable kernel scheduling entities (processes, threads)", reflect.Int64},
+		{"current-kernel-scheduling-entities", "number of kernel scheduling entities that currently exist on the system", reflect.Int64},
+		{"pid", "PID of the process that was most recently created on the system", reflect.Int64},
+	},
+	ColumnsToParse: map[string]RawDataType{
+		"load-avg-1-minute":                   TypeFloat64,
+		"load-avg-5-minute":                   TypeFloat64,
+		"load-avg-15-minute":                  TypeFloat64,
+		"runnable-kernel-scheduling-entities": TypeInt64,
+		"current-kernel-scheduling-entities":  TypeInt64,
+		"pid": TypeInt64,
 	},
 }
 
