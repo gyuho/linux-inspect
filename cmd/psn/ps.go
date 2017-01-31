@@ -18,7 +18,7 @@ type psFlags struct {
 var (
 	psCommand = &cobra.Command{
 		Use:   "ps",
-		Short: "Inspects '/proc/$PID/stat,status'",
+		Short: "Inspects '/proc/$PID/status', 'top' command output",
 		RunE:  psCommandFunc,
 	}
 	psCmdFlag psFlags
@@ -32,7 +32,7 @@ func init() {
 
 func psCommandFunc(cmd *cobra.Command, args []string) error {
 	color.Set(color.FgMagenta)
-	fmt.Fprintf(os.Stdout, "\n'ps' to inspect '/proc/$PID/stat,status'\n\n")
+	fmt.Fprintf(os.Stdout, "\n'ps' to inspect '/proc/$PID/status', 'top' command outpu\n\n")
 	color.Unset()
 
 	pss, err := psn.GetPS(psn.WithProgram(psCmdFlag.program), psn.WithPID(psCmdFlag.pid), psn.WithTopLimit(psCmdFlag.top))

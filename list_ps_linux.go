@@ -34,7 +34,7 @@ type PSEntry struct {
 	VMSizeNum uint64
 }
 
-const maxConcurrentProcStat = 32
+const maxConcurrentProcStatus = 32
 
 // GetPS finds all PSEntry by given filter.
 func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
@@ -97,7 +97,7 @@ func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
 	var pmu sync.RWMutex
 	var wg sync.WaitGroup
 	wg.Add(len(pids))
-	limitc := make(chan struct{}, maxConcurrentProcStat)
+	limitc := make(chan struct{}, maxConcurrentProcStatus)
 	for _, pid := range pids {
 		go func(pid int64) {
 			defer func() {
