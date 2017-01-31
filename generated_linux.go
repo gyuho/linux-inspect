@@ -1,6 +1,6 @@
 package psn
 
-// updated at 2017-01-08 13:43:03.746568457 -0800 PST
+// updated at 2017-01-30 16:32:03.106386397 -0800 PST
 
 // NetDev is '/proc/net/dev' in Linux.
 // The dev pseudo-file contains network device status information.
@@ -76,6 +76,22 @@ type NetTCP struct {
 	Timeout uint64 `column:"timeout"`
 	// Inode is inode raw data.
 	Inode string `column:"inode"`
+}
+
+// LoadAvg is '/proc/loadavg' in Linux.
+type LoadAvg struct {
+	// LoadAvg1Minute is total uptime in seconds.
+	LoadAvg1Minute float64 `column:"load_avg_1_minute"`
+	// LoadAvg5Minute is total uptime in seconds.
+	LoadAvg5Minute float64 `column:"load_avg_5_minute"`
+	// LoadAvg15Minute is total uptime in seconds.
+	LoadAvg15Minute float64 `column:"load_avg_15_minute"`
+	// RunnableKernelSchedulingEntities is number of currently runnable kernel scheduling entities (processes, threads).
+	RunnableKernelSchedulingEntities int64 `column:"runnable_kernel_scheduling_entities"`
+	// CurrentKernelSchedulingEntities is number of kernel scheduling entities that currently exist on the system.
+	CurrentKernelSchedulingEntities int64 `column:"current_kernel_scheduling_entities"`
+	// Pid is PID of the process that was most recently created on the system.
+	Pid int64 `column:"pid"`
 }
 
 // Uptime is '/proc/uptime' in Linux.

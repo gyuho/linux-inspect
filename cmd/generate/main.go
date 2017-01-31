@@ -40,6 +40,9 @@ func generate(raw schema.RawData) string {
 		// additional parsed column
 		if v, ok := raw.ColumnsToParse[col.Name]; ok {
 			switch v {
+			case schema.TypeInt64, schema.TypeFloat64:
+				// need no additional columns
+
 			case schema.TypeBytes:
 				ntstr := "uint64"
 				if col.Kind == reflect.Int64 {
@@ -117,6 +120,13 @@ type NetTCP struct {
 		buf.WriteString(fmt.Sprintf("\t%s\n", line))
 	}
 	buf.WriteString(generate(schema.NetTCP))
+	buf.WriteString("}\n\n")
+
+	// '/proc/loadavg'
+	buf.WriteString(`// LoadAvg is '/proc/loadavg' in Linux.
+type LoadAvg struct {
+`)
+	buf.WriteString(generate(schema.LoadAvg))
 	buf.WriteString("}\n\n")
 
 	// '/proc/uptime'
