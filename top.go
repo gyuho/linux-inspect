@@ -197,7 +197,7 @@ func ParseTopOutput(s string) ([]TopCommandRow, error) {
 		row TopCommandRow
 		err error
 	}
-	rc := make(chan result)
+	rc := make(chan result, len(rows))
 	for _, row := range rows {
 		go func(row []string) {
 			tr, err := parseTopRow(row)
