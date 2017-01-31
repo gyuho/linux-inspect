@@ -122,6 +122,13 @@ type NetTCP struct {
 	buf.WriteString(generate(schema.NetTCP))
 	buf.WriteString("}\n\n")
 
+	// 'top'
+	buf.WriteString(`// TopCommandRow represents a row in 'top' command output.
+type TopCommandRow struct {
+`)
+	buf.WriteString(generate(schema.TopCommandRow))
+	buf.WriteString("}\n\n")
+
 	// '/proc/loadavg'
 	buf.WriteString(`// LoadAvg is '/proc/loadavg' in Linux.
 type LoadAvg struct {
@@ -155,9 +162,6 @@ type IO struct {
 type Stat struct {
 `)
 	buf.WriteString(generate(schema.Stat))
-	for _, line := range additionalFieldsStat {
-		buf.WriteString(fmt.Sprintf("\t%s\n", line))
-	}
 	buf.WriteString("}\n\n")
 
 	// '/proc/$PID/status'
@@ -212,8 +216,4 @@ func toFile(txt, fpath string) error {
 
 var additionalFieldsNetTCP = [...]string{
 	"Type string `column:\"type\"`",
-}
-
-var additionalFieldsStat = [...]string{
-	"CpuUsage float64 `column:\"cpu_usage\"`",
 }

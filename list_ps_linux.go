@@ -61,18 +61,37 @@ func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
 		// applyOpts already panic when ft.ProgramMatchFunc != nil && ft.PID > 0
 	}
 
-	up, err := GetProcUptime()
-	if err != nil {
-		return nil, err
-	}
-
+	// can't filter both by program and by PID
 	if len(pids) == 0 {
-		// find PIDs by Program
+		// list all PIDs, or later to match by Program
 		if pids, err = ListPIDs(); err != nil {
 			return
 		}
 	} else {
 		ft.ProgramMatchFunc = func(string) bool { return true }
+	}
+
+	var topRows []TopCommandRow
+	if len(pids) == 1 {
+		topRows, err = GetTop(ft.TopCommandPath, pids[0])
+		if err != nil {
+			return
+		}
+	} else {
+		topRows, err = GetTop(ft.TopCommandPath, 0)
+		if err != nil {
+			return
+		}
+	}
+	topM := make(map[int64]TopCommandRow, len(topRows))
+	for _, row := range topRows {
+		topM[row.PID] = row
+	}
+	for _, pid := range pids {
+		if _, ok := topM[pid]; !ok {
+			topM[pid] = TopCommandRow{PID: pid}
+			log.Printf("PID %d is not found at 'top' command output", pid)
+		}
 	}
 
 	var pmu sync.RWMutex
@@ -88,12 +107,8 @@ func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
 
 			limitc <- struct{}{}
 
-			stat, err := GetProcStatByPID(pid, up)
-			if err != nil {
-				log.Printf("GetProcStatByPID error %v for PID %d", err, pid)
-				return
-			}
-			if !ft.ProgramMatchFunc(stat.Comm) {
+			topRow := topM[pid]
+			if !ft.ProgramMatchFunc(topRow.COMMAND) {
 				return
 			}
 
@@ -104,7 +119,7 @@ func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
 				return
 			}
 
-			ent, err := getPSEntry(pid, stat)
+			ent, err := getPSEntry(pid, topRow)
 			if err != nil {
 				log.Printf("getPSEntry error %v for PID %d", err, pid)
 				return
@@ -123,20 +138,20 @@ func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
 	return
 }
 
-func getPSEntry(pid int64, stat Stat) (PSEntry, error) {
+func getPSEntry(pid int64, topRow TopCommandRow) (PSEntry, error) {
 	status, err := GetProcStatusByPID(pid)
 	if err != nil {
 		return PSEntry{}, err
 	}
 
 	entry := PSEntry{
-		Program: stat.Comm,
-		State:   stat.StateParsedStatus,
+		Program: status.Name,
+		State:   status.StateParsedStatus,
 
-		PID:  stat.Pid,
-		PPID: stat.Ppid,
+		PID:  status.Pid,
+		PPID: status.PPid,
 
-		CPU:    fmt.Sprintf("%3.2f %%", stat.CpuUsage),
+		CPU:    fmt.Sprintf("%3.2f %%", topRow.CPUPercent),
 		VMRSS:  status.VmRSSParsedBytes,
 		VMSize: status.VmSizeParsedBytes,
 
@@ -146,7 +161,7 @@ func getPSEntry(pid int64, stat Stat) (PSEntry, error) {
 		VoluntaryCtxtSwitches:    status.VoluntaryCtxtSwitches,
 		NonvoluntaryCtxtSwitches: status.NonvoluntaryCtxtSwitches,
 
-		CPUNum:    stat.CpuUsage,
+		CPUNum:    topRow.CPUPercent,
 		VMRSSNum:  status.VmRSSBytesN,
 		VMSizeNum: status.VmSizeBytesN,
 	}
