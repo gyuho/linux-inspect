@@ -19,6 +19,9 @@ type EntryFilter struct {
 	LocalPort  int64
 	RemotePort int64
 
+	// for ps
+	TopCommandPath string
+
 	// for Proc
 	DiskDevice       string
 	NetworkInterface string
@@ -75,6 +78,11 @@ func WithTCP6() FilterFunc {
 	return func(ft *EntryFilter) { ft.TCP6 = true }
 }
 
+// WithTopCommandPath configures 'top' command path.
+func WithTopCommandPath(path string) FilterFunc {
+	return func(ft *EntryFilter) { ft.TopCommandPath = path }
+}
+
 // WithDiskDevice to filter entries by disk device.
 func WithDiskDevice(name string) FilterFunc {
 	return func(ft *EntryFilter) { ft.DiskDevice = name }
@@ -110,5 +118,9 @@ func (ft *EntryFilter) applyOpts(opts []FilterFunc) {
 	}
 	if ft.LocalPort > 0 && ft.RemotePort > 0 {
 		panic(fmt.Errorf("can't query by both local(%d) and remote(%d) ports", ft.LocalPort, ft.RemotePort))
+	}
+
+	if ft.TopCommandPath == "" {
+		ft.TopCommandPath = DefaultTopPath
 	}
 }

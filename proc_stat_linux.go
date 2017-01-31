@@ -111,7 +111,7 @@ func parseProcStat(pid int64, up Uptime) (Stat, error) {
 									hF := s.FieldByName(column + "ParsedStatus")
 									if hF.IsValid() {
 										if hF.CanSet() {
-											hF.SetString(strings.TrimSpace(fv))
+											hF.SetString(convertProcStatus(fv))
 										}
 									}
 								}
@@ -138,35 +138,7 @@ func (s *Stat) update(up Uptime) (Stat, error) {
 	if strings.HasSuffix(s.Comm, ")") {
 		s.Comm = s.Comm[:len(s.Comm)-1]
 	}
-	cu, err := s.getCPU(up)
-	if err != nil {
-		return Stat{}, err
-	}
-	s.CpuUsage = cu
 	return *s, nil
-}
-
-// getCPU returns the average CPU usage in percentage.
-// http://stackoverflow.com/questions/16726779/how-do-i-get-the-total-cpu-usage-of-an-application-from-proc-pid-stat
-func (s Stat) getCPU(up Uptime) (float64, error) {
-	totalSec := s.Utime + s.Stime
-	totalSec += s.Cutime + s.Cstime
-
-	out, err := exec.Command("/usr/bin/getconf", "CLK_TCK").Output()
-	if err != nil {
-		return 0, err
-	}
-	ot := strings.TrimSpace(strings.Replace(string(out), "\n", "", -1))
-	hertz, err := strconv.ParseUint(ot, 10, 64)
-	if err != nil || hertz == 0 {
-		return 0, err
-	}
-
-	tookSec := up.UptimeTotal - (float64(s.Starttime) / float64(hertz))
-	if hertz == 0 || tookSec == 0.0 {
-		return 0.0, nil
-	}
-	return 100 * ((float64(totalSec) / float64(hertz)) / float64(tookSec)), nil
 }
 
 const statTmpl = `
@@ -174,7 +146,7 @@ const statTmpl = `
 [/proc/{{.Pid}}/stat]
 
 Name:  {{.Comm}}
-State: {{.State}}
+State: {{.StateParsedStatus}}
 
 Pid:         {{.Pid}}
 Ppid:        {{.Ppid}}
@@ -183,7 +155,6 @@ NumThreads:  {{.NumThreads}}
 Rss:       {{.RssParsedBytes}} ({{.RssBytesN}})
 Rsslim:    {{.RsslimParsedBytes}} ({{.RsslimBytesN}})
 Vsize:     {{.VsizeParsedBytes}} ({{.VsizeBytesN}})
-CpuUsage:  {{.CpuUsage}} %
 
 Starttime:  {{.Starttime}}
 Utime:      {{.Utime}}
@@ -245,4 +216,29 @@ func (s Stat) String() string {
 		log.Fatal(err)
 	}
 	return buf.String()
+}
+
+// GetCPUPercentage returns the average CPU usage in percentage.
+// http://stackoverflow.com/questions/16726779/how-do-i-get-the-total-cpu-usage-of-an-application-from-proc-pid-stat
+// This sometimes differ from the one in 'top' command.
+// So do not use it!
+func (s Stat) GetCPUPercentage(up Uptime) (float64, error) {
+	totalSec := s.Utime + s.Stime
+	totalSec += s.Cutime + s.Cstime
+
+	out, err := exec.Command("/usr/bin/getconf", "CLK_TCK").Output()
+	if err != nil {
+		return 0, err
+	}
+	ot := strings.TrimSpace(strings.Replace(string(out), "\n", "", -1))
+	hertz, err := strconv.ParseUint(ot, 10, 64)
+	if err != nil || hertz == 0 {
+		return 0, err
+	}
+
+	tookSec := up.UptimeTotal - (float64(s.Starttime) / float64(hertz))
+	if hertz == 0 || tookSec == 0.0 {
+		return 0.0, nil
+	}
+	return 100 * ((float64(totalSec) / float64(hertz)) / float64(tookSec)), nil
 }

@@ -78,3 +78,22 @@ func homeDir() string {
 	}
 	return os.Getenv("HOME")
 }
+
+// exist returns true if the file or directory exists.
+func exist(fpath string) bool {
+	st, err := os.Stat(fpath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	if st.IsDir() {
+		return true
+	}
+	if _, err := os.Stat(fpath); err != nil {
+		if os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
+}

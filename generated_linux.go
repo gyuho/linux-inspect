@@ -1,6 +1,6 @@
 package psn
 
-// updated at 2017-01-30 16:32:03.106386397 -0800 PST
+// updated at 2017-01-31 14:04:04.136777234 -0800 PST
 
 // NetDev is '/proc/net/dev' in Linux.
 // The dev pseudo-file contains network device status information.
@@ -76,6 +76,41 @@ type NetTCP struct {
 	Timeout uint64 `column:"timeout"`
 	// Inode is inode raw data.
 	Inode string `column:"inode"`
+}
+
+// TopCommandRow represents a row in 'top' command output.
+type TopCommandRow struct {
+	// PID is pid of the process.
+	PID int64 `column:"pid"`
+	// USER is user name.
+	USER string `column:"user"`
+	// PR is priority.
+	PR string `column:"pr"`
+	// NI is nice value of the task.
+	NI string `column:"ni"`
+	// VIRT is total amount  of virtual memory used by the task (in KiB).
+	VIRT            string `column:"virt"`
+	VIRTBytesN      uint64 `column:"virt_bytes_n"`
+	VIRTParsedBytes string `column:"virt_parsed_bytes"`
+	// RES is non-swapped physical memory a task is using (in KiB).
+	RES            string `column:"res"`
+	RESBytesN      uint64 `column:"res_bytes_n"`
+	RESParsedBytes string `column:"res_parsed_bytes"`
+	// SHR is amount of shared memory available to a task, not all of which is typically resident (in KiB).
+	SHR            string `column:"shr"`
+	SHRBytesN      uint64 `column:"shr_bytes_n"`
+	SHRParsedBytes string `column:"shr_parsed_bytes"`
+	// S is process status.
+	S             string `column:"s"`
+	SParsedStatus string `column:"s_parsed_status"`
+	// CPUPercent is %CPU.
+	CPUPercent float64 `column:"cpupercent"`
+	// MEMPercent is %MEM.
+	MEMPercent float64 `column:"mempercent"`
+	// TIME is CPU time (TIME+).
+	TIME string `column:"time"`
+	// COMMAND is command.
+	COMMAND string `column:"command"`
 }
 
 // LoadAvg is '/proc/loadavg' in Linux.
@@ -280,8 +315,7 @@ type Stat struct {
 	// EnvEnd is address below which program environment is placed.
 	EnvEnd uint64 `column:"env_end"`
 	// ExitCode is thread's exit status in the form reported by waitpid(2).
-	ExitCode int64   `column:"exit_code"`
-	CpuUsage float64 `column:"cpu_usage"`
+	ExitCode int64 `column:"exit_code"`
 }
 
 // Status is '/proc/$PID/status' in Linux.
