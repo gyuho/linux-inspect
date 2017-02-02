@@ -8,11 +8,14 @@ import (
 
 // Proc represents an entry of various system statistics.
 type Proc struct {
+	// UnixNanosecond is unix nano second when this Proc row gets created.
 	UnixNanosecond int64
+
 	// UnixSecond is the converted Unix seconds from UnixNano.
 	UnixSecond int64
 
 	PSEntry PSEntry
+
 	LoadAvg LoadAvg
 
 	DSEntry              DSEntry

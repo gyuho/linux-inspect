@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/coreos/etcd/pkg/netutil"
 )
 
 func TestProcCSV(t *testing.T) {
@@ -16,11 +18,17 @@ func TestProcCSV(t *testing.T) {
 		fmt.Println(err)
 		t.Skip()
 	}
-	nt, err := GetDefaultInterface()
+	nm, err := netutil.GetDefaultInterfaces()
 	if err != nil {
 		fmt.Println(err)
 		t.Skip()
 	}
+	var nt string
+	for k := range nm {
+		nt = k
+		break
+	}
+	fmt.Println("running with network interface", nt)
 
 	fpath := filepath.Join(os.TempDir(), fmt.Sprintf("test-%010d.csv", time.Now().UnixNano()))
 	defer os.RemoveAll(fpath)
