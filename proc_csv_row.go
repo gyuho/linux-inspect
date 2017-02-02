@@ -36,6 +36,17 @@ type Proc struct {
 	Extra []byte
 }
 
+type ProcSlice []Proc
+
+func (p ProcSlice) Len() int      { return len(p) }
+func (p ProcSlice) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
+func (p ProcSlice) Less(i, j int) bool {
+	if p[i].UnixNanosecond != p[j].UnixNanosecond {
+		return p[i].UnixNanosecond < p[j].UnixNanosecond
+	}
+	return p[i].UnixSecond < p[j].UnixSecond
+}
+
 // GetProc returns current 'Proc' data.
 // PID is required.
 // Disk device, network interface, extra path are optional.

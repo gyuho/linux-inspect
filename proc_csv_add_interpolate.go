@@ -2,6 +2,7 @@ package psn
 
 import (
 	"fmt"
+	"sort"
 
 	humanize "github.com/dustin/go-humanize"
 )
@@ -181,15 +182,15 @@ func (c *CSV) Interpolate() (cc *CSV, err error) {
 	// min unix second is 5, max is 7
 	// then the expected row number is 7-5+1=3
 	expectedRowN := cc.MaxUnixSecond - cc.MinUnixSecond + 1
-	secondToRows := make(map[int64][]Proc)
+	secondToAllRows := make(map[int64][]Proc)
 	for _, row := range cc.Rows {
-		if _, ok := secondToRows[row.UnixSecond]; ok {
-			secondToRows[row.UnixSecond] = append(secondToRows[row.UnixSecond], row)
+		if _, ok := secondToAllRows[row.UnixSecond]; ok {
+			secondToAllRows[row.UnixSecond] = append(secondToAllRows[row.UnixSecond], row)
 		} else {
-			secondToRows[row.UnixSecond] = []Proc{row}
+			secondToAllRows[row.UnixSecond] = []Proc{row}
 		}
 	}
-	if int64(len(cc.Rows)) == expectedRowN && len(cc.Rows) == len(secondToRows) {
+	if int64(len(cc.Rows)) == expectedRowN && len(cc.Rows) == len(secondToAllRows) {
 		// all rows have distinct unix second
 		// and they are all continuous unix seconds
 		return
@@ -205,7 +206,7 @@ func (c *CSV) Interpolate() (cc *CSV, err error) {
 
 	// case #1, find duplicate rows!
 	secondToRow := make(map[int64]Proc)
-	for sec, procs := range secondToRows {
+	for sec, procs := range secondToAllRows {
 		if len(procs) == 0 {
 			return nil, fmt.Errorf("empty row found at unix second %d", sec)
 		}
@@ -220,11 +221,34 @@ func (c *CSV) Interpolate() (cc *CSV, err error) {
 		secondToRow[sec] = Combine(procs...)
 	}
 
+	rows2 := make([]Proc, 0, len(secondToRow))
+	for _, row := range secondToRow {
+		rows2 = append(rows2, row)
+	}
+	sort.Sort(ProcSlice(rows2))
+
+	cc.Rows = rows2
+	cc.MinUnixNanosecond = rows2[0].UnixNanosecond
+	cc.MinUnixSecond = rows2[0].UnixSecond
+	cc.MaxUnixNanosecond = rows2[len(rows2)-1].UnixNanosecond
+	cc.MaxUnixSecond = rows2[len(rows2)-1].UnixSecond
+
 	// case #2, find missing rows!
-	for ts := cc.MinUnixSecond; ts <= cc.MaxUnixSecond; ts++ {
-		// TODO
+	// if unix seconds have discontinued ranges, it's missing some rows!
+	missingTS := make(map[int64]struct{})
+	for unixSecond := cc.MinUnixSecond; unixSecond <= cc.MaxUnixSecond; unixSecond++ {
+		_, ok := secondToRow[unixSecond]
+		if !ok {
+			missingTS[unixSecond] = struct{}{}
+		}
+	}
+	if len(missingTS) == 0 {
+		// now all rows have distinct unix second
+		// and there's no missing unix seconds
+		return
 	}
 
+	// now we need to estimates the Proc for missingTS
 	return
 }
 
