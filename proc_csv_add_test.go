@@ -72,11 +72,11 @@ func TestProcCSV(t *testing.T) {
 	if c.NetworkInterface != cv.NetworkInterface {
 		t.Fatalf("NetworkInterface expected %s, got %s", c.NetworkInterface, cv.NetworkInterface)
 	}
-	if c.MinUnixTS != cv.MinUnixTS {
-		t.Fatalf("MinUnixTS expected %d, got %d", c.MinUnixTS, cv.MinUnixTS)
+	if c.MinUnixNanosecond != cv.MinUnixNanosecond {
+		t.Fatalf("MinUnixNanosecond expected %d, got %d", c.MinUnixNanosecond, cv.MinUnixNanosecond)
 	}
-	if c.MaxUnixTS != cv.MaxUnixTS {
-		t.Fatalf("MaxUnixTS expected %d, got %d", c.MaxUnixTS, cv.MaxUnixTS)
+	if c.MaxUnixNanosecond != cv.MaxUnixNanosecond {
+		t.Fatalf("MaxUnixNanosecond expected %d, got %d", c.MaxUnixNanosecond, cv.MaxUnixNanosecond)
 	}
 	if len(c.Rows) != len(cv.Rows) {
 		t.Fatalf("len(Rows) expected %d, got %d", len(c.Rows), len(cv.Rows))
