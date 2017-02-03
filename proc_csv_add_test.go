@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/coreos/etcd/pkg/netutil"
 )
 
 func TestProcCSV(t *testing.T) {
@@ -16,11 +18,17 @@ func TestProcCSV(t *testing.T) {
 		fmt.Println(err)
 		t.Skip()
 	}
-	nt, err := GetDefaultInterface()
+	nm, err := netutil.GetDefaultInterfaces()
 	if err != nil {
 		fmt.Println(err)
 		t.Skip()
 	}
+	var nt string
+	for k := range nm {
+		nt = k
+		break
+	}
+	fmt.Println("running with network interface", nt)
 
 	fpath := filepath.Join(os.TempDir(), fmt.Sprintf("test-%010d.csv", time.Now().UnixNano()))
 	defer os.RemoveAll(fpath)
@@ -28,19 +36,19 @@ func TestProcCSV(t *testing.T) {
 	epath := filepath.Join(homeDir(), "etcd-client-num")
 	defer os.RemoveAll(epath)
 
-	if err := toFile([]byte("10"), epath); err != nil {
+	if err = toFile([]byte("10"), epath); err != nil {
 		t.Fatal(err)
 	}
 	c := NewCSV(fpath, 1, dn, nt, epath)
 	for i := 0; i < 3; i++ {
 		if i > 0 {
-			if err := toFile([]byte(fmt.Sprintf("%d", 100*i)), epath); err != nil {
+			if err = toFile([]byte(fmt.Sprintf("%d", 100*i)), epath); err != nil {
 				t.Fatal(err)
 			}
 		}
 
 		now := time.Now()
-		if err := c.Add(); err != nil {
+		if err = c.Add(); err != nil {
 			t.Fatal(err)
 		}
 		fmt.Printf("#%d: collected data with %s and %s at %s (c.Add took %v)\n", i, dn, nt, fpath, time.Since(now))
@@ -48,18 +56,20 @@ func TestProcCSV(t *testing.T) {
 		time.Sleep(time.Second)
 	}
 
-	if err := c.Save(); err != nil {
+	if err = c.Save(); err != nil {
 		t.Fatal(err)
 	}
 
-	b, err := ioutil.ReadFile(fpath)
+	var b []byte
+	b, err = ioutil.ReadFile(fpath)
 	if err != nil {
 		fmt.Println(err)
 		t.Skip()
 	}
 	fmt.Println("CSV contents:", string(b))
 
-	cv, err := ReadCSV(fpath)
+	var cv *CSV
+	cv, err = ReadCSV(fpath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -72,11 +82,11 @@ func TestProcCSV(t *testing.T) {
 	if c.NetworkInterface != cv.NetworkInterface {
 		t.Fatalf("NetworkInterface expected %s, got %s", c.NetworkInterface, cv.NetworkInterface)
 	}
-	if c.MinUnixTS != cv.MinUnixTS {
-		t.Fatalf("MinUnixTS expected %d, got %d", c.MinUnixTS, cv.MinUnixTS)
+	if c.MinUnixNanosecond != cv.MinUnixNanosecond {
+		t.Fatalf("MinUnixNanosecond expected %d, got %d", c.MinUnixNanosecond, cv.MinUnixNanosecond)
 	}
-	if c.MaxUnixTS != cv.MaxUnixTS {
-		t.Fatalf("MaxUnixTS expected %d, got %d", c.MaxUnixTS, cv.MaxUnixTS)
+	if c.MaxUnixNanosecond != cv.MaxUnixNanosecond {
+		t.Fatalf("MaxUnixNanosecond expected %d, got %d", c.MaxUnixNanosecond, cv.MaxUnixNanosecond)
 	}
 	if len(c.Rows) != len(cv.Rows) {
 		t.Fatalf("len(Rows) expected %d, got %d", len(c.Rows), len(cv.Rows))
@@ -206,7 +216,6 @@ func TestProcCSV(t *testing.T) {
 		if c.Rows[i].TransmitBytesNumDelta != cv.Rows[i].TransmitBytesNumDelta {
 			t.Fatalf("Rows[%d].TransmitBytesNumDelta expected %d, got %d", i, c.Rows[i].TransmitBytesNumDelta, cv.Rows[i].TransmitBytesNumDelta)
 		}
-
 		if !bytes.Equal(c.Rows[i].Extra, cv.Rows[i].Extra) {
 			t.Fatalf("Rows[%d].Extra expected %q, got %q", i, c.Rows[i].Extra, cv.Rows[i].Extra)
 		}

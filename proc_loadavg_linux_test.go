@@ -18,7 +18,7 @@ func TestGetProcLoadAvg(t *testing.T) {
 	fmt.Printf("%+v with %q\n", lv, txt)
 
 	if !strings.Contains(txt, fmt.Sprint(lv.LoadAvg15Minute)) {
-		t.Fatalf("'/proc/loadavg' expected LoadAvg15Minute %d, got %q", lv.LoadAvg15Minute, txt)
+		t.Fatalf("'/proc/loadavg' expected LoadAvg15Minute %f, got %q", lv.LoadAvg15Minute, txt)
 	}
 	if !strings.Contains(txt, fmt.Sprint(lv.Pid)) {
 		t.Fatalf("'/proc/loadavg' expected pid %d, got %q", lv.Pid, txt)

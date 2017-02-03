@@ -18,8 +18,10 @@ type CSV struct {
 	Header      []string
 	HeaderIndex map[string]int
 
-	MinUnixTS int64
-	MaxUnixTS int64
+	MinUnixNanosecond int64
+	MinUnixSecond     int64
+	MaxUnixNanosecond int64
+	MaxUnixSecond     int64
 
 	// ExtraPath contains extra information.
 	ExtraPath string
@@ -41,8 +43,10 @@ func NewCSV(fpath string, pid int64, diskDevice string, networkInterface string,
 		Header:      ProcHeader,
 		HeaderIndex: ProcHeaderIndex,
 
-		MinUnixTS: 0,
-		MaxUnixTS: 0,
+		MinUnixNanosecond: 0,
+		MinUnixSecond:     0,
+		MaxUnixNanosecond: 0,
+		MaxUnixSecond:     0,
 
 		ExtraPath: extraPath,
 		Rows:      []Proc{},
@@ -65,20 +69,23 @@ func (c *CSV) Add() error {
 
 	// first call; just append and return
 	if len(c.Rows) == 0 {
-		c.MinUnixTS = cur.UnixTS
-		c.MaxUnixTS = cur.UnixTS
+		c.MinUnixNanosecond = cur.UnixNanosecond
+		c.MinUnixSecond = cur.UnixSecond
+		c.MaxUnixNanosecond = cur.UnixNanosecond
+		c.MaxUnixSecond = cur.UnixSecond
 		c.Rows = []Proc{cur}
 		return nil
 	}
 
 	// compare with previous row before append
 	prev := c.Rows[len(c.Rows)-1]
-	if prev.UnixTS >= cur.UnixTS {
-		return fmt.Errorf("clock went backwards: got %v, but expected more than %v", cur.UnixTS, prev.UnixTS)
+	if prev.UnixNanosecond >= cur.UnixNanosecond {
+		return fmt.Errorf("clock went backwards: got %v, but expected more than %v", cur.UnixNanosecond, prev.UnixNanosecond)
 	}
 
 	// 'Add' only appends, so later unix should be max
-	c.MaxUnixTS = cur.UnixTS
+	c.MaxUnixNanosecond = cur.UnixNanosecond
+	c.MaxUnixSecond = cur.UnixSecond
 
 	cur.ReadsCompletedDelta = cur.DSEntry.ReadsCompleted - prev.DSEntry.ReadsCompleted
 	cur.SectorsReadDelta = cur.DSEntry.SectorsRead - prev.DSEntry.SectorsRead
@@ -143,7 +150,7 @@ func ReadCSV(fpath string) (*CSV, error) {
 	if len(rows) <= 1 {
 		return nil, fmt.Errorf("expected len(rows)>1, got %d", len(rows))
 	}
-	if rows[0][0] != "UNIX-TS" {
+	if rows[0][0] != "UNIX-NANOSECOND" {
 		return nil, fmt.Errorf("expected header at top, got %+v", rows[0])
 	}
 
@@ -163,15 +170,21 @@ func ReadCSV(fpath string) (*CSV, error) {
 		DiskDevice:       "",
 		NetworkInterface: "",
 
-		Header:      ProcHeader,
-		HeaderIndex: ProcHeaderIndex,
-		MinUnixTS:   min,
-		MaxUnixTS:   max,
+		Header:            ProcHeader,
+		HeaderIndex:       ProcHeaderIndex,
+		MinUnixNanosecond: min,
+		MinUnixSecond:     ConvertUnixNano(min),
+		MaxUnixNanosecond: max,
+		MaxUnixSecond:     ConvertUnixNano(max),
 
 		Rows: make([]Proc, 0, len(rows)),
 	}
 	for _, row := range rows {
-		ts, err := strconv.ParseInt(row[ProcHeaderIndex["UNIX-TS"]], 10, 64)
+		ts, err := strconv.ParseInt(row[ProcHeaderIndex["UNIX-NANOSECOND"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		tss, err := strconv.ParseInt(row[ProcHeaderIndex["UNIX-SECOND"]], 10, 64)
 		if err != nil {
 			return nil, err
 		}
@@ -302,7 +315,9 @@ func ReadCSV(fpath string) (*CSV, error) {
 		}
 
 		proc := Proc{
-			UnixTS: ts,
+			UnixNanosecond: ts,
+			UnixSecond:     tss,
+
 			PSEntry: PSEntry{
 				Program:                  row[ProcHeaderIndex["PROGRAM"]],
 				State:                    row[ProcHeaderIndex["STATE"]],
