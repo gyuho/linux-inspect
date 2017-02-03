@@ -157,13 +157,11 @@ func Combine(procs ...Proc) Proc {
 	return combined
 }
 
-// Interpolate interpolates missing rows in CSV
-// assuming CSV is to be collected for every second.
+// Interpolate interpolates missing rows in CSV assuming CSV is to be collected for every second.
 // 'Missing' means unix seconds in rows are not continuous.
 // It fills in the empty rows by estimating the averages.
-// It returns a new copy of CSV.
-// The interpolated rows have 0 unix second, since it's
-// already aggregated by the unix second.
+// It returns a new copy of CSV. And the new copy sets all unix nanoseconds to 0.,
+// since it's now aggregated by the unix "second".
 func (c *CSV) Interpolate() (cc *CSV, err error) {
 	if c == nil || len(c.Rows) < 2 {
 		// no need to interpolate
@@ -182,15 +180,15 @@ func (c *CSV) Interpolate() (cc *CSV, err error) {
 	// min unix second is 5, max is 7
 	// then the expected row number is 7-5+1=3
 	expectedRowN := cc.MaxUnixSecond - cc.MinUnixSecond + 1
-	secondToAllRows := make(map[int64][]Proc)
+	secondToAllProcs := make(map[int64][]Proc)
 	for _, row := range cc.Rows {
-		if _, ok := secondToAllRows[row.UnixSecond]; ok {
-			secondToAllRows[row.UnixSecond] = append(secondToAllRows[row.UnixSecond], row)
+		if _, ok := secondToAllProcs[row.UnixSecond]; ok {
+			secondToAllProcs[row.UnixSecond] = append(secondToAllProcs[row.UnixSecond], row)
 		} else {
-			secondToAllRows[row.UnixSecond] = []Proc{row}
+			secondToAllProcs[row.UnixSecond] = []Proc{row}
 		}
 	}
-	if int64(len(cc.Rows)) == expectedRowN && len(cc.Rows) == len(secondToAllRows) {
+	if int64(len(cc.Rows)) == expectedRowN && len(cc.Rows) == len(secondToAllProcs) {
 		// all rows have distinct unix second
 		// and they are all continuous unix seconds
 		return
@@ -205,25 +203,30 @@ func (c *CSV) Interpolate() (cc *CSV, err error) {
 	//          Fill in those rows with average estimates.
 
 	// case #1, find duplicate rows!
-	secondToRow := make(map[int64]Proc)
-	for sec, procs := range secondToAllRows {
+	// It finds duplicates by unix second! Not by unix nanoseconds!
+	secondToProc := make(map[int64]Proc)
+	for sec, procs := range secondToAllProcs {
 		if len(procs) == 0 {
 			return nil, fmt.Errorf("empty row found at unix second %d", sec)
 		}
 
 		if len(procs) == 1 {
-			secondToRow[sec] = procs[0]
+			secondToProc[sec] = procs[0]
 			continue // no need to combine
 		}
 
 		// procs conflicted on unix second,
 		// we want to combine those into one
-		secondToRow[sec] = Combine(procs...)
+		secondToProc[sec] = Combine(procs...)
 	}
 
-	rows2 := make([]Proc, 0, len(secondToRow))
-	for _, row := range secondToRow {
+	// sort and reset the unix second
+	rows2 := make([]Proc, 0, len(secondToProc))
+	allUnixSeconds := make([]int64, 0, len(secondToProc))
+	for _, row := range secondToProc {
+		row.UnixNanosecond = 0
 		rows2 = append(rows2, row)
+		allUnixSeconds = append(allUnixSeconds, row.UnixSecond)
 	}
 	sort.Sort(ProcSlice(rows2))
 
@@ -237,7 +240,7 @@ func (c *CSV) Interpolate() (cc *CSV, err error) {
 	// if unix seconds have discontinued ranges, it's missing some rows!
 	missingTS := make(map[int64]struct{})
 	for unixSecond := cc.MinUnixSecond; unixSecond <= cc.MaxUnixSecond; unixSecond++ {
-		_, ok := secondToRow[unixSecond]
+		_, ok := secondToProc[unixSecond]
 		if !ok {
 			missingTS[unixSecond] = struct{}{}
 		}
@@ -248,7 +251,11 @@ func (c *CSV) Interpolate() (cc *CSV, err error) {
 		return
 	}
 
-	// now we need to estimates the Proc for missingTS
+	// now we need to estimate the Proc for missingTS
+	// fmt.Printf("total %d points available, missing %d points\n", len(allUnixSeconds), len(missingTS))
+	bds := buildBoundaries(allUnixSeconds)
+	_ = bds
+
 	return
 }
 
