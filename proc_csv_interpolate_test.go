@@ -76,7 +76,150 @@ func TestCombine(t *testing.T) {
 	fmt.Printf("combined: %+v\n", combined)
 }
 
-func TestInterpolate(t *testing.T) {
+func TestInterpolateMissingOne(t *testing.T) {
+	cc1 := &CSV{
+		MinUnixNanosecond: 10,
+		MinUnixSecond:     1,
+		MaxUnixNanosecond: 13,
+		MaxUnixSecond:     4,
+		Rows: []Proc{
+			{
+				UnixNanosecond: 10,
+				UnixSecond:     1,
+				LoadAvg: LoadAvg{
+					LoadAvg1Minute:  10.0,
+					LoadAvg15Minute: 20.0,
+				},
+				DSEntry: DSEntry{
+					WritesCompleted: 10000,
+					SectorsWritten:  20000,
+				},
+			},
+			{
+				UnixNanosecond: 12,
+				UnixSecond:     3,
+				LoadAvg: LoadAvg{
+					LoadAvg1Minute:  40.0,
+					LoadAvg15Minute: 130.0,
+				},
+				DSEntry: DSEntry{
+					WritesCompleted: 50000,
+					SectorsWritten:  100000,
+				},
+			},
+			{
+				UnixNanosecond: 13,
+				UnixSecond:     4,
+				LoadAvg: LoadAvg{
+					LoadAvg1Minute:  50.0,
+					LoadAvg15Minute: 150.0,
+				},
+				DSEntry: DSEntry{
+					WritesCompleted: 100000,
+					SectorsWritten:  200000,
+				},
+			},
+		},
+	}
+
+	expectedRowN := int(cc1.MaxUnixSecond - cc1.MinUnixSecond + 1)
+
+	cc2, err := cc1.Interpolate()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(cc2.Rows) != expectedRowN {
+		t.Fatalf("len(cc2.Rows) expected %d, got %d", len(cc2.Rows), expectedRowN)
+	}
+	if !reflect.DeepEqual(cc1.Rows[0].DSEntry, cc2.Rows[0].DSEntry) {
+		t.Fatalf("first row expected %+v, got %+v", cc1.Rows[0].DSEntry, cc2.Rows[0].DSEntry)
+	}
+	if !reflect.DeepEqual(cc1.Rows[len(cc1.Rows)-1].DSEntry, cc2.Rows[len(cc2.Rows)-1].DSEntry) {
+		t.Fatalf("first row expected %+v, got %+v", cc1.Rows[len(cc1.Rows)-1].DSEntry, cc2.Rows[len(cc2.Rows)-1].DSEntry)
+	}
+
+	expected2 := &CSV{
+		MinUnixNanosecond: 0,
+		MinUnixSecond:     1,
+		MaxUnixNanosecond: 0,
+		MaxUnixSecond:     4,
+		Rows: []Proc{
+			{
+				UnixNanosecond: 0,
+				UnixSecond:     1,
+				LoadAvg: LoadAvg{
+					LoadAvg1Minute:  10.0,
+					LoadAvg15Minute: 20.0,
+				},
+				DSEntry: DSEntry{
+					WritesCompleted: 10000,
+					SectorsWritten:  20000,
+				},
+			},
+			{
+				UnixNanosecond: 0,
+				UnixSecond:     2,
+				PSEntry:        PSEntry{CPU: "0.00 %", VMRSS: "0 B", VMSize: "0 B"},
+				LoadAvg: LoadAvg{
+					LoadAvg1Minute:  25.0,
+					LoadAvg15Minute: 75.0,
+				},
+				DSEntry: DSEntry{
+					TimeSpentOnReading: "0 seconds",
+					TimeSpentOnWriting: "0 seconds",
+					WritesCompleted:    30000,
+					SectorsWritten:     60000,
+				},
+				NSEntry:            NSEntry{ReceiveBytes: "0 B", TransmitBytes: "0 B"},
+				ReceiveBytesDelta:  "0 B",
+				TransmitBytesDelta: "0 B",
+			},
+			{
+				UnixNanosecond: 0,
+				UnixSecond:     3,
+				LoadAvg: LoadAvg{
+					LoadAvg1Minute:  40.0,
+					LoadAvg15Minute: 130.0,
+				},
+				DSEntry: DSEntry{
+					WritesCompleted: 50000,
+					SectorsWritten:  100000,
+				},
+			},
+			{
+				UnixNanosecond: 0,
+				UnixSecond:     4,
+				LoadAvg: LoadAvg{
+					LoadAvg1Minute:  50.0,
+					LoadAvg15Minute: 150.0,
+				},
+				DSEntry: DSEntry{
+					WritesCompleted: 100000,
+					SectorsWritten:  200000,
+				},
+			},
+		},
+	}
+
+	if !reflect.DeepEqual(expected2, cc2) {
+		for i := range cc2.Rows {
+			if !reflect.DeepEqual(expected2.Rows[i], cc2.Rows[i]) {
+				t.Fatalf("#%d: expected %+v, got %+v", i, expected2.Rows[i], cc2.Rows[i])
+			}
+		}
+		t.Fatalf("expected %+v, got %+v", expected2, cc2)
+	}
+
+	// make sure interpolated CSV was deep-copied
+	old := cc1.DiskDevice
+	cc2.DiskDevice = "test"
+	if cc1.DiskDevice == "test" {
+		t.Fatalf("cc1.DiskDevice expected %q, got 'test'", old)
+	}
+}
+
+func TestInterpolateMissingALot(t *testing.T) {
 	cc1 := &CSV{
 		MinUnixNanosecond: 10,
 		MinUnixSecond:     1,
@@ -150,14 +293,14 @@ func TestInterpolate(t *testing.T) {
 				UnixSecond:     2,
 				PSEntry:        PSEntry{CPU: "0.00 %", VMRSS: "0 B", VMSize: "0 B"},
 				LoadAvg: LoadAvg{
-					LoadAvg1Minute:  9.5,
-					LoadAvg15Minute: 28.5,
+					LoadAvg1Minute:  10,
+					LoadAvg15Minute: 30,
 				},
 				DSEntry: DSEntry{
 					TimeSpentOnReading: "0 seconds",
 					TimeSpentOnWriting: "0 seconds",
-					WritesCompleted:    19000,
-					SectorsWritten:     38000,
+					WritesCompleted:    20000,
+					SectorsWritten:     40000,
 				},
 				NSEntry:            NSEntry{ReceiveBytes: "0 B", TransmitBytes: "0 B"},
 				ReceiveBytesDelta:  "0 B",
@@ -168,14 +311,14 @@ func TestInterpolate(t *testing.T) {
 				UnixSecond:     3,
 				PSEntry:        PSEntry{CPU: "0.00 %", VMRSS: "0 B", VMSize: "0 B"},
 				LoadAvg: LoadAvg{
-					LoadAvg1Minute:  14,
-					LoadAvg15Minute: 42,
+					LoadAvg1Minute:  15,
+					LoadAvg15Minute: 45,
 				},
 				DSEntry: DSEntry{
 					TimeSpentOnReading: "0 seconds",
 					TimeSpentOnWriting: "0 seconds",
-					WritesCompleted:    28000,
-					SectorsWritten:     56000,
+					WritesCompleted:    30000,
+					SectorsWritten:     60000,
 				},
 				NSEntry:            NSEntry{ReceiveBytes: "0 B", TransmitBytes: "0 B"},
 				ReceiveBytesDelta:  "0 B",
@@ -186,14 +329,14 @@ func TestInterpolate(t *testing.T) {
 				UnixSecond:     4,
 				PSEntry:        PSEntry{CPU: "0.00 %", VMRSS: "0 B", VMSize: "0 B"},
 				LoadAvg: LoadAvg{
-					LoadAvg1Minute:  18.5,
-					LoadAvg15Minute: 55.5,
+					LoadAvg1Minute:  20.0,
+					LoadAvg15Minute: 60.0,
 				},
 				DSEntry: DSEntry{
 					TimeSpentOnReading: "0 seconds",
 					TimeSpentOnWriting: "0 seconds",
-					WritesCompleted:    37000,
-					SectorsWritten:     74000,
+					WritesCompleted:    40000,
+					SectorsWritten:     80000,
 				},
 				NSEntry:            NSEntry{ReceiveBytes: "0 B", TransmitBytes: "0 B"},
 				ReceiveBytesDelta:  "0 B",
@@ -204,14 +347,14 @@ func TestInterpolate(t *testing.T) {
 				UnixSecond:     5,
 				PSEntry:        PSEntry{CPU: "0.00 %", VMRSS: "0 B", VMSize: "0 B"},
 				LoadAvg: LoadAvg{
-					LoadAvg1Minute:  23,
-					LoadAvg15Minute: 69,
+					LoadAvg1Minute:  25,
+					LoadAvg15Minute: 75,
 				},
 				DSEntry: DSEntry{
 					TimeSpentOnReading: "0 seconds",
 					TimeSpentOnWriting: "0 seconds",
-					WritesCompleted:    46000,
-					SectorsWritten:     92000,
+					WritesCompleted:    50000,
+					SectorsWritten:     100000,
 				},
 				NSEntry:            NSEntry{ReceiveBytes: "0 B", TransmitBytes: "0 B"},
 				ReceiveBytesDelta:  "0 B",
@@ -222,14 +365,14 @@ func TestInterpolate(t *testing.T) {
 				UnixSecond:     6,
 				PSEntry:        PSEntry{CPU: "0.00 %", VMRSS: "0 B", VMSize: "0 B"},
 				LoadAvg: LoadAvg{
-					LoadAvg1Minute:  27.5,
-					LoadAvg15Minute: 82.5,
+					LoadAvg1Minute:  30.0,
+					LoadAvg15Minute: 90.0,
 				},
 				DSEntry: DSEntry{
 					TimeSpentOnReading: "0 seconds",
 					TimeSpentOnWriting: "0 seconds",
-					WritesCompleted:    55000,
-					SectorsWritten:     110000,
+					WritesCompleted:    60000,
+					SectorsWritten:     120000,
 				},
 				NSEntry:            NSEntry{ReceiveBytes: "0 B", TransmitBytes: "0 B"},
 				ReceiveBytesDelta:  "0 B",
@@ -240,14 +383,14 @@ func TestInterpolate(t *testing.T) {
 				UnixSecond:     7,
 				PSEntry:        PSEntry{CPU: "0.00 %", VMRSS: "0 B", VMSize: "0 B"},
 				LoadAvg: LoadAvg{
-					LoadAvg1Minute:  32,
-					LoadAvg15Minute: 96,
+					LoadAvg1Minute:  35,
+					LoadAvg15Minute: 105,
 				},
 				DSEntry: DSEntry{
 					TimeSpentOnReading: "0 seconds",
 					TimeSpentOnWriting: "0 seconds",
-					WritesCompleted:    64000,
-					SectorsWritten:     128000,
+					WritesCompleted:    70000,
+					SectorsWritten:     140000,
 				},
 				NSEntry:            NSEntry{ReceiveBytes: "0 B", TransmitBytes: "0 B"},
 				ReceiveBytesDelta:  "0 B",
@@ -258,14 +401,14 @@ func TestInterpolate(t *testing.T) {
 				UnixSecond:     8,
 				PSEntry:        PSEntry{CPU: "0.00 %", VMRSS: "0 B", VMSize: "0 B"},
 				LoadAvg: LoadAvg{
-					LoadAvg1Minute:  36.5,
-					LoadAvg15Minute: 109.5,
+					LoadAvg1Minute:  40.0,
+					LoadAvg15Minute: 120.0,
 				},
 				DSEntry: DSEntry{
 					TimeSpentOnReading: "0 seconds",
 					TimeSpentOnWriting: "0 seconds",
-					WritesCompleted:    73000,
-					SectorsWritten:     146000,
+					WritesCompleted:    80000,
+					SectorsWritten:     160000,
 				},
 				NSEntry:            NSEntry{ReceiveBytes: "0 B", TransmitBytes: "0 B"},
 				ReceiveBytesDelta:  "0 B",
@@ -276,14 +419,14 @@ func TestInterpolate(t *testing.T) {
 				UnixSecond:     9,
 				PSEntry:        PSEntry{CPU: "0.00 %", VMRSS: "0 B", VMSize: "0 B"},
 				LoadAvg: LoadAvg{
-					LoadAvg1Minute:  41,
-					LoadAvg15Minute: 123,
+					LoadAvg1Minute:  45,
+					LoadAvg15Minute: 135,
 				},
 				DSEntry: DSEntry{
 					TimeSpentOnReading: "0 seconds",
 					TimeSpentOnWriting: "0 seconds",
-					WritesCompleted:    82000,
-					SectorsWritten:     164000,
+					WritesCompleted:    90000,
+					SectorsWritten:     180000,
 				},
 				NSEntry:            NSEntry{ReceiveBytes: "0 B", TransmitBytes: "0 B"},
 				ReceiveBytesDelta:  "0 B",
@@ -304,11 +447,13 @@ func TestInterpolate(t *testing.T) {
 		},
 	}
 
-	if !reflect.DeepEqual(cc2, expected2) {
-		for _, row := range cc2.Rows {
-			fmt.Printf("%+v\n", row)
+	if !reflect.DeepEqual(expected2, cc2) {
+		for i := range cc2.Rows {
+			if !reflect.DeepEqual(expected2.Rows[i], cc2.Rows[i]) {
+				t.Fatalf("#%d: expected %+v, got %+v", i, expected2.Rows[i], cc2.Rows[i])
+			}
 		}
-		t.Fatal("unexpected CSV")
+		t.Fatalf("expected %+v, got %+v", expected2, cc2)
 	}
 
 	// make sure interpolated CSV was deep-copied
