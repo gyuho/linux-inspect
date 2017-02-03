@@ -144,6 +144,52 @@ var Uptime = RawData{
 	},
 }
 
+// MTAB represents '/etc/mtab'
+// (See https://en.wikipedia.org/wiki/Fstab
+// and https://en.wikipedia.org/wiki/Mtab).
+var MTAB = RawData{
+	IsYAML: false,
+	Columns: []Column{
+		{"file-system", "file system", reflect.String},
+		{"mounted-on", "'mounted on'", reflect.String},
+		{"file-system-type", "file system type", reflect.String},
+		{"options", "file system type", reflect.String},
+		{"dump", "number indicating whether and how often the file system should be backed up by the dump program; a zero indicates the file system will never be automatically backed up", reflect.Int},
+		{"pass", "number indicating the order in which the fsck program will check the devices for errors at boot time; this is 1 for the root file system and either 2 (meaning check after root) or 0 (do not check) for all other devices", reflect.Int},
+	},
+	ColumnsToParse: map[string]RawDataType{},
+}
+
+// DF represents 'df' command output
+// (See https://en.wikipedia.org/wiki/Df_(Unix)
+// and https://www.gnu.org/software/coreutils/manual/html_node/df-invocation.html
+// and 'df --all --sync --block-size=1024 --output=source,target,fstype,file,itotal,iavail,iused,ipcent,size,avail,used,pcent'
+// and the output unit is kilobytes).
+var DF = RawData{
+	IsYAML: false,
+	Columns: []Column{
+		{"file-system", "file system ('source')", reflect.String},
+		{"mounted-on", "'mounted on' ('target')", reflect.String},
+		{"file-system-type", "file system type ('fstype')", reflect.String},
+		{"file", "file name if specified on the command line ('file')", reflect.String},
+
+		{"inodes", "total number of inodes ('itotal')", reflect.Int64},
+		{"ifree", "number of available inodes ('iavail')", reflect.Int64},
+		{"iused", "number of used inodes ('iused')", reflect.Int64},
+		{"iused-percent", "percentage of iused divided by itotal ('ipcent')", reflect.String},
+
+		{"total-blocks", "total number of blocks ('size')", reflect.Int64},
+		{"available-blocks", "number of available blocks ('avail')", reflect.Int64},
+		{"used-blocks", "number of used blocks ('used')", reflect.Int64},
+		{"used-percent", "percentage of iused divided by itotal ('pcent')", reflect.String},
+	},
+	ColumnsToParse: map[string]RawDataType{
+		"total-blocks":     TypeStatus,
+		"available-blocks": TypeBytes,
+		"used-blocks":      TypeBytes,
+	},
+}
+
 // DiskStat represents '/proc/diskstats'
 // (See https://www.kernel.org/doc/Documentation/ABI/testing/procfs-diskstats
 // and https://www.kernel.org/doc/Documentation/iostats.txt).
