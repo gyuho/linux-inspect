@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"syscall"
 	"testing"
-	"time"
+
+	humanize "github.com/dustin/go-humanize"
 )
 
 func TestGetProcDiskstats(t *testing.T) {
@@ -23,13 +23,28 @@ func TestGetProcDiskstats(t *testing.T) {
 	}
 }
 
-/*
-TODO: want to see disk writes increases the sector writes!
+func getWritten(t *testing.T, targetDevice string) (uint64, uint64) {
+	dss, err := GetProcDiskstats()
+	if err != nil {
+		t.Error(err)
+	}
+	var ds DiskStat
+	for _, elem := range dss {
+		if elem.DeviceName == targetDevice {
+			ds = elem
+			break
+		}
+	}
+	if ds.DeviceName == "" {
+		t.Skipf("disk stat is not found for device %q", targetDevice)
+	}
+	return ds.WritesCompleted, ds.SectorsWritten
+}
 
-just run with
+const minSectorSize = 512
 
-sudo /usr/local/go/bin/go test -v -run TestGetProcDiskstatsSectorWrite
-*/
+// TODO: use tmpfs
+// sudo /usr/local/go/bin/go test -v -run TestGetProcDiskstatsSectorWrite
 func TestGetProcDiskstatsSectorWrite(t *testing.T) {
 	dn, err := GetDevice("/boot")
 	if err != nil {
@@ -38,22 +53,9 @@ func TestGetProcDiskstatsSectorWrite(t *testing.T) {
 	}
 	fpath := filepath.Join("/boot", "test-temp-file")
 	fmt.Println("writing to", fpath, "with device", dn)
-	// defer os.RemoveAll(fpath)
+	defer os.RemoveAll(fpath)
 
-	ds1, err := GetProcDiskstats()
-	if err != nil {
-		t.Error(err)
-	}
-	var diskStat1 DiskStat
-	for _, elem := range ds1 {
-		if elem.DeviceName == dn {
-			diskStat1 = elem
-			break
-		}
-	}
-	if diskStat1.DeviceName == "" {
-		t.Skipf("disk stat is not found for device %q", dn)
-	}
+	oldWritesCompleted, oldSectorWritten := getWritten(t, dn)
 
 	f, err := openToOverwrite(fpath)
 	if err != nil {
@@ -61,50 +63,34 @@ func TestGetProcDiskstatsSectorWrite(t *testing.T) {
 		t.Skip()
 	}
 
-	const minSectorSize = 512
-	const walPageBytes = 8 * minSectorSize
-	n, err := f.Write(bytes.Repeat([]byte{50}, 10*walPageBytes))
-	if err != nil {
-		t.Fatal(err)
-	}
-	fmt.Println("wrote", n, "bytes")
-
-	// if err = f.Close(); err != nil {
-	// 	t.Fatal(err)
-	// }
-	if err = fdatasync(f); err != nil {
-		t.Fatal(err)
-	}
-
-	time.Sleep(time.Second)
-
-	ds2, err := GetProcDiskstats()
-	if err != nil {
-		t.Error(err)
-	}
-	var diskStat2 DiskStat
-	for _, elem := range ds2 {
-		if elem.DeviceName == dn {
-			diskStat2 = elem
-			break
+	var sum uint64
+	for i := 0; i < 1000; i++ {
+		n, err := f.Write(bytes.Repeat([]byte{50}, 100*minSectorSize))
+		if err != nil {
+			t.Fatal(err)
 		}
+		sum += uint64(n)
 	}
-	if diskStat2.DeviceName == "" {
-		t.Skipf("disk stat is not found for device %q", dn)
+	fmt.Println("written", humanize.Bytes(sum))
+
+	if err = f.Sync(); err != nil {
+		t.Fatal(err)
+	}
+	if err = f.Close(); err != nil {
+		t.Fatal(err)
 	}
 
-	fmt.Printf("diskStat1 %+v\n", diskStat1)
-	fmt.Printf("diskStat2 %+v\n", diskStat2)
-}
+	newWritesCompleted, newSectorWritten := getWritten(t, dn)
 
-// fdatasync flushes all data buffers of a file onto the disk.
-// Fsync is required to update the metadata, such as access time.
-// Fsync always does two write operations: one for writing new data
-// to disk. Another for updating the modification time stored in its
-// inode. If the modification time is not a part of the transaction,
-// syscall.Fdatasync can be used to avoid unnecessary inode disk writes.
-//
-// (etcd pkg.fileutil.Fdatasync)
-func fdatasync(f *os.File) error {
-	return syscall.Fdatasync(int(f.Fd()))
+	// sector delta >= write delta
+	// because one write size can have 100*minSectorSize
+	// e.g. if data 100-byte is written and the sector size is 10-byte
+	// then writes completed increases 1,but sector written increases 10
+	deltaWrites := newWritesCompleted - oldWritesCompleted
+	deltaSector := newSectorWritten - oldSectorWritten
+	if deltaSector < deltaWrites {
+		t.Fatalf("expected sector delta %d >= writes delta %d", deltaSector, deltaWrites)
+	}
+	fmt.Printf("writes completed: %d\n", deltaWrites)
+	fmt.Printf("sector written: %d\n", deltaSector)
 }
