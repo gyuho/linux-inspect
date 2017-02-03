@@ -83,7 +83,7 @@ func TestInterpolate(t *testing.T) {
 		MaxUnixNanosecond: 100,
 		MaxUnixSecond:     10,
 		Rows: []Proc{
-			Proc{
+			{
 				UnixNanosecond: 10,
 				UnixSecond:     1,
 				LoadAvg: LoadAvg{
@@ -95,7 +95,7 @@ func TestInterpolate(t *testing.T) {
 					SectorsWritten:  20000,
 				},
 			},
-			Proc{
+			{
 				UnixNanosecond: 100,
 				UnixSecond:     10,
 				LoadAvg: LoadAvg{
@@ -133,7 +133,7 @@ func TestInterpolate(t *testing.T) {
 		MaxUnixNanosecond: 0,
 		MaxUnixSecond:     10,
 		Rows: []Proc{
-			Proc{
+			{
 				UnixNanosecond: 0,
 				UnixSecond:     1,
 				LoadAvg: LoadAvg{
@@ -145,7 +145,7 @@ func TestInterpolate(t *testing.T) {
 					SectorsWritten:  20000,
 				},
 			},
-			Proc{
+			{
 				UnixNanosecond: 0,
 				UnixSecond:     2,
 				PSEntry:        PSEntry{CPU: "0.00 %", VMRSS: "0 B", VMSize: "0 B"},
@@ -163,7 +163,7 @@ func TestInterpolate(t *testing.T) {
 				ReceiveBytesDelta:  "0 B",
 				TransmitBytesDelta: "0 B",
 			},
-			Proc{
+			{
 				UnixNanosecond: 0,
 				UnixSecond:     3,
 				PSEntry:        PSEntry{CPU: "0.00 %", VMRSS: "0 B", VMSize: "0 B"},
@@ -181,7 +181,7 @@ func TestInterpolate(t *testing.T) {
 				ReceiveBytesDelta:  "0 B",
 				TransmitBytesDelta: "0 B",
 			},
-			Proc{
+			{
 				UnixNanosecond: 0,
 				UnixSecond:     4,
 				PSEntry:        PSEntry{CPU: "0.00 %", VMRSS: "0 B", VMSize: "0 B"},
@@ -199,7 +199,7 @@ func TestInterpolate(t *testing.T) {
 				ReceiveBytesDelta:  "0 B",
 				TransmitBytesDelta: "0 B",
 			},
-			Proc{
+			{
 				UnixNanosecond: 0,
 				UnixSecond:     5,
 				PSEntry:        PSEntry{CPU: "0.00 %", VMRSS: "0 B", VMSize: "0 B"},
@@ -217,7 +217,7 @@ func TestInterpolate(t *testing.T) {
 				ReceiveBytesDelta:  "0 B",
 				TransmitBytesDelta: "0 B",
 			},
-			Proc{
+			{
 				UnixNanosecond: 0,
 				UnixSecond:     6,
 				PSEntry:        PSEntry{CPU: "0.00 %", VMRSS: "0 B", VMSize: "0 B"},
@@ -235,7 +235,7 @@ func TestInterpolate(t *testing.T) {
 				ReceiveBytesDelta:  "0 B",
 				TransmitBytesDelta: "0 B",
 			},
-			Proc{
+			{
 				UnixNanosecond: 0,
 				UnixSecond:     7,
 				PSEntry:        PSEntry{CPU: "0.00 %", VMRSS: "0 B", VMSize: "0 B"},
@@ -253,7 +253,7 @@ func TestInterpolate(t *testing.T) {
 				ReceiveBytesDelta:  "0 B",
 				TransmitBytesDelta: "0 B",
 			},
-			Proc{
+			{
 				UnixNanosecond: 0,
 				UnixSecond:     8,
 				PSEntry:        PSEntry{CPU: "0.00 %", VMRSS: "0 B", VMSize: "0 B"},
@@ -271,7 +271,7 @@ func TestInterpolate(t *testing.T) {
 				ReceiveBytesDelta:  "0 B",
 				TransmitBytesDelta: "0 B",
 			},
-			Proc{
+			{
 				UnixNanosecond: 0,
 				UnixSecond:     9,
 				PSEntry:        PSEntry{CPU: "0.00 %", VMRSS: "0 B", VMSize: "0 B"},
@@ -289,7 +289,7 @@ func TestInterpolate(t *testing.T) {
 				ReceiveBytesDelta:  "0 B",
 				TransmitBytesDelta: "0 B",
 			},
-			Proc{
+			{
 				UnixNanosecond: 0,
 				UnixSecond:     10,
 				LoadAvg: LoadAvg{

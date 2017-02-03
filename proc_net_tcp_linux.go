@@ -24,7 +24,7 @@ func (tp TransportProtocol) String() string {
 	case TypeTCP6:
 		return "tcp6"
 	default:
-		panic(fmt.Errorf("unknown %v", tp))
+		panic(fmt.Errorf("unknown transport protocol %d", tp))
 	}
 }
 

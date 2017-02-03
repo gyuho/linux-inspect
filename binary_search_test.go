@@ -58,7 +58,7 @@ func TestBinarySearchFloat64Node(t *testing.T) {
 		t.Fatalf("s3 expected to have 7.999, got %f", s3.Value)
 	}
 	if s3.Idx != 3 {
-		t.Fatalf("s3.Idx expected to have 3, got %f", s3.Idx)
+		t.Fatalf("s3.Idx expected to have 3, got %d", s3.Idx)
 	}
 
 	s4 := searchClosest(root, 5.66)
