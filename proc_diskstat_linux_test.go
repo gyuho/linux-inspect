@@ -83,7 +83,9 @@ func TestGetProcDiskstatsSectorWrite(t *testing.T) {
 	newWritesCompleted, newSectorWritten := getWritten(t, dn)
 
 	// sector delta >= write delta
-	// because
+	// because one write size can have 100*minSectorSize
+	// e.g. if data 100-byte is written and the sector size is 10-byte
+	// then writes completed increases 1,but sector written increases 10
 	deltaWrites := newWritesCompleted - oldWritesCompleted
 	deltaSector := newSectorWritten - oldSectorWritten
 	if deltaSector < deltaWrites {
