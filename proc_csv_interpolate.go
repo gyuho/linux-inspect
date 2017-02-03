@@ -287,7 +287,9 @@ func (c *CSV) Interpolate() (cc *CSV, err error) {
 	}
 
 	// copy the original CSV data
-	cc = &(*c)
+	// cc = &(*c) (X)
+	copied := *c
+	cc = &copied
 
 	// find missing rows, assuming CSV is to be collected every second
 	if cc.MinUnixSecond == cc.MaxUnixSecond {
