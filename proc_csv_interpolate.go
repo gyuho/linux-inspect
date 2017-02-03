@@ -177,7 +177,7 @@ func Interpolate(lower, upper Proc) (procs []Proc, err error) {
 	}
 
 	// calculate the delta; divide by expectedRowN-1 because that's the number of delta ranges
-	// 5 ___ () ___ 7, where expectedRowN=3
+	// 5 ___ () ___ 7 should have denominator 2 when expectedRowN=3
 	var (
 		// for PSEntry
 		voluntaryCtxtSwitches    = (upper.PSEntry.VoluntaryCtxtSwitches - lower.PSEntry.VoluntaryCtxtSwitches) / uint64(expectedRowN-1)
