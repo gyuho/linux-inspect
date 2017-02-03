@@ -259,17 +259,17 @@ func Interpolate(lower, upper Proc) (procs []Proc, err error) {
 		procs[i].SectorsWrittenDelta = lower.SectorsWrittenDelta + uint64(i+1)*sectorsWrittenDelta
 
 		// for NSEntry
-		procs[i].NSEntry.ReceiveBytesNum = uint64(receiveBytesNum) + uint64(i+1)*voluntaryCtxtSwitches
-		procs[i].NSEntry.TransmitBytesNum = uint64(transmitBytesNum) + uint64(i+1)*voluntaryCtxtSwitches
-		procs[i].NSEntry.ReceivePackets = uint64(receivePackets) + uint64(i+1)*voluntaryCtxtSwitches
-		procs[i].NSEntry.TransmitPackets = uint64(transmitPackets) + uint64(i+1)*voluntaryCtxtSwitches
+		procs[i].NSEntry.ReceiveBytesNum = lower.NSEntry.ReceiveBytesNum + uint64(i+1)*receiveBytesNum
+		procs[i].NSEntry.TransmitBytesNum = lower.NSEntry.TransmitBytesNum + uint64(i+1)*transmitBytesNum
+		procs[i].NSEntry.ReceivePackets = lower.NSEntry.ReceivePackets + uint64(i+1)*receivePackets
+		procs[i].NSEntry.TransmitPackets = lower.NSEntry.TransmitPackets + uint64(i+1)*transmitPackets
 		procs[i].NSEntry.ReceiveBytes = humanize.Bytes(procs[i].NSEntry.ReceiveBytesNum)
 		procs[i].NSEntry.TransmitBytes = humanize.Bytes(procs[i].NSEntry.TransmitBytesNum)
-		procs[i].ReceivePacketsDelta = uint64(receivePacketsDelta) + uint64(i+1)*voluntaryCtxtSwitches
-		procs[i].TransmitPacketsDelta = uint64(transmitPacketsDelta) + uint64(i+1)*voluntaryCtxtSwitches
-		procs[i].ReceiveBytesNumDelta = uint64(receiveBytesNumDelta) + uint64(i+1)*voluntaryCtxtSwitches
+		procs[i].ReceivePacketsDelta = lower.ReceivePacketsDelta + uint64(i+1)*receivePacketsDelta
+		procs[i].TransmitPacketsDelta = lower.TransmitPacketsDelta + uint64(i+1)*transmitPacketsDelta
+		procs[i].ReceiveBytesNumDelta = lower.ReceiveBytesNumDelta + uint64(i+1)*receiveBytesNumDelta
 		procs[i].ReceiveBytesDelta = humanize.Bytes(procs[i].ReceiveBytesNumDelta)
-		procs[i].TransmitBytesNumDelta = uint64(transmitBytesNumDelta) + uint64(i+1)*voluntaryCtxtSwitches
+		procs[i].TransmitBytesNumDelta = lower.TransmitBytesNumDelta + uint64(i+1)*transmitBytesNumDelta
 		procs[i].TransmitBytesDelta = humanize.Bytes(procs[i].TransmitBytesNumDelta)
 	}
 
