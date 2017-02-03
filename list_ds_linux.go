@@ -89,7 +89,7 @@ func ConvertDS(dss ...DSEntry) (header []string, rows [][]string) {
 	dataframe.SortBy(
 		rows,
 		dataframe.Float64DescendingFunc(5), // SectorsWritten
-		dataframe.Float64DescendingFunc(4), // SectorsRead
+		dataframe.Float64DescendingFunc(4), // WritesCompleted
 	).Sort(rows)
 
 	return

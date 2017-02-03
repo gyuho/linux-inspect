@@ -1,6 +1,6 @@
 package psn
 
-// updated at 2017-01-31 14:04:04.136777234 -0800 PST
+// updated at 2017-02-03 12:33:47.711425238 -0800 PST
 
 // NetDev is '/proc/net/dev' in Linux.
 // The dev pseudo-file contains network device status information.
@@ -137,6 +137,58 @@ type Uptime struct {
 	// UptimeIdle is total amount of time in seconds spent in idle process.
 	UptimeIdle           float64 `column:"uptime_idle"`
 	UptimeIdleParsedTime string  `column:"uptime_idle_parsed_time"`
+}
+
+// DfCommandRow is 'df' command output row in Linux.
+type DfCommandRow struct {
+	// FileSystem is file system ('source').
+	FileSystem string `column:"file_system"`
+	// Device is device name.
+	Device string `column:"device"`
+	// MountedOn is 'mounted on' ('target').
+	MountedOn string `column:"mounted_on"`
+	// FileSystemType is file system type ('fstype').
+	FileSystemType string `column:"file_system_type"`
+	// File is file name if specified on the command line ('file').
+	File string `column:"file"`
+	// Inodes is total number of inodes ('itotal').
+	Inodes int64 `column:"inodes"`
+	// Ifree is number of available inodes ('iavail').
+	Ifree int64 `column:"ifree"`
+	// Iused is number of used inodes ('iused').
+	Iused int64 `column:"iused"`
+	// IusedPercent is percentage of iused divided by itotal ('ipcent').
+	IusedPercent string `column:"iused_percent"`
+	// TotalBlocks is total number of 1K-blocks ('size').
+	TotalBlocks            int64  `column:"total_blocks"`
+	TotalBlocksBytesN      int64  `column:"total_blocks_bytes_n"`
+	TotalBlocksParsedBytes string `column:"total_blocks_parsed_bytes"`
+	// AvailableBlocks is number of available 1K-blocks ('avail').
+	AvailableBlocks            int64  `column:"available_blocks"`
+	AvailableBlocksBytesN      int64  `column:"available_blocks_bytes_n"`
+	AvailableBlocksParsedBytes string `column:"available_blocks_parsed_bytes"`
+	// UsedBlocks is number of used 1K-blocks ('used').
+	UsedBlocks            int64  `column:"used_blocks"`
+	UsedBlocksBytesN      int64  `column:"used_blocks_bytes_n"`
+	UsedBlocksParsedBytes string `column:"used_blocks_parsed_bytes"`
+	// UsedBlocksPercent is percentage of used-blocks divided by total-blocks ('pcent').
+	UsedBlocksPercent string `column:"used_blocks_percent"`
+}
+
+// Mtab is '/etc/mtab' in Linux.
+type Mtab struct {
+	// FileSystem is file system.
+	FileSystem string `column:"file_system"`
+	// MountedOn is 'mounted on'.
+	MountedOn string `column:"mounted_on"`
+	// FileSystemType is file system type.
+	FileSystemType string `column:"file_system_type"`
+	// Options is file system type.
+	Options string `column:"options"`
+	// Dump is number indicating whether and how often the file system should be backed up by the dump program; a zero indicates the file system will never be automatically backed up.
+	Dump int `column:"dump"`
+	// Pass is number indicating the order in which the fsck program will check the devices for errors at boot time; this is 1 for the root file system and either 2 (meaning check after root) or 0 (do not check) for all other devices.
+	Pass int `column:"pass"`
 }
 
 // DiskStat is '/proc/diskstats' in Linux.

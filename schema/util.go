@@ -36,6 +36,8 @@ func GoType(tp reflect.Kind) string {
 		return "float64"
 	case reflect.Uint64:
 		return "uint64"
+	case reflect.Int:
+		return "int"
 	case reflect.Int64:
 		return "int64"
 	case reflect.String:
