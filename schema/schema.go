@@ -144,10 +144,10 @@ var Uptime = RawData{
 	},
 }
 
-// MTAB represents '/etc/mtab'
+// Mtab represents '/etc/mtab'
 // (See https://en.wikipedia.org/wiki/Fstab
 // and https://en.wikipedia.org/wiki/Mtab).
-var MTAB = RawData{
+var Mtab = RawData{
 	IsYAML: false,
 	Columns: []Column{
 		{"file-system", "file system", reflect.String},
@@ -160,12 +160,12 @@ var MTAB = RawData{
 	ColumnsToParse: map[string]RawDataType{},
 }
 
-// DF represents 'df' command output
+// DfCommandRow represents 'df' command output row
 // (See https://en.wikipedia.org/wiki/Df_(Unix)
 // and https://www.gnu.org/software/coreutils/manual/html_node/df-invocation.html
 // and 'df --all --sync --block-size=1024 --output=source,target,fstype,file,itotal,iavail,iused,ipcent,size,avail,used,pcent'
 // and the output unit is kilobytes).
-var DF = RawData{
+var DfCommandRow = RawData{
 	IsYAML: false,
 	Columns: []Column{
 		{"file-system", "file system ('source')", reflect.String},

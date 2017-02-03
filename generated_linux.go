@@ -1,6 +1,6 @@
 package psn
 
-// updated at 2017-02-03 11:07:56.024419686 -0800 PST
+// updated at 2017-02-03 11:18:31.955639461 -0800 PST
 
 // NetDev is '/proc/net/dev' in Linux.
 // The dev pseudo-file contains network device status information.
@@ -139,8 +139,8 @@ type Uptime struct {
 	UptimeIdleParsedTime string  `column:"uptime_idle_parsed_time"`
 }
 
-// MTAB is '/etc/mtab' in Linux.
-type MTAB struct {
+// Mtab is '/etc/mtab' in Linux.
+type Mtab struct {
 	// FileSystem is file system.
 	FileSystem string `column:"file_system"`
 	// MountedOn is 'mounted on'.
@@ -155,8 +155,8 @@ type MTAB struct {
 	Pass int `column:"pass"`
 }
 
-// DF is 'df' command output in Linux.
-type DF struct {
+// DfCommandRow is 'df' command output row in Linux.
+type DfCommandRow struct {
 	// FileSystem is file system ('source').
 	FileSystem string `column:"file_system"`
 	// MountedOn is 'mounted on' ('target').

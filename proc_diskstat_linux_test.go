@@ -11,11 +11,11 @@ import (
 )
 
 func TestGetProcDiskstats(t *testing.T) {
-	ds, err := GetProcDiskstats()
+	dss, err := GetProcDiskstats()
 	if err != nil {
 		t.Error(err)
 	}
-	for _, ds := range ds {
+	for _, ds := range dss {
 		if ds.ReadsCompleted == 0 {
 			continue
 		}
