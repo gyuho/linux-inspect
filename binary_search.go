@@ -189,6 +189,8 @@ func buildBoundaries(nums []int64) *boundaries {
 	}
 }
 
+// adds a second to boundaries
+// and rebuild the binary tree
 func (bf *boundaries) add(sec int64) {
 	bf.numsOrig = append(bf.numsOrig, sec)
 	bf.num2OrigIdx[sec] = len(bf.numsOrig)
