@@ -143,18 +143,18 @@ type Uptime struct {
 	buf.WriteString(generate(schema.Uptime))
 	buf.WriteString("}\n\n")
 
-	// '/etc/mtab'
-	buf.WriteString(`// Mtab is '/etc/mtab' in Linux.
-type Mtab struct {
-`)
-	buf.WriteString(generate(schema.Mtab))
-	buf.WriteString("}\n\n")
-
 	// 'df'
 	buf.WriteString(`// DfCommandRow is 'df' command output row in Linux.
 type DfCommandRow struct {
 `)
 	buf.WriteString(generate(schema.DfCommandRow))
+	buf.WriteString("}\n\n")
+
+	// '/etc/mtab'
+	buf.WriteString(`// Mtab is '/etc/mtab' in Linux.
+type Mtab struct {
+`)
+	buf.WriteString(generate(schema.Mtab))
 	buf.WriteString("}\n\n")
 
 	// '/proc/diskstats'
