@@ -120,11 +120,11 @@ func TestInterpolate(t *testing.T) {
 	if len(cc2.Rows) != expectedRowN {
 		t.Fatalf("len(cc2.Rows) expected %d, got %d", len(cc2.Rows), expectedRowN)
 	}
-	if !reflect.DeepEqual(cc1.Rows[0], cc2.Rows[0]) {
-		t.Fatalf("first row expected %+v, got %+v", cc1.Rows[0], cc2.Rows[0])
+	if !reflect.DeepEqual(cc1.Rows[0].DSEntry, cc2.Rows[0].DSEntry) {
+		t.Fatalf("first row expected %+v, got %+v", cc1.Rows[0].DSEntry, cc2.Rows[0].DSEntry)
 	}
-	if !reflect.DeepEqual(cc1.Rows[len(cc1.Rows)-1], cc2.Rows[len(cc2.Rows)-1]) {
-		t.Fatalf("first row expected %+v, got %+v", cc1.Rows[len(cc1.Rows)-1], cc2.Rows[len(cc2.Rows)-1])
+	if !reflect.DeepEqual(cc1.Rows[len(cc1.Rows)-1].DSEntry, cc2.Rows[len(cc2.Rows)-1].DSEntry) {
+		t.Fatalf("first row expected %+v, got %+v", cc1.Rows[len(cc1.Rows)-1].DSEntry, cc2.Rows[len(cc2.Rows)-1].DSEntry)
 	}
 
 	expected2 := &CSV{
@@ -309,5 +309,12 @@ func TestInterpolate(t *testing.T) {
 			fmt.Printf("%+v\n", row)
 		}
 		t.Fatal("unexpected CSV")
+	}
+
+	// make sure interpolated CSV was deep-copied
+	old := cc1.DiskDevice
+	cc2.DiskDevice = "test"
+	if cc1.DiskDevice == "test" {
+		t.Fatalf("cc1.DiskDevice expected %q, got 'test'", old)
 	}
 }
