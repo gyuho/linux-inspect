@@ -6,16 +6,16 @@ import (
 	"time"
 )
 
-func TestReadTopDefault(t *testing.T) {
-	o, err := ReadTopDefault(0)
+func TestRunTopDefault(t *testing.T) {
+	o, err := RunTopDefault(0)
 	if err != nil {
 		t.Skip(err)
 	}
 	fmt.Println(o)
 }
 
-func Test_parseKiBInTop(t *testing.T) {
-	bts, bs, err := parseKiBInTop("50.883g")
+func Test_parseTopCommandKiB(t *testing.T) {
+	bts, bs, err := parseTopCommandKiB("50.883g")
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -15,7 +15,7 @@ import (
 // GetTop returns all entries in 'top' command.
 // If pid<1, it reads all processes in 'top' command.
 func GetTop(topPath string, pid int64) ([]TopCommandRow, error) {
-	o, err := ReadTop(topPath, pid)
+	o, err := RunTop(topPath, pid)
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +25,7 @@ func GetTop(topPath string, pid int64) ([]TopCommandRow, error) {
 // GetTopDefault returns all entries in 'top' command.
 // If pid<1, it reads all processes in 'top' command.
 func GetTopDefault(pid int64) ([]TopCommandRow, error) {
-	o, err := ReadTop(DefaultTopPath, pid)
+	o, err := RunTop(DefaultTopPath, pid)
 	if err != nil {
 		return nil, err
 	}
@@ -35,20 +35,20 @@ func GetTopDefault(pid int64) ([]TopCommandRow, error) {
 // DefaultTopPath is the default 'top' command path.
 var DefaultTopPath = "/usr/bin/top"
 
-// ReadTopDefault reads Linux 'top' command output.
-func ReadTopDefault(pid int64) (string, error) {
-	return ReadTop(DefaultTopPath, pid)
+// RunTopDefault reads Linux 'top' command output.
+func RunTopDefault(pid int64) (string, error) {
+	return RunTop(DefaultTopPath, pid)
 }
 
-// ReadTop reads Linux 'top' command output.
-func ReadTop(topPath string, pid int64) (string, error) {
+// RunTop runs and reads Linux 'top' command output.
+func RunTop(topPath string, pid int64) (string, error) {
 	buf := new(bytes.Buffer)
-	err := readTop(topPath, pid, buf)
+	err := runTop(topPath, pid, buf)
 	o := strings.TrimSpace(buf.String())
 	return o, err
 }
 
-func readTop(topPath string, pid int64, w io.Writer) error {
+func runTop(topPath string, pid int64, w io.Writer) error {
 	if !exist(topPath) {
 		return fmt.Errorf("%q does not exist", topPath)
 	}
@@ -62,29 +62,6 @@ func readTop(topPath string, pid int64, w io.Writer) error {
 	return cmd.Run()
 }
 
-func convertProcStatus(s string) string {
-	ns := strings.TrimSpace(s)
-	if len(s) > 1 {
-		ns = ns[:1]
-	}
-	switch ns {
-	case "D":
-		return "D (uninterruptible sleep)"
-	case "R":
-		return "R (running)"
-	case "S":
-		return "S (sleeping)"
-	case "T":
-		return "T (stopped by job control signal)"
-	case "t":
-		return "t (stopped by debugger during trace)"
-	case "Z":
-		return "Z (zombie)"
-	default:
-		return fmt.Sprintf("unknown process %q", s)
-	}
-}
-
 // parses KiB strings, returns bytes in int64, and humanized bytes.
 //
 //  KiB = kibibyte = 1024 bytes
@@ -94,7 +71,7 @@ func convertProcStatus(s string) string {
 //  PiB = pebibyte = 1024 TiB = 1,125,899,906,842,624 bytes
 //  EiB = exbibyte = 1024 PiB = 1,152,921,504,606,846,976 bytes
 //
-func parseKiBInTop(s string) (bts uint64, hs string, err error) {
+func parseTopCommandKiB(s string) (bts uint64, hs string, err error) {
 	s = strings.TrimSpace(s)
 	switch {
 	// suffix 'm' means megabytes
@@ -232,7 +209,7 @@ func parseTopRow(row []string) (TopCommandRow, error) {
 	trow.PR = strings.TrimSpace(row[top_command_output_row_idx_pr])
 	trow.NI = strings.TrimSpace(row[top_command_output_row_idx_ni])
 
-	virt, virtTxt, err := parseKiBInTop(row[top_command_output_row_idx_virt])
+	virt, virtTxt, err := parseTopCommandKiB(row[top_command_output_row_idx_virt])
 	if err != nil {
 		return TopCommandRow{}, fmt.Errorf("parse error %v (row %v)", err, row)
 	}
@@ -240,7 +217,7 @@ func parseTopRow(row []string) (TopCommandRow, error) {
 	trow.VIRTBytesN = virt
 	trow.VIRTParsedBytes = virtTxt
 
-	res, resTxt, err := parseKiBInTop(row[top_command_output_row_idx_res])
+	res, resTxt, err := parseTopCommandKiB(row[top_command_output_row_idx_res])
 	if err != nil {
 		return TopCommandRow{}, fmt.Errorf("parse error %v (row %v)", err, row)
 	}
@@ -248,7 +225,7 @@ func parseTopRow(row []string) (TopCommandRow, error) {
 	trow.RESBytesN = res
 	trow.RESParsedBytes = resTxt
 
-	shr, shrTxt, err := parseKiBInTop(row[top_command_output_row_idx_shr])
+	shr, shrTxt, err := parseTopCommandKiB(row[top_command_output_row_idx_shr])
 	if err != nil {
 		return TopCommandRow{}, fmt.Errorf("parse error %v (row %v)", err, row)
 	}

@@ -1,11 +1,40 @@
 package psn
 
 import (
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"strconv"
 	"strings"
 )
+
+func convertProcStatus(s string) string {
+	ns := strings.TrimSpace(s)
+	if len(s) > 1 {
+		ns = ns[:1]
+	}
+	switch ns {
+	case "D":
+		return "D (uninterruptible sleep)"
+	case "R":
+		return "R (running)"
+	case "S":
+		return "S (sleeping)"
+	case "T":
+		return "T (stopped by job control signal)"
+	case "t":
+		return "t (stopped by debugger during trace)"
+	case "Z":
+		return "Z (zombie)"
+	default:
+		return fmt.Sprintf("unknown process %q", s)
+	}
+}
+
+func pidFromFd(s string) (int64, error) {
+	// get 5261 from '/proc/5261/fd/69'
+	return strconv.ParseInt(strings.Split(s, "/")[2], 10, 64)
+}
 
 // ListPIDs reads all PIDs in '/proc'.
 func ListPIDs() ([]int64, error) {
@@ -36,11 +65,6 @@ func ListProcFds() ([]string, error) {
 		return nil, err
 	}
 	return fs, nil
-}
-
-func pidFromFd(s string) (int64, error) {
-	// get 5261 from '/proc/5261/fd/69'
-	return strconv.ParseInt(strings.Split(s, "/")[2], 10, 64)
 }
 
 // GetProgram returns the program name.
