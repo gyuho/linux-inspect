@@ -67,11 +67,18 @@ func (str *TopStream) ErrChan() <-chan error {
 	return str.errc
 }
 
+func (str *TopStream) noError() (noErr bool) {
+	str.rmu.RLock()
+	noErr = str.err == nil
+	str.rmu.RUnlock()
+	return
+}
+
 // feed new top results into the queue
 func (str *TopStream) enqueue() {
 	defer str.wg.Done()
 	reader := bufio.NewReader(str.pt)
-	for str.err == nil {
+	for str.noError() {
 		// lock for pty
 		str.pmu.Lock()
 		data, _, lerr := reader.ReadLine()
@@ -97,9 +104,12 @@ func (str *TopStream) enqueue() {
 			str.rmu.Unlock()
 			continue
 		}
+
 		r, rerr := parseTopRow(row)
 		if rerr != nil {
 			str.err = rerr
+			str.rmu.Unlock()
+			continue
 		}
 
 		str.queue = append(str.queue, r)
