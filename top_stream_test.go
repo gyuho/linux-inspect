@@ -2,14 +2,18 @@ package psn
 
 import (
 	"fmt"
+	"os"
 	"testing"
 	"time"
 )
 
 func TestTopStartTopStream(t *testing.T) {
+	pid := int64(os.Getpid())
+
 	cfg := &TopConfig{
 		Exec:           DefaultTopPath,
 		IntervalSecond: 1,
+		PID:            pid,
 	}
 	str, err := cfg.StartStream()
 	if err != nil {

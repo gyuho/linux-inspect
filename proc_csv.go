@@ -62,10 +62,13 @@ func GetProc(opts ...FilterFunc) (Proc, error) {
 	ts := time.Now().UnixNano()
 	proc := Proc{UnixNanosecond: ts, UnixSecond: ConvertUnixNano(ts)}
 
+	toFinish := 0
+
 	errc := make(chan error)
+	toFinish++
 	go func() {
 		// get process stats
-		ets, err := GetPS(WithPID(ft.PID))
+		ets, err := GetPS(WithPID(ft.PID), WithTopStream(ft.TopStream))
 		if err != nil {
 			errc <- err
 			return
@@ -78,6 +81,7 @@ func GetProc(opts ...FilterFunc) (Proc, error) {
 		errc <- nil
 	}()
 
+	toFinish++
 	go func() {
 		lvg, err := GetProcLoadAvg()
 		if err != nil {
@@ -89,6 +93,7 @@ func GetProc(opts ...FilterFunc) (Proc, error) {
 	}()
 
 	if ft.DiskDevice != "" {
+		toFinish++
 		go func() {
 			// get diskstats
 			ds, err := GetDS()
@@ -107,6 +112,7 @@ func GetProc(opts ...FilterFunc) (Proc, error) {
 	}
 
 	if ft.NetworkInterface != "" {
+		toFinish++
 		go func() {
 			// get network I/O stats
 			ns, err := GetNS()
@@ -125,6 +131,7 @@ func GetProc(opts ...FilterFunc) (Proc, error) {
 	}
 
 	if ft.ExtraPath != "" {
+		toFinish++
 		go func() {
 			f, err := openToRead(ft.ExtraPath)
 			if err != nil {
@@ -142,7 +149,7 @@ func GetProc(opts ...FilterFunc) (Proc, error) {
 	}
 
 	cnt := 0
-	for cnt != len(opts)+1 { // include load avg query
+	for cnt != toFinish { // include load avg query
 		err := <-errc
 		if err != nil {
 			return Proc{}, err
@@ -152,7 +159,7 @@ func GetProc(opts ...FilterFunc) (Proc, error) {
 
 	if ft.DiskDevice != "" {
 		if proc.DSEntry.Device == "" {
-			return Proc{}, fmt.Errorf("disk device %q was not found", ft.DiskDevice)
+			return Proc{}, fmt.Errorf("disk device %q was not found (%+v)", ft.DiskDevice, proc.DSEntry)
 		}
 	}
 	if ft.NetworkInterface != "" {

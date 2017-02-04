@@ -95,6 +95,8 @@ func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
 				log.Printf("PID %d is not found at 'top' command output", pid)
 			}
 		}
+	} else {
+		topM = ft.TopStream.Latest()
 	}
 
 	var pmu sync.RWMutex

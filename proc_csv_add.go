@@ -3,6 +3,7 @@ package psn
 import (
 	"encoding/csv"
 	"fmt"
+	"log"
 	"strconv"
 
 	humanize "github.com/dustin/go-humanize"
@@ -26,6 +27,11 @@ type CSV struct {
 	// ExtraPath contains extra information.
 	ExtraPath string
 
+	// TopStream feeds realtime 'top' command data in the background, every second.
+	// And whenver 'Add' gets called, returns the latest 'top' data.
+	// Use this to provide more accurate CPU usage.
+	TopStream *TopStream
+
 	// Rows are sorted by unix time in nanoseconds.
 	// It's the number of nanoseconds (not seconds) elapsed
 	// since January 1, 1970 UTC.
@@ -33,8 +39,8 @@ type CSV struct {
 }
 
 // NewCSV returns a new CSV.
-func NewCSV(fpath string, pid int64, diskDevice string, networkInterface string, extraPath string) *CSV {
-	return &CSV{
+func NewCSV(fpath string, pid int64, diskDevice string, networkInterface string, extraPath string, tcfg *TopConfig) (c *CSV, err error) {
+	c = &CSV{
 		FilePath:         fpath,
 		PID:              pid,
 		DiskDevice:       diskDevice,
@@ -51,6 +57,10 @@ func NewCSV(fpath string, pid int64, diskDevice string, networkInterface string,
 		ExtraPath: extraPath,
 		Rows:      []Proc{},
 	}
+	if tcfg != nil {
+		c.TopStream, err = tcfg.StartStream()
+	}
+	return
 }
 
 // Add is called periodically to append a new entry to CSV; it only appends.
@@ -62,6 +72,7 @@ func (c *CSV) Add() error {
 		WithDiskDevice(c.DiskDevice),
 		WithNetworkInterface(c.NetworkInterface),
 		WithExtraPath(c.ExtraPath),
+		WithTopStream(c.TopStream),
 	)
 	if err != nil {
 		return err
@@ -106,6 +117,18 @@ func (c *CSV) Add() error {
 
 // Save saves CSV to disk.
 func (c *CSV) Save() error {
+	if c.TopStream != nil {
+		if err := c.TopStream.Stop(); err != nil {
+			log.Println(err)
+		}
+		select {
+		case err := <-c.TopStream.ErrChan():
+			log.Println(err)
+		default:
+			log.Println("TopStream has stopped")
+		}
+	}
+
 	f, err := openToAppend(c.FilePath)
 	if err != nil {
 		return err

@@ -26,6 +26,11 @@ type TopStream struct {
 	pid2TopCommandRow map[int64]TopCommandRow
 	err               error
 	errc              chan error
+
+	// signal only once at initial, once the first line is ready
+	readymu sync.RWMutex
+	ready   bool
+	readyc  chan struct{}
 }
 
 // StartStream starts 'top' command stream.
@@ -52,6 +57,9 @@ func (cfg *TopConfig) StartStream() (*TopStream, error) {
 		pid2TopCommandRow: make(map[int64]TopCommandRow, 500),
 		err:               nil,
 		errc:              make(chan error, 1),
+
+		ready:  false,
+		readyc: make(chan struct{}, 1),
 	}
 	str.rcond = sync.NewCond(&str.rmu)
 
@@ -59,6 +67,7 @@ func (cfg *TopConfig) StartStream() (*TopStream, error) {
 	go str.enqueue()
 	go str.dequeue()
 
+	<-str.readyc
 	return str, nil
 }
 
@@ -164,6 +173,16 @@ func (str *TopStream) dequeue() {
 		str.queue = str.queue[1:]
 
 		str.pid2TopCommandRow[row.PID] = row
+
+		str.readymu.RLock()
+		rd := str.ready
+		str.readymu.RUnlock()
+		if !rd {
+			str.readymu.Lock()
+			str.ready = true
+			str.readymu.Unlock()
+			close(str.readyc)
+		}
 	}
 	if expectedErr(str.err) {
 		str.err = nil

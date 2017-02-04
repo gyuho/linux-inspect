@@ -38,7 +38,10 @@ func TestCombine(t *testing.T) {
 	if err := toFile([]byte("10"), epath); err != nil {
 		t.Fatal(err)
 	}
-	c := NewCSV(fpath, 1, dn, nt, epath)
+	c, err := NewCSV(fpath, 1, dn, nt, epath, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 	for i := 0; i < 3; i++ {
 		if i > 0 {
 			if err := toFile([]byte(fmt.Sprintf("%d", 100*i)), epath); err != nil {
