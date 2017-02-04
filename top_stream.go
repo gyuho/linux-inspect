@@ -137,11 +137,10 @@ func (str *TopStream) dequeue() {
 	if expectedErr(str.err) {
 		str.err = nil
 	}
-	str.rmu.Unlock()
-
 	if str.err != nil {
 		str.errc <- str.err
 	}
+	str.rmu.Unlock()
 }
 
 func (str *TopStream) close(kill bool) (err error) {
@@ -161,15 +160,14 @@ func (str *TopStream) close(kill bool) (err error) {
 	str.wg.Wait()
 
 	if err != nil {
-		str.err = err
 		if !kill && strings.Contains(err.Error(), "exit status") {
-			str.err = nil // non-zero exit code
+			err = nil // non-zero exit code
 		} else if kill && expectedErr(err) {
-			str.err = nil
+			err = nil
 		}
 	}
 	str.cmd = nil
-	return str.err
+	return err
 }
 
 func expectedErr(err error) bool {
