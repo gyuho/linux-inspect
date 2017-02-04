@@ -65,7 +65,8 @@ func TestGetProcDiskstatsSectorWrite(t *testing.T) {
 
 	var sum uint64
 	for i := 0; i < 1000; i++ {
-		n, err := f.Write(bytes.Repeat([]byte{50}, 100*minSectorSize))
+		var n int
+		n, err = f.Write(bytes.Repeat([]byte{50}, 100*minSectorSize))
 		if err != nil {
 			t.Fatal(err)
 		}

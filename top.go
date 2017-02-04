@@ -5,273 +5,103 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
-	"reflect"
-	"strconv"
-	"strings"
-
-	humanize "github.com/dustin/go-humanize"
 )
-
-// GetTop returns all entries in 'top' command.
-// If pid<1, it reads all processes in 'top' command.
-func GetTop(topPath string, pid int64) ([]TopCommandRow, error) {
-	o, err := ReadTop(topPath, pid)
-	if err != nil {
-		return nil, err
-	}
-	return ParseTopOutput(o)
-}
-
-// GetTopDefault returns all entries in 'top' command.
-// If pid<1, it reads all processes in 'top' command.
-func GetTopDefault(pid int64) ([]TopCommandRow, error) {
-	o, err := ReadTop(DefaultTopPath, pid)
-	if err != nil {
-		return nil, err
-	}
-	return ParseTopOutput(o)
-}
 
 // DefaultTopPath is the default 'top' command path.
 var DefaultTopPath = "/usr/bin/top"
 
-// ReadTopDefault reads Linux 'top' command output.
-func ReadTopDefault(pid int64) (string, error) {
-	return ReadTop(DefaultTopPath, pid)
+// TopConfig configures 'top' command runs.
+type TopConfig struct {
+	Exec string
+
+	// MAKE THIS TRUE BY DEFAULT
+	// OTHERWISE PARSER HAS TO DEAL WITH HIGHLIGHTED TEXTS
+	//
+	// BatchMode is true to start 'top' in batch mode, which could be useful
+	// for sending output from 'top' to other programs or to a file.
+	// In this mode, 'top' will not accept input and runs until the interations
+	// limit ('-n' flag) or until killed.
+	// It's '-b' flag.
+	// BatchMode bool
+
+	// Limit limits the iteration of 'top' commands to run before exit.
+	// If 1, 'top' prints out the current processes and exits.
+	// It's '-n' flag.
+	Limit int
+
+	// IntervalSecond is the delay time between updates.
+	// Default is 1 second.
+	// It's '-d' flag.
+	IntervalSecond float64
+
+	// PID specifies the PID to monitor.
+	// It's '-p' flag.
+	PID int64
+
+	// Writer stores 'top' command outputs.
+	Writer io.Writer
+
+	cmd *exec.Cmd
 }
 
-// ReadTop reads Linux 'top' command output.
-func ReadTop(topPath string, pid int64) (string, error) {
-	buf := new(bytes.Buffer)
-	err := readTop(topPath, pid, buf)
-	o := strings.TrimSpace(buf.String())
-	return o, err
-}
+// Flags returns the 'top' command flags.
+func (cfg *TopConfig) Flags() (fs []string) {
+	// batch mode by default
+	fs = append(fs, "-b")
 
-func readTop(topPath string, pid int64, w io.Writer) error {
-	if !exist(topPath) {
-		return fmt.Errorf("%q does not exist", topPath)
-	}
-	topFlags := []string{"-b", "-n", "1"}
-	if pid > 0 {
-		topFlags = append(topFlags, "-p", fmt.Sprint(pid))
-	}
-	cmd := exec.Command(topPath, topFlags...)
-	cmd.Stdout = w
-	cmd.Stderr = w
-	return cmd.Run()
-}
-
-func convertProcStatus(s string) string {
-	ns := strings.TrimSpace(s)
-	if len(s) > 1 {
-		ns = ns[:1]
-	}
-	switch ns {
-	case "D":
-		return "D (uninterruptible sleep)"
-	case "R":
-		return "R (running)"
-	case "S":
-		return "S (sleeping)"
-	case "T":
-		return "T (stopped by job control signal)"
-	case "t":
-		return "t (stopped by debugger during trace)"
-	case "Z":
-		return "Z (zombie)"
-	default:
-		return fmt.Sprintf("unknown process %q", s)
-	}
-}
-
-// parses KiB strings, returns bytes in int64, and humanized bytes.
-//
-//  KiB = kibibyte = 1024 bytes
-//  MiB = mebibyte = 1024 KiB = 1,048,576 bytes
-//  GiB = gibibyte = 1024 MiB = 1,073,741,824 bytes
-//  TiB = tebibyte = 1024 GiB = 1,099,511,627,776 bytes
-//  PiB = pebibyte = 1024 TiB = 1,125,899,906,842,624 bytes
-//  EiB = exbibyte = 1024 PiB = 1,152,921,504,606,846,976 bytes
-//
-func parseKiBInTop(s string) (bts uint64, hs string, err error) {
-	s = strings.TrimSpace(s)
-	switch {
-	// suffix 'm' means megabytes
-	case strings.HasSuffix(s, "m"):
-		ns := s[:len(s)-1]
-		var mib float64
-		mib, err = strconv.ParseFloat(ns, 64)
-		if err != nil {
-			return 0, "", err
-		}
-		bts = uint64(mib) * 1024 * 1024
-
-	// suffix 'g' means gigabytes
-	case strings.HasSuffix(s, "g"):
-		ns := s[:len(s)-1]
-		var gib float64
-		gib, err = strconv.ParseFloat(ns, 64)
-		if err != nil {
-			return 0, "", err
-		}
-		bts = uint64(gib) * 1024 * 1024 * 1024
-
-	default:
-		var kib float64
-		kib, err = strconv.ParseFloat(s, 64)
-		if err != nil {
-			return 0, "", err
-		}
-		bts = uint64(kib) * 1024
+	if cfg.Limit > 0 { // if 1, command just exists after one output
+		fs = append(fs, "-n", fmt.Sprintf("%d", cfg.Limit))
 	}
 
-	hs = humanize.Bytes(bts)
+	if cfg.IntervalSecond > 0 {
+		fs = append(fs, "-d", fmt.Sprintf("%.2f", cfg.IntervalSecond))
+	}
+
+	if cfg.PID > 0 {
+		fs = append(fs, "-p", fmt.Sprintf("%d", cfg.PID))
+	}
+
 	return
 }
 
-// TopRowHeaders is the headers in 'top' output.
-var TopRowHeaders = []string{
-	"PID",
-	"USER",
-	"PR",
-	"NI",
-	"VIRT",
-	"RES",
-	"SHR",
-	"S",
-	"%CPU",
-	"%MEM",
-	"TIME+",
-	"COMMAND",
+// process updates with '*exec.Cmd' for the given 'TopConfig'.
+func (cfg *TopConfig) createCmd() error {
+	if cfg == nil {
+		return fmt.Errorf("TopConfig is nil")
+	}
+	if !exist(cfg.Exec) {
+		return fmt.Errorf("%q does not exist", cfg.Exec)
+	}
+	flags := cfg.Flags()
+
+	c := exec.Command(cfg.Exec, flags...)
+	c.Stdout = cfg.Writer
+	c.Stderr = cfg.Writer
+
+	cfg.cmd = c
+	return nil
 }
 
-type topCommandOutputRowIdx int
-
-const (
-	top_command_output_row_idx_pid topCommandOutputRowIdx = iota
-	top_command_output_row_idx_user
-	top_command_output_row_idx_pr
-	top_command_output_row_idx_ni
-	top_command_output_row_idx_virt
-	top_command_output_row_idx_res
-	top_command_output_row_idx_shr
-	top_command_output_row_idx_s
-	top_command_output_row_idx_cpu
-	top_command_output_row_idx_mem
-	top_command_output_row_idx_time
-	top_command_output_row_idx_command
-)
-
-// ParseTopOutput parses 'top' command output and returns the rows.
-func ParseTopOutput(s string) ([]TopCommandRow, error) {
-	lines := strings.Split(s, "\n")
-	rows := make([][]string, 0, len(lines))
-	headerFound := false
-	for _, line := range lines {
-		if len(line) == 0 {
-			continue
-		}
-
-		ds := strings.Fields(strings.TrimSpace(line))
-		if ds[0] == "PID" { // header line
-			if !reflect.DeepEqual(ds, TopRowHeaders) {
-				return nil, fmt.Errorf("unexpected 'top' command header order (%v, expected %v)", ds, TopRowHeaders)
-			}
-			headerFound = true
-			continue
-		}
-
-		if !headerFound {
-			continue
-		}
-
-		row := strings.Fields(strings.TrimSpace(line))
-		if len(row) != len(TopRowHeaders) {
-			return nil, fmt.Errorf("unexpected row column number %v (expected %v)", row, TopRowHeaders)
-		}
-		rows = append(rows, row)
+// GetTop returns all entries in 'top' command.
+// If pid<1, it reads all processes in 'top' command.
+// This is one-time command.
+func GetTop(topPath string, pid int64) ([]TopCommandRow, error) {
+	buf := new(bytes.Buffer)
+	cfg := &TopConfig{
+		Exec:           topPath,
+		Limit:          1,
+		IntervalSecond: 1,
+		PID:            pid,
+		Writer:         buf,
+		cmd:            nil,
+	}
+	if err := cfg.createCmd(); err != nil {
+		return nil, err
 	}
 
-	type result struct {
-		row TopCommandRow
-		err error
+	// run starts the 'top' command and waits for it to complete.
+	if err := cfg.cmd.Run(); err != nil {
+		return nil, err
 	}
-	rc := make(chan result, len(rows))
-	for _, row := range rows {
-		go func(row []string) {
-			tr, err := parseTopRow(row)
-			rc <- result{row: tr, err: err}
-		}(row)
-	}
-
-	tcRows := make([]TopCommandRow, 0, len(rows))
-	for len(tcRows) != len(rows) {
-		select {
-		case rs := <-rc:
-			if rs.err != nil {
-				return nil, rs.err
-			}
-			tcRows = append(tcRows, rs.row)
-		}
-	}
-	return tcRows, nil
-}
-
-func parseTopRow(row []string) (TopCommandRow, error) {
-	trow := TopCommandRow{
-		USER: strings.TrimSpace(row[top_command_output_row_idx_user]),
-	}
-
-	pv, err := strconv.ParseInt(row[top_command_output_row_idx_pid], 10, 64)
-	if err != nil {
-		return TopCommandRow{}, fmt.Errorf("parse error %v (row %v)", err, row)
-	}
-	trow.PID = pv
-
-	trow.PR = strings.TrimSpace(row[top_command_output_row_idx_pr])
-	trow.NI = strings.TrimSpace(row[top_command_output_row_idx_ni])
-
-	virt, virtTxt, err := parseKiBInTop(row[top_command_output_row_idx_virt])
-	if err != nil {
-		return TopCommandRow{}, fmt.Errorf("parse error %v (row %v)", err, row)
-	}
-	trow.VIRT = row[top_command_output_row_idx_virt]
-	trow.VIRTBytesN = virt
-	trow.VIRTParsedBytes = virtTxt
-
-	res, resTxt, err := parseKiBInTop(row[top_command_output_row_idx_res])
-	if err != nil {
-		return TopCommandRow{}, fmt.Errorf("parse error %v (row %v)", err, row)
-	}
-	trow.RES = row[top_command_output_row_idx_res]
-	trow.RESBytesN = res
-	trow.RESParsedBytes = resTxt
-
-	shr, shrTxt, err := parseKiBInTop(row[top_command_output_row_idx_shr])
-	if err != nil {
-		return TopCommandRow{}, fmt.Errorf("parse error %v (row %v)", err, row)
-	}
-	trow.SHR = row[top_command_output_row_idx_shr]
-	trow.SHRBytesN = shr
-	trow.SHRParsedBytes = shrTxt
-
-	trow.S = row[top_command_output_row_idx_s]
-	trow.SParsedStatus = convertProcStatus(row[top_command_output_row_idx_s])
-
-	cnum, err := strconv.ParseFloat(row[top_command_output_row_idx_cpu], 64)
-	if err != nil {
-		return TopCommandRow{}, fmt.Errorf("parse error %v (row %v)", err, row)
-	}
-	trow.CPUPercent = cnum
-
-	mnum, err := strconv.ParseFloat(row[top_command_output_row_idx_mem], 64)
-	if err != nil {
-		return TopCommandRow{}, fmt.Errorf("parse error %v (row %v)", err, row)
-	}
-	trow.MEMPercent = mnum
-
-	trow.TIME = row[top_command_output_row_idx_time]
-
-	return trow, nil
+	return ParseTopOutput(buf.String())
 }
