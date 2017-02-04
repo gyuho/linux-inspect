@@ -175,7 +175,9 @@ func expectedErr(err error) bool {
 		return true
 	}
 	es := err.Error()
-	return strings.Contains(es, "signal:") || strings.Contains(es, "/dev/ptmx: input/output error")
+	return strings.Contains(es, "signal:") ||
+		strings.Contains(es, "/dev/ptmx: input/output error") ||
+		strings.Contains(es, "/dev/ptmx: file already closed")
 }
 
 // Stop kills the 'top' process and waits for it to exit.
