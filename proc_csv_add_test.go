@@ -13,6 +13,21 @@ import (
 )
 
 func TestProcCSV(t *testing.T) {
+	pid := int64(os.Getpid())
+	testProcCSV(t, pid, nil)
+}
+
+func TestProcCSVWithTopStream(t *testing.T) {
+	pid := int64(os.Getpid())
+	tcfg := &TopConfig{
+		Exec:           DefaultTopPath,
+		IntervalSecond: 1,
+		PID:            pid,
+	}
+	testProcCSV(t, pid, tcfg)
+}
+
+func testProcCSV(t *testing.T, pid int64, tcfg *TopConfig) {
 	dn, err := GetDevice("/boot")
 	if err != nil {
 		fmt.Println(err)
@@ -28,7 +43,7 @@ func TestProcCSV(t *testing.T) {
 		nt = k
 		break
 	}
-	fmt.Println("running with network interface", nt)
+	fmt.Println("running with network interface", nt, "and disk device", dn)
 
 	fpath := filepath.Join(os.TempDir(), fmt.Sprintf("test-%010d.csv", time.Now().UnixNano()))
 	defer os.RemoveAll(fpath)
@@ -39,7 +54,11 @@ func TestProcCSV(t *testing.T) {
 	if err = toFile([]byte("10"), epath); err != nil {
 		t.Fatal(err)
 	}
-	c := NewCSV(fpath, 1, dn, nt, epath)
+	c, err := NewCSV(fpath, pid, dn, nt, epath, tcfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	for i := 0; i < 3; i++ {
 		if i > 0 {
 			if err = toFile([]byte(fmt.Sprintf("%d", 100*i)), epath); err != nil {

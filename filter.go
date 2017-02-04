@@ -21,6 +21,7 @@ type EntryFilter struct {
 
 	// for ps
 	TopCommandPath string
+	TopStream      *TopStream
 
 	// for Proc
 	DiskDevice       string
@@ -81,6 +82,11 @@ func WithTCP6() FilterFunc {
 // WithTopCommandPath configures 'top' command path.
 func WithTopCommandPath(path string) FilterFunc {
 	return func(ft *EntryFilter) { ft.TopCommandPath = path }
+}
+
+// WithTopStream gets the PSEntry from the 'top' stream.
+func WithTopStream(str *TopStream) FilterFunc {
+	return func(ft *EntryFilter) { ft.TopStream = str }
 }
 
 // WithDiskDevice to filter entries by disk device.

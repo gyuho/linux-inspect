@@ -26,6 +26,11 @@ type TopStream struct {
 	pid2TopCommandRow map[int64]TopCommandRow
 	err               error
 	errc              chan error
+
+	// signal only once at initial, once the first line is ready
+	readymu sync.RWMutex
+	ready   bool
+	readyc  chan struct{}
 }
 
 // StartStream starts 'top' command stream.
@@ -52,6 +57,9 @@ func (cfg *TopConfig) StartStream() (*TopStream, error) {
 		pid2TopCommandRow: make(map[int64]TopCommandRow, 500),
 		err:               nil,
 		errc:              make(chan error, 1),
+
+		ready:  false,
+		readyc: make(chan struct{}, 1),
 	}
 	str.rcond = sync.NewCond(&str.rmu)
 
@@ -59,12 +67,34 @@ func (cfg *TopConfig) StartStream() (*TopStream, error) {
 	go str.enqueue()
 	go str.dequeue()
 
+	<-str.readyc
 	return str, nil
+}
+
+// Stop kills the 'top' process and waits for it to exit.
+func (str *TopStream) Stop() error {
+	return str.close(true)
+}
+
+// Wait just waits for the 'top' process to exit.
+func (str *TopStream) Wait() error {
+	return str.close(false)
 }
 
 // ErrChan returns the error from stream.
 func (str *TopStream) ErrChan() <-chan error {
 	return str.errc
+}
+
+// Latest returns the latest top command outputs.
+func (str *TopStream) Latest() map[int64]TopCommandRow {
+	str.rmu.RLock()
+	cm := make(map[int64]TopCommandRow, len(str.pid2TopCommandRow))
+	for k, v := range str.pid2TopCommandRow {
+		cm[k] = v
+	}
+	str.rmu.RUnlock()
+	return cm
 }
 
 func (str *TopStream) noError() (noErr bool) {
@@ -143,6 +173,16 @@ func (str *TopStream) dequeue() {
 		str.queue = str.queue[1:]
 
 		str.pid2TopCommandRow[row.PID] = row
+
+		str.readymu.RLock()
+		rd := str.ready
+		str.readymu.RUnlock()
+		if !rd {
+			str.readymu.Lock()
+			str.ready = true
+			str.readymu.Unlock()
+			close(str.readyc)
+		}
 	}
 	if expectedErr(str.err) {
 		str.err = nil
@@ -188,25 +228,4 @@ func expectedErr(err error) bool {
 	return strings.Contains(es, "signal:") ||
 		strings.Contains(es, "/dev/ptmx: input/output error") ||
 		strings.Contains(es, "/dev/ptmx: file already closed")
-}
-
-// Stop kills the 'top' process and waits for it to exit.
-func (str *TopStream) Stop() error {
-	return str.close(true)
-}
-
-// Wait just waits for the 'top' process to exit.
-func (str *TopStream) Wait() error {
-	return str.close(false)
-}
-
-// Latest returns the latest top command outputs.
-func (str *TopStream) Latest() map[int64]TopCommandRow {
-	str.rmu.RLock()
-	cm := make(map[int64]TopCommandRow, len(str.pid2TopCommandRow))
-	for k, v := range str.pid2TopCommandRow {
-		cm[k] = v
-	}
-	str.rmu.RUnlock()
-	return cm
 }
