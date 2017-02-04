@@ -118,7 +118,7 @@ func ParseDfOutput(s string) ([]DfCommandRow, error) {
 		ds := strings.Fields(strings.TrimSpace(line))
 		if ds[0] == "Filesystem" { // header line
 			if !reflect.DeepEqual(ds, DfRowHeaders) {
-				return nil, fmt.Errorf("unexpected 'df' command header order (%v, expected %v)", ds, DfRowHeaders)
+				return nil, fmt.Errorf("unexpected 'df' command header order (%v, expected %v, output: %q)", ds, DfRowHeaders, s)
 			}
 			headerFound = true
 			continue
@@ -157,7 +157,15 @@ func ParseDfOutput(s string) ([]DfCommandRow, error) {
 			tcRows = append(tcRows, rs.row)
 		}
 	}
-	return tcRows, nil
+	rm := make(map[string]DfCommandRow)
+	for _, row := range tcRows {
+		rm[row.MountedOn] = row
+	}
+	rrs := make([]DfCommandRow, 0, len(rm))
+	for _, row := range rm {
+		rrs = append(rrs, row)
+	}
+	return rrs, nil
 }
 
 func parseDfRow(row []string) (DfCommandRow, error) {
