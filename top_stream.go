@@ -48,7 +48,7 @@ func (cfg *TopConfig) StartStream() (*TopStream, error) {
 		rmu: sync.RWMutex{},
 
 		// pre-allocate
-		queue:             make([]TopCommandRow, 0, 100),
+		queue:             make([]TopCommandRow, 0, 500),
 		pid2TopCommandRow: make(map[int64]TopCommandRow, 500),
 		err:               nil,
 		errc:              make(chan error, 1),
