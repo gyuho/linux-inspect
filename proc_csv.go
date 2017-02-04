@@ -36,6 +36,8 @@ type Proc struct {
 	Extra []byte
 }
 
+// ProcSlice is a slice of 'Proc' and implements
+// the sort.Sort interface in unix nano/second ascending order.
 type ProcSlice []Proc
 
 func (p ProcSlice) Len() int      { return len(p) }

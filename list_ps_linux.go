@@ -71,26 +71,29 @@ func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
 		ft.ProgramMatchFunc = func(string) bool { return true }
 	}
 
-	var topRows []TopCommandRow
-	if len(pids) == 1 {
-		topRows, err = GetTop(ft.TopCommandPath, pids[0])
-		if err != nil {
-			return
+	var topM map[int64]TopCommandRow
+	if ft.TopStream == nil {
+		var topRows []TopCommandRow
+		if len(pids) == 1 {
+			topRows, err = GetTop(ft.TopCommandPath, pids[0])
+			if err != nil {
+				return
+			}
+		} else {
+			topRows, err = GetTop(ft.TopCommandPath, 0)
+			if err != nil {
+				return
+			}
 		}
-	} else {
-		topRows, err = GetTop(ft.TopCommandPath, 0)
-		if err != nil {
-			return
+		topM = make(map[int64]TopCommandRow, len(topRows))
+		for _, row := range topRows {
+			topM[row.PID] = row
 		}
-	}
-	topM := make(map[int64]TopCommandRow, len(topRows))
-	for _, row := range topRows {
-		topM[row.PID] = row
-	}
-	for _, pid := range pids {
-		if _, ok := topM[pid]; !ok {
-			topM[pid] = TopCommandRow{PID: pid}
-			log.Printf("PID %d is not found at 'top' command output", pid)
+		for _, pid := range pids {
+			if _, ok := topM[pid]; !ok {
+				topM[pid] = TopCommandRow{PID: pid}
+				log.Printf("PID %d is not found at 'top' command output", pid)
+			}
 		}
 	}
 
