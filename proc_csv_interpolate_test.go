@@ -97,6 +97,7 @@ func TestInterpolateMissingOne(t *testing.T) {
 					WritesCompleted: 10000,
 					SectorsWritten:  20000,
 				},
+				TransmitBytesNumDelta: 244,
 			},
 			{
 				UnixNanosecond: 12,
@@ -109,6 +110,7 @@ func TestInterpolateMissingOne(t *testing.T) {
 					WritesCompleted: 50000,
 					SectorsWritten:  100000,
 				},
+				TransmitBytesNumDelta: 74,
 			},
 			{
 				UnixNanosecond: 13,
@@ -159,6 +161,7 @@ func TestInterpolateMissingOne(t *testing.T) {
 					WritesCompleted: 10000,
 					SectorsWritten:  20000,
 				},
+				TransmitBytesNumDelta: 244,
 			},
 			{
 				UnixNanosecond: 0,
@@ -174,9 +177,10 @@ func TestInterpolateMissingOne(t *testing.T) {
 					WritesCompleted:    30000,
 					SectorsWritten:     60000,
 				},
-				NSEntry:            NSEntry{ReceiveBytes: "0 B", TransmitBytes: "0 B"},
-				ReceiveBytesDelta:  "0 B",
-				TransmitBytesDelta: "0 B",
+				NSEntry:               NSEntry{ReceiveBytes: "0 B", TransmitBytes: "0 B"},
+				ReceiveBytesDelta:     "0 B",
+				TransmitBytesDelta:    "159 B",
+				TransmitBytesNumDelta: 159,
 			},
 			{
 				UnixNanosecond: 0,
@@ -189,6 +193,7 @@ func TestInterpolateMissingOne(t *testing.T) {
 					WritesCompleted: 50000,
 					SectorsWritten:  100000,
 				},
+				TransmitBytesNumDelta: 74,
 			},
 			{
 				UnixNanosecond: 0,

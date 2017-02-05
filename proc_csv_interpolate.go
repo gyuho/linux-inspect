@@ -180,11 +180,11 @@ func Interpolate(lower, upper Proc) (procs []Proc, err error) {
 	// 5 ___ () ___ 7 should have denominator 2 when expectedRowN=3
 	var (
 		// for PSEntry
-		voluntaryCtxtSwitches    = (upper.PSEntry.VoluntaryCtxtSwitches - lower.PSEntry.VoluntaryCtxtSwitches) / uint64(expectedRowN-1)
-		nonVoluntaryCtxtSwitches = (upper.PSEntry.NonvoluntaryCtxtSwitches - lower.PSEntry.NonvoluntaryCtxtSwitches) / uint64(expectedRowN-1)
+		voluntaryCtxtSwitches    = int64(upper.PSEntry.VoluntaryCtxtSwitches-lower.PSEntry.VoluntaryCtxtSwitches) / (expectedRowN - 1)
+		nonVoluntaryCtxtSwitches = int64(upper.PSEntry.NonvoluntaryCtxtSwitches-lower.PSEntry.NonvoluntaryCtxtSwitches) / (expectedRowN - 1)
 		cpuNum                   = (upper.PSEntry.CPUNum - lower.PSEntry.CPUNum) / float64(expectedRowN-1)
-		vmRSSNum                 = (upper.PSEntry.VMRSSNum - lower.PSEntry.VMRSSNum) / uint64(expectedRowN-1)
-		vmSizeNum                = (upper.PSEntry.VMSizeNum - lower.PSEntry.VMSizeNum) / uint64(expectedRowN-1)
+		vmRSSNum                 = int64(upper.PSEntry.VMRSSNum-lower.PSEntry.VMRSSNum) / (expectedRowN - 1)
+		vmSizeNum                = int64(upper.PSEntry.VMSizeNum-lower.PSEntry.VMSizeNum) / (expectedRowN - 1)
 
 		// for LoadAvg
 		loadAvg1Minute                   = (upper.LoadAvg.LoadAvg1Minute - lower.LoadAvg.LoadAvg1Minute) / float64(expectedRowN-1)
@@ -194,30 +194,30 @@ func Interpolate(lower, upper Proc) (procs []Proc, err error) {
 		currentKernelSchedulingEntities  = (upper.LoadAvg.RunnableKernelSchedulingEntities - lower.LoadAvg.RunnableKernelSchedulingEntities) / int64(expectedRowN-1)
 
 		// for DSEntry
-		readsCompleted       = (upper.DSEntry.ReadsCompleted - lower.DSEntry.ReadsCompleted) / uint64(expectedRowN-1)
-		sectorsRead          = (upper.DSEntry.SectorsRead - lower.DSEntry.SectorsRead) / uint64(expectedRowN-1)
-		writesCompleted      = (upper.DSEntry.WritesCompleted - lower.DSEntry.WritesCompleted) / uint64(expectedRowN-1)
-		sectorsWritten       = (upper.DSEntry.SectorsWritten - lower.DSEntry.SectorsWritten) / uint64(expectedRowN-1)
-		timeSpentOnReadingMs = (upper.DSEntry.TimeSpentOnReadingMs - lower.DSEntry.TimeSpentOnReadingMs) / uint64(expectedRowN-1)
-		timeSpentOnWritingMs = (upper.DSEntry.TimeSpentOnWritingMs - lower.DSEntry.TimeSpentOnWritingMs) / uint64(expectedRowN-1)
+		readsCompleted       = int64(upper.DSEntry.ReadsCompleted-lower.DSEntry.ReadsCompleted) / (expectedRowN - 1)
+		sectorsRead          = int64(upper.DSEntry.SectorsRead-lower.DSEntry.SectorsRead) / (expectedRowN - 1)
+		writesCompleted      = int64(upper.DSEntry.WritesCompleted-lower.DSEntry.WritesCompleted) / (expectedRowN - 1)
+		sectorsWritten       = int64(upper.DSEntry.SectorsWritten-lower.DSEntry.SectorsWritten) / (expectedRowN - 1)
+		timeSpentOnReadingMs = int64(upper.DSEntry.TimeSpentOnReadingMs-lower.DSEntry.TimeSpentOnReadingMs) / (expectedRowN - 1)
+		timeSpentOnWritingMs = int64(upper.DSEntry.TimeSpentOnWritingMs-lower.DSEntry.TimeSpentOnWritingMs) / (expectedRowN - 1)
 
 		// for DSEntry delta
-		readsCompletedDelta  = (upper.ReadsCompletedDelta - lower.ReadsCompletedDelta) / uint64(expectedRowN-1)
-		sectorsReadDelta     = (upper.SectorsReadDelta - lower.SectorsReadDelta) / uint64(expectedRowN-1)
-		writesCompletedDelta = (upper.WritesCompletedDelta - lower.WritesCompletedDelta) / uint64(expectedRowN-1)
-		sectorsWrittenDelta  = (upper.SectorsWrittenDelta - lower.SectorsWrittenDelta) / uint64(expectedRowN-1)
+		readsCompletedDelta  = int64(upper.ReadsCompletedDelta-lower.ReadsCompletedDelta) / (expectedRowN - 1)
+		sectorsReadDelta     = int64(upper.SectorsReadDelta-lower.SectorsReadDelta) / (expectedRowN - 1)
+		writesCompletedDelta = int64(upper.WritesCompletedDelta-lower.WritesCompletedDelta) / (expectedRowN - 1)
+		sectorsWrittenDelta  = int64(upper.SectorsWrittenDelta-lower.SectorsWrittenDelta) / (expectedRowN - 1)
 
 		// for NSEntry
-		receivePackets   = (upper.NSEntry.ReceivePackets - lower.NSEntry.ReceivePackets) / uint64(expectedRowN-1)
-		transmitPackets  = (upper.NSEntry.TransmitPackets - lower.NSEntry.TransmitPackets) / uint64(expectedRowN-1)
-		receiveBytesNum  = (upper.NSEntry.ReceiveBytesNum - lower.NSEntry.ReceiveBytesNum) / uint64(expectedRowN-1)
-		transmitBytesNum = (upper.NSEntry.TransmitBytesNum - lower.NSEntry.TransmitBytesNum) / uint64(expectedRowN-1)
+		receivePackets   = int64(upper.NSEntry.ReceivePackets-lower.NSEntry.ReceivePackets) / (expectedRowN - 1)
+		transmitPackets  = int64(upper.NSEntry.TransmitPackets-lower.NSEntry.TransmitPackets) / (expectedRowN - 1)
+		receiveBytesNum  = int64(upper.NSEntry.ReceiveBytesNum-lower.NSEntry.ReceiveBytesNum) / (expectedRowN - 1)
+		transmitBytesNum = int64(upper.NSEntry.TransmitBytesNum-lower.NSEntry.TransmitBytesNum) / (expectedRowN - 1)
 
 		// for NSEntry delta
-		receivePacketsDelta   = (upper.ReceivePacketsDelta - lower.ReceivePacketsDelta) / uint64(expectedRowN-1)
-		transmitPacketsDelta  = (upper.TransmitPacketsDelta - lower.TransmitPacketsDelta) / uint64(expectedRowN-1)
-		receiveBytesNumDelta  = (upper.ReceiveBytesNumDelta - lower.ReceiveBytesNumDelta) / uint64(expectedRowN-1)
-		transmitBytesNumDelta = (upper.TransmitBytesNumDelta - lower.TransmitBytesNumDelta) / uint64(expectedRowN-1)
+		receivePacketsDelta   = int64(upper.ReceivePacketsDelta-lower.ReceivePacketsDelta) / (expectedRowN - 1)
+		transmitPacketsDelta  = int64(upper.TransmitPacketsDelta-lower.TransmitPacketsDelta) / (expectedRowN - 1)
+		receiveBytesNumDelta  = int64(upper.ReceiveBytesNumDelta-lower.ReceiveBytesNumDelta) / (expectedRowN - 1)
+		transmitBytesNumDelta = int64(upper.TransmitBytesNumDelta-lower.TransmitBytesNumDelta) / (expectedRowN - 1)
 	)
 
 	procs = make([]Proc, expectedRowN-2)
@@ -228,13 +228,13 @@ func Interpolate(lower, upper Proc) (procs []Proc, err error) {
 		procs[i].UnixSecond = lower.UnixSecond + int64(i+1)
 
 		// for PSEntry
-		procs[i].PSEntry.VoluntaryCtxtSwitches = lower.PSEntry.VoluntaryCtxtSwitches + uint64(i+1)*voluntaryCtxtSwitches
-		procs[i].PSEntry.NonvoluntaryCtxtSwitches = lower.PSEntry.NonvoluntaryCtxtSwitches + uint64(i+1)*nonVoluntaryCtxtSwitches
+		procs[i].PSEntry.VoluntaryCtxtSwitches = uint64(int64(lower.PSEntry.VoluntaryCtxtSwitches) + int64(i+1)*voluntaryCtxtSwitches)
+		procs[i].PSEntry.NonvoluntaryCtxtSwitches = uint64(int64(lower.PSEntry.NonvoluntaryCtxtSwitches) + int64(i+1)*nonVoluntaryCtxtSwitches)
 		procs[i].PSEntry.CPUNum = lower.PSEntry.CPUNum + float64(i+1)*cpuNum
 		procs[i].PSEntry.CPU = fmt.Sprintf("%3.2f %%", procs[i].PSEntry.CPUNum)
-		procs[i].PSEntry.VMRSSNum = lower.PSEntry.VMRSSNum + uint64(i+1)*vmRSSNum
+		procs[i].PSEntry.VMRSSNum = uint64(int64(lower.PSEntry.VMRSSNum) + int64(i+1)*vmRSSNum)
 		procs[i].PSEntry.VMRSS = humanize.Bytes(procs[i].PSEntry.VMRSSNum)
-		procs[i].PSEntry.VMSizeNum = lower.PSEntry.VMSizeNum + uint64(i+1)*vmSizeNum
+		procs[i].PSEntry.VMSizeNum = uint64(int64(lower.PSEntry.VMSizeNum) + int64(i+1)*vmSizeNum)
 		procs[i].PSEntry.VMSize = humanize.Bytes(procs[i].PSEntry.VMSizeNum)
 
 		// for LoadAvg
@@ -245,31 +245,31 @@ func Interpolate(lower, upper Proc) (procs []Proc, err error) {
 		procs[i].LoadAvg.CurrentKernelSchedulingEntities = lower.LoadAvg.CurrentKernelSchedulingEntities + int64(i+1)*currentKernelSchedulingEntities
 
 		// for DSEntry
-		procs[i].DSEntry.ReadsCompleted = lower.DSEntry.ReadsCompleted + uint64(i+1)*readsCompleted
-		procs[i].DSEntry.SectorsRead = lower.DSEntry.SectorsRead + uint64(i+1)*sectorsRead
-		procs[i].DSEntry.WritesCompleted = lower.DSEntry.WritesCompleted + uint64(i+1)*writesCompleted
-		procs[i].DSEntry.SectorsWritten = lower.DSEntry.SectorsWritten + uint64(i+1)*sectorsWritten
-		procs[i].DSEntry.TimeSpentOnReadingMs = lower.DSEntry.TimeSpentOnReadingMs + uint64(i+1)*timeSpentOnReadingMs
+		procs[i].DSEntry.ReadsCompleted = uint64(int64(lower.DSEntry.ReadsCompleted) + int64(i+1)*readsCompleted)
+		procs[i].DSEntry.SectorsRead = uint64(int64(lower.DSEntry.SectorsRead) + int64(i+1)*sectorsRead)
+		procs[i].DSEntry.WritesCompleted = uint64(int64(lower.DSEntry.WritesCompleted) + int64(i+1)*writesCompleted)
+		procs[i].DSEntry.SectorsWritten = uint64(int64(lower.DSEntry.SectorsWritten) + int64(i+1)*sectorsWritten)
+		procs[i].DSEntry.TimeSpentOnReadingMs = uint64(int64(lower.DSEntry.TimeSpentOnReadingMs) + int64(i+1)*timeSpentOnReadingMs)
 		procs[i].DSEntry.TimeSpentOnReading = humanizeDurationMs(procs[i].DSEntry.TimeSpentOnReadingMs)
-		procs[i].DSEntry.TimeSpentOnWritingMs = lower.DSEntry.TimeSpentOnWritingMs + uint64(i+1)*timeSpentOnWritingMs
+		procs[i].DSEntry.TimeSpentOnWritingMs = uint64(int64(lower.DSEntry.TimeSpentOnWritingMs) + int64(i+1)*timeSpentOnWritingMs)
 		procs[i].DSEntry.TimeSpentOnWriting = humanizeDurationMs(procs[i].DSEntry.TimeSpentOnWritingMs)
-		procs[i].ReadsCompletedDelta = lower.ReadsCompletedDelta + uint64(i+1)*readsCompletedDelta
-		procs[i].SectorsReadDelta = lower.SectorsReadDelta + uint64(i+1)*sectorsReadDelta
-		procs[i].WritesCompletedDelta = lower.WritesCompletedDelta + uint64(i+1)*writesCompletedDelta
-		procs[i].SectorsWrittenDelta = lower.SectorsWrittenDelta + uint64(i+1)*sectorsWrittenDelta
+		procs[i].ReadsCompletedDelta = uint64(int64(lower.ReadsCompletedDelta) + int64(i+1)*readsCompletedDelta)
+		procs[i].SectorsReadDelta = uint64(int64(lower.SectorsReadDelta) + int64(i+1)*sectorsReadDelta)
+		procs[i].WritesCompletedDelta = uint64(int64(lower.WritesCompletedDelta) + int64(i+1)*writesCompletedDelta)
+		procs[i].SectorsWrittenDelta = uint64(int64(lower.SectorsWrittenDelta) + int64(i+1)*sectorsWrittenDelta)
 
 		// for NSEntry
-		procs[i].NSEntry.ReceiveBytesNum = lower.NSEntry.ReceiveBytesNum + uint64(i+1)*receiveBytesNum
-		procs[i].NSEntry.TransmitBytesNum = lower.NSEntry.TransmitBytesNum + uint64(i+1)*transmitBytesNum
-		procs[i].NSEntry.ReceivePackets = lower.NSEntry.ReceivePackets + uint64(i+1)*receivePackets
-		procs[i].NSEntry.TransmitPackets = lower.NSEntry.TransmitPackets + uint64(i+1)*transmitPackets
+		procs[i].NSEntry.ReceiveBytesNum = uint64(int64(lower.NSEntry.ReceiveBytesNum) + int64(i+1)*receiveBytesNum)
+		procs[i].NSEntry.TransmitBytesNum = uint64(int64(lower.NSEntry.TransmitBytesNum) + int64(i+1)*transmitBytesNum)
+		procs[i].NSEntry.ReceivePackets = uint64(int64(lower.NSEntry.ReceivePackets) + int64(i+1)*receivePackets)
+		procs[i].NSEntry.TransmitPackets = uint64(int64(lower.NSEntry.TransmitPackets) + int64(i+1)*transmitPackets)
 		procs[i].NSEntry.ReceiveBytes = humanize.Bytes(procs[i].NSEntry.ReceiveBytesNum)
 		procs[i].NSEntry.TransmitBytes = humanize.Bytes(procs[i].NSEntry.TransmitBytesNum)
-		procs[i].ReceivePacketsDelta = lower.ReceivePacketsDelta + uint64(i+1)*receivePacketsDelta
-		procs[i].TransmitPacketsDelta = lower.TransmitPacketsDelta + uint64(i+1)*transmitPacketsDelta
-		procs[i].ReceiveBytesNumDelta = lower.ReceiveBytesNumDelta + uint64(i+1)*receiveBytesNumDelta
+		procs[i].ReceivePacketsDelta = uint64(int64(lower.ReceivePacketsDelta) + int64(i+1)*receivePacketsDelta)
+		procs[i].TransmitPacketsDelta = uint64(int64(lower.TransmitPacketsDelta) + int64(i+1)*transmitPacketsDelta)
+		procs[i].ReceiveBytesNumDelta = uint64(int64(lower.ReceiveBytesNumDelta) + int64(i+1)*receiveBytesNumDelta)
 		procs[i].ReceiveBytesDelta = humanize.Bytes(procs[i].ReceiveBytesNumDelta)
-		procs[i].TransmitBytesNumDelta = lower.TransmitBytesNumDelta + uint64(i+1)*transmitBytesNumDelta
+		procs[i].TransmitBytesNumDelta = uint64(int64(lower.TransmitBytesNumDelta) + int64(i+1)*transmitBytesNumDelta)
 		procs[i].TransmitBytesDelta = humanize.Bytes(procs[i].TransmitBytesNumDelta)
 	}
 
