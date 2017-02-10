@@ -95,3 +95,12 @@ func TestGetProcDiskstatsSectorWrite(t *testing.T) {
 	fmt.Printf("writes completed: %d\n", deltaWrites)
 	fmt.Printf("sector written: %d\n", deltaSector)
 }
+
+/*
+sudo /usr/local/go/bin/go test -v -run TestGetProcDiskstatsSectorWrite
+=== RUN   TestGetProcDiskstatsSectorWrite
+writing to /boot/test-temp-file with device nvme0n1p2
+written 51 MB
+writes completed: 592
+sector written: 100398
+*/
