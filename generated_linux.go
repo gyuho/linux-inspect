@@ -1,6 +1,6 @@
 package psn
 
-// updated at 2017-02-03 12:33:47.711425238 -0800 PST
+// updated at 2017-02-10 10:04:53.292742581 -0800 PST
 
 // NetDev is '/proc/net/dev' in Linux.
 // The dev pseudo-file contains network device status information.
@@ -217,14 +217,14 @@ type DiskStat struct {
 	// TimeSpentOnWritingMs is total number of milliseconds spent by all writes.
 	TimeSpentOnWritingMs           uint64 `column:"time_spent_on_writing_ms"`
 	TimeSpentOnWritingMsParsedTime string `column:"time_spent_on_writing_ms_parsed_time"`
-	// IOInProgress is only field that should go to zero (incremented as requests are on request_queue).
-	IOInProgress uint64 `column:"io_in_progress"`
-	// TimeSpentOnIOMs is milliseconds spent doing I/Os.
-	TimeSpentOnIOMs           uint64 `column:"time_spent_on_io_ms"`
-	TimeSpentOnIOMsParsedTime string `column:"time_spent_on_io_ms_parsed_time"`
-	// WeightedTimeSpentOnIOMs is weighted milliseconds spent doing I/Os (incremented at each I/O start, I/O completion, I/O merge).
-	WeightedTimeSpentOnIOMs           uint64 `column:"weighted_time_spent_on_io_ms"`
-	WeightedTimeSpentOnIOMsParsedTime string `column:"weighted_time_spent_on_io_ms_parsed_time"`
+	// IOsInProgress is only field that should go to zero (incremented as requests are on request_queue).
+	IOsInProgress uint64 `column:"ios_in_progress"`
+	// TimeSpentOnIOsMs is milliseconds spent doing I/Os.
+	TimeSpentOnIOsMs           uint64 `column:"time_spent_on_ios_ms"`
+	TimeSpentOnIOsMsParsedTime string `column:"time_spent_on_ios_ms_parsed_time"`
+	// WeightedTimeSpentOnIOsMs is weighted milliseconds spent doing I/Os (incremented at each I/O start, I/O completion, I/O merge).
+	WeightedTimeSpentOnIOsMs           uint64 `column:"weighted_time_spent_on_ios_ms"`
+	WeightedTimeSpentOnIOsMsParsedTime string `column:"weighted_time_spent_on_ios_ms_parsed_time"`
 }
 
 // IO is '/proc/$PID/io' in Linux.

@@ -211,15 +211,15 @@ var DiskStat = RawData{
 		{"sectors-written", "total number of sectors written successfully", reflect.Uint64},
 		{"time-spent-on-writing-ms", "total number of milliseconds spent by all writes", reflect.Uint64},
 
-		{"I/O-in-progress", "only field that should go to zero (incremented as requests are on request_queue)", reflect.Uint64},
-		{"time-spent-on-I/O-ms", "milliseconds spent doing I/Os", reflect.Uint64},
-		{"weighted-time-spent-on-I/O-ms", "weighted milliseconds spent doing I/Os (incremented at each I/O start, I/O completion, I/O merge)", reflect.Uint64},
+		{"I/Os-in-progress", "only field that should go to zero (incremented as requests are on request_queue)", reflect.Uint64},
+		{"time-spent-on-I/Os-ms", "milliseconds spent doing I/Os", reflect.Uint64},
+		{"weighted-time-spent-on-I/Os-ms", "weighted milliseconds spent doing I/Os (incremented at each I/O start, I/O completion, I/O merge)", reflect.Uint64},
 	},
 	ColumnsToParse: map[string]RawDataType{
-		"time-spent-on-reading-ms":      TypeTimeMicroseconds,
-		"time-spent-on-writing-ms":      TypeTimeMicroseconds,
-		"time-spent-on-I/O-ms":          TypeTimeMicroseconds,
-		"weighted-time-spent-on-I/O-ms": TypeTimeMicroseconds,
+		"time-spent-on-reading-ms":       TypeTimeMicroseconds,
+		"time-spent-on-writing-ms":       TypeTimeMicroseconds,
+		"time-spent-on-I/Os-ms":          TypeTimeMicroseconds,
+		"weighted-time-spent-on-I/Os-ms": TypeTimeMicroseconds,
 	},
 }
 

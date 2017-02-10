@@ -21,12 +21,12 @@ const (
 
 	proc_diskstats_idx_writes_completed
 	proc_diskstats_idx_writes_merged
-	proc_diskstats_idx_time_spent_on_writing_ms
 	proc_diskstats_idx_sectors_written
+	proc_diskstats_idx_time_spent_on_writing_ms
 
-	proc_diskstats_idx_io_in_progress
-	proc_diskstats_idx_time_spent_on_io_ms
-	proc_diskstats_idx_weighted_time_spent_on_io_ms
+	proc_diskstats_idx_ios_in_progress
+	proc_diskstats_idx_time_spent_on_ios_ms
+	proc_diskstats_idx_weighted_time_spent_on_ios_ms
 )
 
 // GetProcDiskstats reads '/proc/diskstats'.
@@ -45,7 +45,7 @@ func GetProcDiskstats() ([]DiskStat, error) {
 			continue
 		}
 		ds := strings.Fields(strings.TrimSpace(txt))
-		if len(ds) < int(proc_diskstats_idx_weighted_time_spent_on_io_ms+1) {
+		if len(ds) < int(proc_diskstats_idx_weighted_time_spent_on_ios_ms+1) {
 			return nil, fmt.Errorf("not enough columns at %v", ds)
 		}
 		d := DiskStat{}
@@ -114,25 +114,25 @@ func GetProcDiskstats() ([]DiskStat, error) {
 		d.TimeSpentOnWritingMs = mn
 		d.TimeSpentOnWritingMsParsedTime = humanizeDurationMs(mn)
 
-		mn, err = strconv.ParseUint(ds[proc_diskstats_idx_io_in_progress], 10, 64)
+		mn, err = strconv.ParseUint(ds[proc_diskstats_idx_ios_in_progress], 10, 64)
 		if err != nil {
 			return nil, err
 		}
-		d.IOInProgress = mn
+		d.IOsInProgress = mn
 
-		mn, err = strconv.ParseUint(ds[proc_diskstats_idx_time_spent_on_io_ms], 10, 64)
+		mn, err = strconv.ParseUint(ds[proc_diskstats_idx_time_spent_on_ios_ms], 10, 64)
 		if err != nil {
 			return nil, err
 		}
-		d.TimeSpentOnIOMs = mn
-		d.TimeSpentOnIOMsParsedTime = humanizeDurationMs(mn)
+		d.TimeSpentOnIOsMs = mn
+		d.TimeSpentOnIOsMsParsedTime = humanizeDurationMs(mn)
 
-		mn, err = strconv.ParseUint(ds[proc_diskstats_idx_weighted_time_spent_on_io_ms], 10, 64)
+		mn, err = strconv.ParseUint(ds[proc_diskstats_idx_weighted_time_spent_on_ios_ms], 10, 64)
 		if err != nil {
 			return nil, err
 		}
-		d.WeightedTimeSpentOnIOMs = mn
-		d.WeightedTimeSpentOnIOMsParsedTime = humanizeDurationMs(mn)
+		d.WeightedTimeSpentOnIOsMs = mn
+		d.WeightedTimeSpentOnIOsMsParsedTime = humanizeDurationMs(mn)
 
 		dss = append(dss, d)
 	}
