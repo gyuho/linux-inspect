@@ -28,7 +28,7 @@ type TopStream struct {
 	errc              chan error
 
 	// signal only once at initial, once the first line is ready
-	readymu sync.RWMutex
+	readymu sync.Mutex
 	ready   bool
 	readyc  chan struct{}
 }
@@ -174,13 +174,14 @@ func (str *TopStream) dequeue() {
 
 		str.pid2TopCommandRow[row.PID] = row
 
-		str.readymu.RLock()
-		rd := str.ready
-		str.readymu.RUnlock()
-		if !rd {
-			str.readymu.Lock()
+		toc := false
+		str.readymu.Lock()
+		if !str.ready {
 			str.ready = true
-			str.readymu.Unlock()
+			toc = true
+		}
+		str.readymu.Unlock()
+		if toc {
 			close(str.readyc)
 		}
 	}
