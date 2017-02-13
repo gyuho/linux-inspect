@@ -53,6 +53,10 @@ func Combine(procs ...Proc) Proc {
 		sectorsReadDelta     uint64
 		writesCompletedDelta uint64
 		sectorsWrittenDelta  uint64
+		readBytesDelta       uint64
+		readMegabytesDelta   uint64
+		writeBytesDelta      uint64
+		writeMegabytesDelta  uint64
 
 		// for NSEntry
 		receivePackets   uint64
@@ -95,6 +99,10 @@ func Combine(procs ...Proc) Proc {
 		sectorsReadDelta += p.SectorsReadDelta
 		writesCompletedDelta += p.WritesCompletedDelta
 		sectorsWrittenDelta += p.SectorsWrittenDelta
+		readBytesDelta += p.ReadBytesDelta
+		readMegabytesDelta += p.ReadMegabytesDelta
+		writeBytesDelta += p.WriteBytesDelta
+		writeMegabytesDelta += p.WriteMegabytesDelta
 
 		// for NSEntry
 		receivePackets += p.NSEntry.ReceivePackets
@@ -141,6 +149,10 @@ func Combine(procs ...Proc) Proc {
 	combined.SectorsReadDelta = uint64(sectorsReadDelta) / uint64(pN)
 	combined.WritesCompletedDelta = uint64(writesCompletedDelta) / uint64(pN)
 	combined.SectorsWrittenDelta = uint64(sectorsWrittenDelta) / uint64(pN)
+	combined.ReadBytesDelta = uint64(readBytesDelta) / uint64(pN)
+	combined.ReadMegabytesDelta = uint64(readMegabytesDelta) / uint64(pN)
+	combined.WriteBytesDelta = uint64(writeBytesDelta) / uint64(pN)
+	combined.WriteMegabytesDelta = uint64(writeMegabytesDelta) / uint64(pN)
 
 	// for NSEntry
 	combined.NSEntry.ReceiveBytesNum = uint64(receiveBytesNum) / uint64(pN)
@@ -206,6 +218,10 @@ func Interpolate(lower, upper Proc) (procs []Proc, err error) {
 		sectorsReadDelta     = int64(upper.SectorsReadDelta-lower.SectorsReadDelta) / (expectedRowN - 1)
 		writesCompletedDelta = int64(upper.WritesCompletedDelta-lower.WritesCompletedDelta) / (expectedRowN - 1)
 		sectorsWrittenDelta  = int64(upper.SectorsWrittenDelta-lower.SectorsWrittenDelta) / (expectedRowN - 1)
+		readBytesDelta       = int64(upper.ReadBytesDelta-lower.ReadBytesDelta) / (expectedRowN - 1)
+		readMegabytesDelta   = int64(upper.ReadMegabytesDelta-lower.ReadMegabytesDelta) / (expectedRowN - 1)
+		writeBytesDelta      = int64(upper.WriteBytesDelta-lower.WriteBytesDelta) / (expectedRowN - 1)
+		writeMegabytesDelta  = int64(upper.WriteMegabytesDelta-lower.WriteMegabytesDelta) / (expectedRowN - 1)
 
 		// for NSEntry
 		receivePackets   = int64(upper.NSEntry.ReceivePackets-lower.NSEntry.ReceivePackets) / (expectedRowN - 1)
@@ -257,6 +273,10 @@ func Interpolate(lower, upper Proc) (procs []Proc, err error) {
 		procs[i].SectorsReadDelta = uint64(int64(lower.SectorsReadDelta) + int64(i+1)*sectorsReadDelta)
 		procs[i].WritesCompletedDelta = uint64(int64(lower.WritesCompletedDelta) + int64(i+1)*writesCompletedDelta)
 		procs[i].SectorsWrittenDelta = uint64(int64(lower.SectorsWrittenDelta) + int64(i+1)*sectorsWrittenDelta)
+		procs[i].ReadBytesDelta = uint64(int64(lower.ReadBytesDelta) + int64(i+1)*readBytesDelta)
+		procs[i].ReadMegabytesDelta = uint64(int64(lower.ReadMegabytesDelta) + int64(i+1)*readMegabytesDelta)
+		procs[i].WriteBytesDelta = uint64(int64(lower.WriteBytesDelta) + int64(i+1)*writeBytesDelta)
+		procs[i].WriteMegabytesDelta = uint64(int64(lower.WriteMegabytesDelta) + int64(i+1)*writeMegabytesDelta)
 
 		// for NSEntry
 		procs[i].NSEntry.ReceiveBytesNum = uint64(int64(lower.NSEntry.ReceiveBytesNum) + int64(i+1)*receiveBytesNum)

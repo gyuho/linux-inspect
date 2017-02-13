@@ -198,6 +198,19 @@ func testProcCSV(t *testing.T, pid int64, tcfg *TopConfig) {
 			t.Fatalf("Rows[%d].SectorsWrittenDelta expected %d, got %d", i, c.Rows[i].SectorsWrittenDelta, cv.Rows[i].SectorsWrittenDelta)
 		}
 
+		if c.Rows[i].ReadBytesDelta != cv.Rows[i].ReadBytesDelta {
+			t.Fatalf("Rows[%d].ReadBytesDelta expected %d, got %d", i, c.Rows[i].ReadBytesDelta, cv.Rows[i].ReadBytesDelta)
+		}
+		if c.Rows[i].ReadMegabytesDelta != cv.Rows[i].ReadMegabytesDelta {
+			t.Fatalf("Rows[%d].ReadMegabytesDelta expected %d, got %d", i, c.Rows[i].ReadMegabytesDelta, cv.Rows[i].ReadMegabytesDelta)
+		}
+		if c.Rows[i].WriteBytesDelta != cv.Rows[i].WriteBytesDelta {
+			t.Fatalf("Rows[%d].WriteBytesDelta expected %d, got %d", i, c.Rows[i].WriteBytesDelta, cv.Rows[i].WriteBytesDelta)
+		}
+		if c.Rows[i].WriteMegabytesDelta != cv.Rows[i].WriteMegabytesDelta {
+			t.Fatalf("Rows[%d].WriteMegabytesDelta expected %d, got %d", i, c.Rows[i].WriteMegabytesDelta, cv.Rows[i].WriteMegabytesDelta)
+		}
+
 		if c.Rows[i].NSEntry.ReceiveBytes != cv.Rows[i].NSEntry.ReceiveBytes {
 			t.Fatalf("Rows[%d].NSEntry.ReceiveBytes expected %s, got %s", i, c.Rows[i].NSEntry.ReceiveBytes, cv.Rows[i].NSEntry.ReceiveBytes)
 		}

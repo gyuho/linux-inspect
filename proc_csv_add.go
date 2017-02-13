@@ -103,6 +103,13 @@ func (c *CSV) Add() error {
 	cur.WritesCompletedDelta = cur.DSEntry.WritesCompleted - prev.DSEntry.WritesCompleted
 	cur.SectorsWrittenDelta = cur.DSEntry.SectorsWritten - prev.DSEntry.SectorsWritten
 
+	// SECTOR_SIZE is 512 (one sector is 512-byte) in Linux kernel
+	// (http://lkml.iu.edu/hypermail/linux/kernel/1508.2/00431.html).
+	cur.ReadBytesDelta = cur.SectorsReadDelta * 512
+	cur.ReadMegabytesDelta = cur.SectorsReadDelta * 512 * (1 / 1000000)
+	cur.WriteBytesDelta = cur.SectorsWrittenDelta * 512
+	cur.WriteMegabytesDelta = cur.SectorsWrittenDelta * 512 * (1 / 1000000)
+
 	cur.ReceiveBytesNumDelta = cur.NSEntry.ReceiveBytesNum - prev.NSEntry.ReceiveBytesNum
 	cur.TransmitBytesNumDelta = cur.NSEntry.TransmitBytesNum - prev.NSEntry.TransmitBytesNum
 	cur.ReceivePacketsDelta = cur.NSEntry.ReceivePackets - prev.NSEntry.ReceivePackets
@@ -303,6 +310,23 @@ func ReadCSV(fpath string) (*CSV, error) {
 			return nil, err
 		}
 
+		readBytesDelta, err := strconv.ParseUint(row[ProcHeaderIndex["READ-BYTES-DELTA"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		readMegabytesDelta, err := strconv.ParseUint(row[ProcHeaderIndex["READ-MEGABYTES-DELTA"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		writeBytesDelta, err := strconv.ParseUint(row[ProcHeaderIndex["WRITE-BYTES-DELTA"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		writeMegabytesDelta, err := strconv.ParseUint(row[ProcHeaderIndex["WRITE-MEGABYTES-DELTA"]], 10, 64)
+		if err != nil {
+			return nil, err
+		}
+
 		receivePackets, err := strconv.ParseUint(row[ProcHeaderIndex["RECEIVE-PACKETS"]], 10, 64)
 		if err != nil {
 			return nil, err
@@ -379,6 +403,11 @@ func ReadCSV(fpath string) (*CSV, error) {
 			SectorsReadDelta:     sectorsReadDelta,
 			WritesCompletedDelta: writesCompletedDelta,
 			SectorsWrittenDelta:  sectorsWrittenDelta,
+
+			ReadBytesDelta:      readBytesDelta,
+			ReadMegabytesDelta:  readMegabytesDelta,
+			WriteBytesDelta:     writeBytesDelta,
+			WriteMegabytesDelta: writeMegabytesDelta,
 
 			NSEntry: NSEntry{
 				Interface:        row[ProcHeaderIndex["INTERFACE"]],
