@@ -24,6 +24,18 @@ type Proc struct {
 	WritesCompletedDelta uint64
 	SectorsWrittenDelta  uint64
 
+	// ReadBytesDelta is calculated from SectorsReadDelta
+	// while SECTOR_SIZE is 512 (one sector is 512-byte) in Linux kernel
+	// (http://lkml.iu.edu/hypermail/linux/kernel/1508.2/00431.html).
+	ReadBytesDelta     uint64
+	ReadMegabytesDelta uint64
+
+	// WriteBytesDelta is calculated from SectorsWrittenDelta
+	// while SECTOR_SIZE is 512 (one sector is 512-byte) in Linux kernel
+	// (http://lkml.iu.edu/hypermail/linux/kernel/1508.2/00431.html).
+	WriteBytesDelta     uint64
+	WriteMegabytesDelta uint64
+
 	NSEntry               NSEntry
 	ReceiveBytesDelta     string
 	ReceivePacketsDelta   uint64
@@ -193,6 +205,11 @@ func init() {
 		"WRITES-COMPLETED-DELTA",
 		"SECTORS-WRITTEN-DELTA",
 
+		"READ-BYTES-DELTA",
+		"READ-MEGABYTES-DELTA",
+		"WRITE-BYTES-DELTA",
+		"WRITE-MEGABYTES-DELTA",
+
 		"RECEIVE-BYTES-DELTA",
 		"RECEIVE-PACKETS-DELTA",
 		"TRANSMIT-BYTES-DELTA",
@@ -257,14 +274,19 @@ func (p *Proc) ToRow() (row []string) {
 	row[37] = fmt.Sprintf("%d", p.WritesCompletedDelta) // WRITES-COMPLETED-DELTA
 	row[38] = fmt.Sprintf("%d", p.SectorsWrittenDelta)  // SECTORS-WRITTEN-DELTA
 
-	row[39] = p.ReceiveBytesDelta                        // RECEIVE-BYTES-DELTA
-	row[40] = fmt.Sprintf("%d", p.ReceivePacketsDelta)   // RECEIVE-PACKETS-DELTA
-	row[41] = p.TransmitBytesDelta                       // TRANSMIT-BYTES-DELTA
-	row[42] = fmt.Sprintf("%d", p.TransmitPacketsDelta)  // TRANSMIT-PACKETS-DELTA
-	row[43] = fmt.Sprintf("%d", p.ReceiveBytesNumDelta)  // RECEIVE-BYTES-NUM-DELTA
-	row[44] = fmt.Sprintf("%d", p.TransmitBytesNumDelta) // TRANSMIT-BYTES-NUM-DELTA
+	row[39] = fmt.Sprintf("%d", p.ReadBytesDelta)      // READ-BYTES-DELTA
+	row[40] = fmt.Sprintf("%d", p.ReadMegabytesDelta)  // READ-MEGABYTES-DELTA
+	row[41] = fmt.Sprintf("%d", p.WriteBytesDelta)     // WRITE-BYTES-DELTA
+	row[42] = fmt.Sprintf("%d", p.WriteMegabytesDelta) // WRITE-MEGABYTES-DELTA
 
-	row[45] = string(p.Extra) // EXTRA
+	row[43] = p.ReceiveBytesDelta                        // RECEIVE-BYTES-DELTA
+	row[44] = fmt.Sprintf("%d", p.ReceivePacketsDelta)   // RECEIVE-PACKETS-DELTA
+	row[45] = p.TransmitBytesDelta                       // TRANSMIT-BYTES-DELTA
+	row[46] = fmt.Sprintf("%d", p.TransmitPacketsDelta)  // TRANSMIT-PACKETS-DELTA
+	row[47] = fmt.Sprintf("%d", p.ReceiveBytesNumDelta)  // RECEIVE-BYTES-NUM-DELTA
+	row[48] = fmt.Sprintf("%d", p.TransmitBytesNumDelta) // TRANSMIT-BYTES-NUM-DELTA
+
+	row[49] = string(p.Extra) // EXTRA
 
 	return
 }
