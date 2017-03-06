@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/fatih/color"
-	"github.com/gyuho/psn"
+	"github.com/gyuho/linux-inspect/psn"
 	"github.com/spf13/cobra"
 )
 

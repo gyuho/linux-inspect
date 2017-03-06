@@ -7,7 +7,7 @@ go:
 
 script:
 - ./test
-- go get -v github.com/gyuho/psn/cmd/psn
+- go get -v github.com/gyuho/linux-inspect/cmd/psn
 - psn ds
 - psn ns
 - psn ps --top 10

@@ -11,7 +11,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/gyuho/psn/schema"
+	"github.com/gyuho/linux-inspect/schema"
 )
 
 func generate(raw schema.RawData) string {
@@ -186,10 +186,10 @@ type Status struct {
 	buf.WriteString("}\n\n")
 
 	txt := buf.String()
-	if err := toFile(txt, filepath.Join(os.Getenv("GOPATH"), "src/github.com/gyuho/psn/generated_linux.go")); err != nil {
+	if err := toFile(txt, filepath.Join(os.Getenv("GOPATH"), "src/github.com/gyuho/linux-inspect/psn/generated_linux.go")); err != nil {
 		log.Fatal(err)
 	}
-	if err := os.Chdir(filepath.Join(os.Getenv("GOPATH"), "src/github.com/gyuho/psn")); err != nil {
+	if err := os.Chdir(filepath.Join(os.Getenv("GOPATH"), "src/github.com/gyuho/linux-inspect/psn")); err != nil {
 		log.Fatal(err)
 	}
 	if err := exec.Command("go", "fmt", "./...").Run(); err != nil {
