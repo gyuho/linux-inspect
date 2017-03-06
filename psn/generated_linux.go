@@ -1,6 +1,6 @@
 package psn
 
-// updated at 2017-02-10 10:04:53.292742581 -0800 PST
+// updated at 2017-03-06 15:17:44.4679204 -0800 PST
 
 // NetDev is '/proc/net/dev' in Linux.
 // The dev pseudo-file contains network device status information.

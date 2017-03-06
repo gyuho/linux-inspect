@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	"github.com/dustin/go-humanize"
-	"github.com/gyuho/linux-inspect/schema"
+	"github.com/gyuho/linux-inspect/psn/schema"
 )
 
 // GetProcStatByPID reads '/proc/$PID/stat' data.

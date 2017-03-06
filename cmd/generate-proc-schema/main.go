@@ -4,14 +4,13 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"reflect"
 	"time"
 
-	"github.com/gyuho/linux-inspect/schema"
+	"github.com/gyuho/linux-inspect/psn/schema"
 )
 
 func generate(raw schema.RawData) string {
@@ -96,6 +95,15 @@ func generate(raw schema.RawData) string {
 }
 
 func main() {
+	wd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	exp := filepath.Join(os.Getenv("GOPATH"), "src/github.com/gyuho/linux-inspect")
+	if wd != exp {
+		panic(fmt.Errorf("'generate-proc-schema' must be run in repo root %q, but run at %q", exp, wd))
+	}
+
 	buf := new(bytes.Buffer)
 	buf.WriteString(`package psn
 
@@ -187,14 +195,16 @@ type Status struct {
 
 	txt := buf.String()
 	if err := toFile(txt, filepath.Join(os.Getenv("GOPATH"), "src/github.com/gyuho/linux-inspect/psn/generated_linux.go")); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	if err := os.Chdir(filepath.Join(os.Getenv("GOPATH"), "src/github.com/gyuho/linux-inspect/psn")); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	if err := exec.Command("go", "fmt", "./...").Run(); err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
+
+	fmt.Println("DONE")
 }
 
 func nowPST() time.Time {
