@@ -32,10 +32,10 @@ func main() {
 `)
 
 	// 'df'
-	buf.WriteString(`// DfCommandRow is 'df' command output row in Linux.
-type DfCommandRow struct {
+	buf.WriteString(`// Row is 'df' command output row in Linux.
+type Row struct {
 `)
-	buf.WriteString(schemautil.Generate(df.DfCommandRowSchema))
+	buf.WriteString(schemautil.Generate(df.RowSchema))
 	buf.WriteString("}\n\n")
 
 	txt := buf.String()

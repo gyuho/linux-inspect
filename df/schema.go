@@ -6,12 +6,12 @@ import (
 	"github.com/gyuho/linux-inspect/pkg/schemautil"
 )
 
-// DfCommandRowSchema represents 'df' command output row
+// RowSchema represents 'df' command output row
 // (See https://en.wikipedia.org/wiki/Df_(Unix)
 // and https://www.gnu.org/software/coreutils/manual/html_node/df-invocation.html
 // and 'df --all --sync --block-size=1024 --output=source,target,fstype,file,itotal,iavail,iused,ipcent,size,avail,used,pcent'
 // and the output unit is kilobytes).
-var DfCommandRowSchema = schemautil.RawData{
+var RowSchema = schemautil.RawData{
 	IsYAML: false,
 	Columns: []schemautil.Column{
 		{Name: "file-system", Godoc: "file system ('source')", Kind: reflect.String},

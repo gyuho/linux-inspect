@@ -7,7 +7,7 @@ import (
 )
 
 // RowSchema represents a row in 'top' command output.
-// (See http://man7.org/linux/man-pages/man1/top.1.html).
+// Reference http://man7.org/linux/man-pages/man1/top.1.html.
 var RowSchema = schemautil.RawData{
 	IsYAML: false,
 	Columns: []schemautil.Column{

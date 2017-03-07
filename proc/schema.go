@@ -6,9 +6,9 @@ import (
 	"github.com/gyuho/linux-inspect/pkg/schemautil"
 )
 
-// NetDevSchema represents '/proc/net/dev'
-// (See http://man7.org/linux/man-pages/man5/proc.5.html
-// or http://www.onlamp.com/pub/a/linux/2000/11/16/LinuxAdmin.html).
+// NetDevSchema represents '/proc/net/dev'.
+// Reference http://man7.org/linux/man-pages/man5/proc.5.html
+// and http://www.onlamp.com/pub/a/linux/2000/11/16/LinuxAdmin.html.
 var NetDevSchema = schemautil.RawData{
 	IsYAML: false,
 	Columns: []schemautil.Column{
@@ -37,9 +37,9 @@ var NetDevSchema = schemautil.RawData{
 	},
 }
 
-// NetTCPSchema represents '/proc/net/tcp' and '/proc/net/tcp6'
-// (See http://man7.org/linux/man-pages/man5/proc.5.html
-// and http://www.onlamp.com/pub/a/linux/2000/11/16/LinuxAdmin.html).
+// NetTCPSchema represents '/proc/net/tcp' and '/proc/net/tcp6'.
+// Reference http://man7.org/linux/man-pages/man5/proc.5.html
+// and http://www.onlamp.com/pub/a/linux/2000/11/16/LinuxAdmin.html.
 var NetTCPSchema = schemautil.RawData{
 	IsYAML: false,
 	Columns: []schemautil.Column{
@@ -63,8 +63,8 @@ var NetTCPSchema = schemautil.RawData{
 	},
 }
 
-// LoadAvgSchema represents '/proc/loadavg'
-// (See http://man7.org/linux/man-pages/man5/proc.5.html).
+// LoadAvgSchema represents '/proc/loadavg'.
+// Reference http://man7.org/linux/man-pages/man5/proc.5.html.
 var LoadAvgSchema = schemautil.RawData{
 	IsYAML: false,
 	Columns: []schemautil.Column{
@@ -78,8 +78,8 @@ var LoadAvgSchema = schemautil.RawData{
 	ColumnsToParse: map[string]schemautil.RawDataType{},
 }
 
-// UptimeSchema represents '/proc/uptime'
-// (See http://man7.org/linux/man-pages/man5/proc.5.html).
+// UptimeSchema represents '/proc/uptime'.
+// Reference http://man7.org/linux/man-pages/man5/proc.5.html.
 var UptimeSchema = schemautil.RawData{
 	IsYAML: false,
 	Columns: []schemautil.Column{
@@ -92,9 +92,9 @@ var UptimeSchema = schemautil.RawData{
 	},
 }
 
-// DiskStatSchema represents '/proc/diskstats'
-// (See https://www.kernel.org/doc/Documentation/ABI/testing/procfs-diskstats
-// and https://www.kernel.org/doc/Documentation/iostats.txt).
+// DiskStatSchema represents '/proc/diskstats'.
+// Reference https://www.kernel.org/doc/Documentation/ABI/testing/procfs-diskstats
+// and https://www.kernel.org/doc/Documentation/iostats.txt.
 var DiskStatSchema = schemautil.RawData{
 	IsYAML: false,
 	Columns: []schemautil.Column{
@@ -124,8 +124,8 @@ var DiskStatSchema = schemautil.RawData{
 	},
 }
 
-// IOSchema represents 'proc/$PID/io'
-// (See http://man7.org/linux/man-pages/man5/proc.5.html).
+// IOSchema represents 'proc/$PID/io'.
+// Reference http://man7.org/linux/man-pages/man5/proc.5.html.
 var IOSchema = schemautil.RawData{
 	IsYAML: true,
 	Columns: []schemautil.Column{
@@ -146,8 +146,8 @@ var IOSchema = schemautil.RawData{
 	},
 }
 
-// StatSchema represents '/proc/$PID/stat'
-// (SeeSchema http://man7.org/linux/man-pages/man5/proc.5.html).
+// StatSchema represents '/proc/$PID/stat'.
+// Reference http://man7.org/linux/man-pages/man5/proc.5.html.
 var StatSchema = schemautil.RawData{
 	IsYAML: false,
 	Columns: []schemautil.Column{
@@ -212,8 +212,8 @@ var StatSchema = schemautil.RawData{
 	},
 }
 
-// StatusSchema represents 'proc/$PID/status'
-// (See http://man7.org/linux/man-pages/man5/proc.5.html).
+// StatusSchema represents 'proc/$PID/status'.
+// Reference http://man7.org/linux/man-pages/man5/proc.5.html.
 var StatusSchema = schemautil.RawData{
 	IsYAML: true,
 	Columns: []schemautil.Column{

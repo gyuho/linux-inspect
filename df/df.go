@@ -15,24 +15,24 @@ import (
 	humanize "github.com/dustin/go-humanize"
 )
 
-// GetDf returns entries in 'df' command.
+// Get returns entries in 'df' command.
 // Pass '' target to list all information.
-func GetDf(dfPath string, target string) ([]DfCommandRow, error) {
-	o, err := ReadDf(dfPath, target)
+func Get(dfPath string, target string) ([]Row, error) {
+	o, err := Read(dfPath, target)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDfOutput(o)
+	return Parse(o)
 }
 
-// GetDfDefault returns entries in 'df' command.
+// GetDefault returns entries in 'df' command.
 // Pass '' target to list all information.
-func GetDfDefault(target string) ([]DfCommandRow, error) {
-	o, err := ReadDf(dfPath, target)
+func GetDefault(target string) ([]Row, error) {
+	o, err := Read(dfPath, target)
 	if err != nil {
 		return nil, err
 	}
-	return ParseDfOutput(o)
+	return Parse(o)
 }
 
 // dfPath is the default 'df' command path.
@@ -41,22 +41,22 @@ const dfPath = "/bin/df"
 // dfFlags is 'df --all --sync --block-size=1024 --output=source,target,fstype,file,itotal,iavail,iused,ipcent,size,avail,used,pcent'.
 var dfFlags = []string{"--all", "--sync", "--block-size=1024", "--output=source,target,fstype,file,itotal,iavail,iused,ipcent,size,avail,used,pcent"}
 
-// ReadDfDefault reads Linux 'df' command output.
+// ReadDefault reads Linux 'df' command output.
 // Pass '' target to list all information.
-func ReadDfDefault(target string) (string, error) {
-	return ReadDf(dfPath, target)
+func ReadDefault(target string) (string, error) {
+	return Read(dfPath, target)
 }
 
-// ReadDf reads Linux 'df' command output.
+// Read reads Linux 'df' command output.
 // Pass '' target to list all information.
-func ReadDf(dfPath string, target string) (string, error) {
+func Read(dfPath string, target string) (string, error) {
 	buf := new(bytes.Buffer)
-	err := readDf(dfPath, target, buf)
+	err := read(dfPath, target, buf)
 	o := strings.TrimSpace(buf.String())
 	return o, err
 }
 
-func readDf(dfPath string, target string, w io.Writer) error {
+func read(dfPath string, target string, w io.Writer) error {
 	if !fileutil.Exist(dfPath) {
 		return fmt.Errorf("%q does not exist", dfPath)
 	}
@@ -106,8 +106,8 @@ const (
 	df_command_output_row_idx_used_blocks_percentage
 )
 
-// ParseDfOutput parses 'df' command output and returns the rows.
-func ParseDfOutput(s string) ([]DfCommandRow, error) {
+// Parse parses 'df' command output and returns the rows.
+func Parse(s string) ([]Row, error) {
 	lines := strings.Split(s, "\n")
 	rows := make([][]string, 0, len(lines))
 	headerFound := false
@@ -137,18 +137,18 @@ func ParseDfOutput(s string) ([]DfCommandRow, error) {
 	}
 
 	type result struct {
-		row DfCommandRow
+		row Row
 		err error
 	}
 	rc := make(chan result, len(rows))
 	for _, row := range rows {
 		go func(row []string) {
-			tr, err := parseDfRow(row)
+			tr, err := parseRow(row)
 			rc <- result{row: tr, err: err}
 		}(row)
 	}
 
-	tcRows := make([]DfCommandRow, 0, len(rows))
+	tcRows := make([]Row, 0, len(rows))
 	for len(tcRows) != len(rows) {
 		select {
 		case rs := <-rc:
@@ -158,19 +158,19 @@ func ParseDfOutput(s string) ([]DfCommandRow, error) {
 			tcRows = append(tcRows, rs.row)
 		}
 	}
-	rm := make(map[string]DfCommandRow)
+	rm := make(map[string]Row)
 	for _, row := range tcRows {
 		rm[row.MountedOn] = row
 	}
-	rrs := make([]DfCommandRow, 0, len(rm))
+	rrs := make([]Row, 0, len(rm))
 	for _, row := range rm {
 		rrs = append(rrs, row)
 	}
 	return rrs, nil
 }
 
-func parseDfRow(row []string) (DfCommandRow, error) {
-	drow := DfCommandRow{
+func parseRow(row []string) (Row, error) {
+	drow := Row{
 		FileSystem:        strings.TrimSpace(row[df_command_output_row_idx_file_system]),
 		MountedOn:         strings.TrimSpace(row[df_command_output_row_idx_mounted_on]),
 		FileSystemType:    strings.TrimSpace(row[df_command_output_row_idx_file_system_type]),
@@ -186,7 +186,7 @@ func parseDfRow(row []string) (DfCommandRow, error) {
 	}
 	iv, err := strconv.ParseInt(ptxt, 10, 64)
 	if err != nil {
-		return DfCommandRow{}, fmt.Errorf("parse error %v (row %v)", err, row)
+		return Row{}, fmt.Errorf("parse error %v (row %v)", err, row)
 	}
 	drow.Inodes = iv
 
@@ -196,7 +196,7 @@ func parseDfRow(row []string) (DfCommandRow, error) {
 	}
 	iv, err = strconv.ParseInt(ptxt, 10, 64)
 	if err != nil {
-		return DfCommandRow{}, fmt.Errorf("parse error %v (row %v)", err, row)
+		return Row{}, fmt.Errorf("parse error %v (row %v)", err, row)
 	}
 	drow.Ifree = iv
 
@@ -206,7 +206,7 @@ func parseDfRow(row []string) (DfCommandRow, error) {
 	}
 	iv, err = strconv.ParseInt(ptxt, 10, 64)
 	if err != nil {
-		return DfCommandRow{}, fmt.Errorf("parse error %v (row %v)", err, row)
+		return Row{}, fmt.Errorf("parse error %v (row %v)", err, row)
 	}
 	drow.Iused = iv
 
@@ -216,7 +216,7 @@ func parseDfRow(row []string) (DfCommandRow, error) {
 	}
 	iv, err = strconv.ParseInt(ptxt, 10, 64)
 	if err != nil {
-		return DfCommandRow{}, fmt.Errorf("parse error %v (row %v)", err, row)
+		return Row{}, fmt.Errorf("parse error %v (row %v)", err, row)
 	}
 	drow.TotalBlocks = iv
 	drow.TotalBlocksBytesN = iv * 1024
@@ -228,7 +228,7 @@ func parseDfRow(row []string) (DfCommandRow, error) {
 	}
 	iv, err = strconv.ParseInt(ptxt, 10, 64)
 	if err != nil {
-		return DfCommandRow{}, fmt.Errorf("parse error %v (row %v)", err, row)
+		return Row{}, fmt.Errorf("parse error %v (row %v)", err, row)
 	}
 	drow.AvailableBlocks = iv
 	drow.AvailableBlocksBytesN = iv * 1024
@@ -240,7 +240,7 @@ func parseDfRow(row []string) (DfCommandRow, error) {
 	}
 	iv, err = strconv.ParseInt(ptxt, 10, 64)
 	if err != nil {
-		return DfCommandRow{}, fmt.Errorf("parse error %v (row %v)", err, row)
+		return Row{}, fmt.Errorf("parse error %v (row %v)", err, row)
 	}
 	drow.UsedBlocks = iv
 	drow.UsedBlocksBytesN = iv * 1024
@@ -251,7 +251,7 @@ func parseDfRow(row []string) (DfCommandRow, error) {
 
 // GetDevice returns the device name where dir is mounted.
 func GetDevice(target string) (string, error) {
-	drows, err := GetDfDefault(target)
+	drows, err := GetDefault(target)
 	if err != nil {
 		return "", err
 	}

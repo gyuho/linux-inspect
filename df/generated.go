@@ -1,9 +1,9 @@
 package df
 
-// updated at 2017-03-07 05:17:49.580116603 -0800 PST
+// updated at 2017-03-07 05:28:07.748217427 -0800 PST
 
-// DfCommandRow is 'df' command output row in Linux.
-type DfCommandRow struct {
+// Row is 'df' command output row in Linux.
+type Row struct {
 	// FileSystem is file system ('source').
 	FileSystem string `column:"file_system"`
 	// Device is device name.

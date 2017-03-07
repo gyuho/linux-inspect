@@ -6,8 +6,8 @@ import (
 	"github.com/gyuho/linux-inspect/pkg/schemautil"
 )
 
-// MtabSchema represents '/etc/mtab'
-// (See https://en.wikipedia.org/wiki/Fstab
+// MtabSchema represents '/etc/mtab'.
+// Reference https://en.wikipedia.org/wiki/Fstab
 // and https://en.wikipedia.org/wiki/Mtab).
 var MtabSchema = schemautil.RawData{
 	IsYAML: false,

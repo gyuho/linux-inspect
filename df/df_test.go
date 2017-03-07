@@ -5,8 +5,8 @@ import (
 	"testing"
 )
 
-func TestGetDfDefault(t *testing.T) {
-	dfs, err := GetDfDefault("")
+func TestGetDefault(t *testing.T) {
+	dfs, err := GetDefault("")
 	if err != nil {
 		t.Skip(err)
 	}
@@ -14,7 +14,7 @@ func TestGetDfDefault(t *testing.T) {
 		fmt.Printf("%+v\n", df)
 	}
 
-	dfs, err = GetDfDefault(".")
+	dfs, err = GetDefault(".")
 	if err != nil {
 		t.Skip(err)
 	}
