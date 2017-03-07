@@ -1,2 +1,2 @@
-// Package proc inspects Linux processes in '/proc'.
+// Package proc represents Linux '/proc'.
 package proc
