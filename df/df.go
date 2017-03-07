@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	humanize "github.com/dustin/go-humanize"
-	"github.com/gyuho/linux-inspect//pkg/fileutil"
+	"github.com/gyuho/linux-inspect/pkg/fileutil"
 )
 
 // GetDf returns entries in 'df' command.
