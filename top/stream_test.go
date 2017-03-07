@@ -10,8 +10,7 @@ import (
 func TestTopStartTopStream(t *testing.T) {
 	pid := int64(os.Getpid())
 
-	cfg := &TopConfig{
-		Exec:           DefaultTopPath,
+	cfg := &Config{
 		IntervalSecond: 1,
 		PID:            pid,
 	}

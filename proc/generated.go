@@ -1,6 +1,6 @@
 package proc
 
-// updated at 2017-03-06 16:03:03.731809651 -0800 PST
+// updated at 2017-03-07 05:17:45.638969355 -0800 PST
 
 // NetDev is '/proc/net/dev' in Linux.
 // The dev pseudo-file contains network device status information.

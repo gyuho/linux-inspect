@@ -6,9 +6,9 @@ import (
 	"time"
 )
 
-func TestTopGetTop(t *testing.T) {
+func TestGet(t *testing.T) {
 	now := time.Now()
-	rows, err := GetTop(DefaultTopPath, 0)
+	rows, err := Get(topPath, 0)
 	if err != nil {
 		t.Skip(err)
 	}

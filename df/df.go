@@ -10,8 +10,9 @@ import (
 	"strconv"
 	"strings"
 
-	humanize "github.com/dustin/go-humanize"
 	"github.com/gyuho/linux-inspect/pkg/fileutil"
+
+	humanize "github.com/dustin/go-humanize"
 )
 
 // GetDf returns entries in 'df' command.
@@ -27,23 +28,23 @@ func GetDf(dfPath string, target string) ([]DfCommandRow, error) {
 // GetDfDefault returns entries in 'df' command.
 // Pass '' target to list all information.
 func GetDfDefault(target string) ([]DfCommandRow, error) {
-	o, err := ReadDf(DefaultDfPath, target)
+	o, err := ReadDf(dfPath, target)
 	if err != nil {
 		return nil, err
 	}
 	return ParseDfOutput(o)
 }
 
-// DefaultDfPath is the default 'df' command path.
-var DefaultDfPath = "/bin/df"
+// dfPath is the default 'df' command path.
+const dfPath = "/bin/df"
 
-// DfFlags is 'df --all --sync --block-size=1024 --output=source,target,fstype,file,itotal,iavail,iused,ipcent,size,avail,used,pcent'.
-var DfFlags = []string{"--all", "--sync", "--block-size=1024", "--output=source,target,fstype,file,itotal,iavail,iused,ipcent,size,avail,used,pcent"}
+// dfFlags is 'df --all --sync --block-size=1024 --output=source,target,fstype,file,itotal,iavail,iused,ipcent,size,avail,used,pcent'.
+var dfFlags = []string{"--all", "--sync", "--block-size=1024", "--output=source,target,fstype,file,itotal,iavail,iused,ipcent,size,avail,used,pcent"}
 
 // ReadDfDefault reads Linux 'df' command output.
 // Pass '' target to list all information.
 func ReadDfDefault(target string) (string, error) {
-	return ReadDf(DefaultDfPath, target)
+	return ReadDf(dfPath, target)
 }
 
 // ReadDf reads Linux 'df' command output.
@@ -60,9 +61,9 @@ func readDf(dfPath string, target string, w io.Writer) error {
 		return fmt.Errorf("%q does not exist", dfPath)
 	}
 	if target != "" {
-		DfFlags = append(DfFlags, strings.TrimSpace(target))
+		dfFlags = append(dfFlags, strings.TrimSpace(target))
 	}
-	cmd := exec.Command(dfPath, DfFlags...)
+	cmd := exec.Command(dfPath, dfFlags...)
 	cmd.Stdout = w
 	cmd.Stderr = w
 	return cmd.Run()

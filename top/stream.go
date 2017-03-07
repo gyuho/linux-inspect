@@ -11,21 +11,21 @@ import (
 	"github.com/kr/pty"
 )
 
-// TopStream provides top command output stream.
-type TopStream struct {
+// Stream provides top command output stream.
+type Stream struct {
 	cmd *exec.Cmd
 
 	pmu sync.Mutex
 	pt  *os.File
 
 	// broadcast updates whenver available available
-	wg                sync.WaitGroup
-	rcond             *sync.Cond
-	rmu               sync.RWMutex // protect results
-	queue             []TopCommandRow
-	pid2TopCommandRow map[int64]TopCommandRow
-	err               error
-	errc              chan error
+	wg      sync.WaitGroup
+	rcond   *sync.Cond
+	rmu     sync.RWMutex // protect results
+	queue   []Row
+	pid2Row map[int64]Row
+	err     error
+	errc    chan error
 
 	// signal only once at initial, once the first line is ready
 	readymu sync.Mutex
@@ -34,7 +34,7 @@ type TopStream struct {
 }
 
 // StartStream starts 'top' command stream.
-func (cfg *TopConfig) StartStream() (*TopStream, error) {
+func (cfg *Config) StartStream() (*Stream, error) {
 	if err := cfg.createCmd(); err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (cfg *TopConfig) StartStream() (*TopStream, error) {
 		return nil, err
 	}
 
-	str := &TopStream{
+	str := &Stream{
 		cmd: cfg.cmd,
 
 		pmu: sync.Mutex{},
@@ -53,10 +53,10 @@ func (cfg *TopConfig) StartStream() (*TopStream, error) {
 		rmu: sync.RWMutex{},
 
 		// pre-allocate
-		queue:             make([]TopCommandRow, 0, 500),
-		pid2TopCommandRow: make(map[int64]TopCommandRow, 500),
-		err:               nil,
-		errc:              make(chan error, 1),
+		queue:   make([]Row, 0, 500),
+		pid2Row: make(map[int64]Row, 500),
+		err:     nil,
+		errc:    make(chan error, 1),
 
 		ready:  false,
 		readyc: make(chan struct{}, 1),
@@ -72,32 +72,32 @@ func (cfg *TopConfig) StartStream() (*TopStream, error) {
 }
 
 // Stop kills the 'top' process and waits for it to exit.
-func (str *TopStream) Stop() error {
+func (str *Stream) Stop() error {
 	return str.close(true)
 }
 
 // Wait just waits for the 'top' process to exit.
-func (str *TopStream) Wait() error {
+func (str *Stream) Wait() error {
 	return str.close(false)
 }
 
 // ErrChan returns the error from stream.
-func (str *TopStream) ErrChan() <-chan error {
+func (str *Stream) ErrChan() <-chan error {
 	return str.errc
 }
 
 // Latest returns the latest top command outputs.
-func (str *TopStream) Latest() map[int64]TopCommandRow {
+func (str *Stream) Latest() map[int64]Row {
 	str.rmu.RLock()
-	cm := make(map[int64]TopCommandRow, len(str.pid2TopCommandRow))
-	for k, v := range str.pid2TopCommandRow {
+	cm := make(map[int64]Row, len(str.pid2Row))
+	for k, v := range str.pid2Row {
 		cm[k] = v
 	}
 	str.rmu.RUnlock()
 	return cm
 }
 
-func (str *TopStream) noError() (noErr bool) {
+func (str *Stream) noError() (noErr bool) {
 	str.rmu.RLock()
 	noErr = str.err == nil
 	str.rmu.RUnlock()
@@ -105,7 +105,7 @@ func (str *TopStream) noError() (noErr bool) {
 }
 
 // feed new top results into the queue
-func (str *TopStream) enqueue() {
+func (str *Stream) enqueue() {
 	defer str.wg.Done()
 	reader := bufio.NewReader(str.pt)
 	for str.noError() {
@@ -130,12 +130,12 @@ func (str *TopStream) enqueue() {
 		}
 
 		row := strings.Fields(line)
-		if len(row) != len(TopRowHeaders) {
+		if len(row) != len(Headers) {
 			str.rmu.Unlock()
 			continue
 		}
 
-		r, rerr := parseTopRow(row)
+		r, rerr := parseRow(row)
 		if rerr != nil {
 			str.err = rerr
 			str.rmu.Unlock()
@@ -156,7 +156,7 @@ func (str *TopStream) enqueue() {
 
 // dequeue polls from 'top' process.
 // And signals error channel if any.
-func (str *TopStream) dequeue() {
+func (str *Stream) dequeue() {
 	str.rmu.Lock()
 	for {
 		// wait until there's output
@@ -172,7 +172,7 @@ func (str *TopStream) dequeue() {
 		row := str.queue[0]
 		str.queue = str.queue[1:]
 
-		str.pid2TopCommandRow[row.PID] = row
+		str.pid2Row[row.PID] = row
 
 		toc := false
 		str.readymu.Lock()
@@ -194,7 +194,7 @@ func (str *TopStream) dequeue() {
 	str.rmu.Unlock()
 }
 
-func (str *TopStream) close(kill bool) (err error) {
+func (str *Stream) close(kill bool) (err error) {
 	if str.cmd == nil {
 		return str.err
 	}

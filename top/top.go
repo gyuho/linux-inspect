@@ -9,11 +9,13 @@ import (
 	"github.com/gyuho/linux-inspect/pkg/fileutil"
 )
 
-// DefaultTopPath is the default 'top' command path.
-var DefaultTopPath = "/usr/bin/top"
+// topPath is the default 'top' command path.
+const topPath = "/usr/bin/top"
 
-// TopConfig configures 'top' command runs.
-type TopConfig struct {
+// Config configures 'top' command runs.
+type Config struct {
+	// Exec is the 'top' command path.
+	// Defaults to '/usr/bin/top'.
 	Exec string
 
 	// MAKE THIS TRUE BY DEFAULT
@@ -47,7 +49,7 @@ type TopConfig struct {
 }
 
 // Flags returns the 'top' command flags.
-func (cfg *TopConfig) Flags() (fs []string) {
+func (cfg *Config) Flags() (fs []string) {
 	// batch mode by default
 	fs = append(fs, "-b")
 
@@ -66,10 +68,10 @@ func (cfg *TopConfig) Flags() (fs []string) {
 	return
 }
 
-// process updates with '*exec.Cmd' for the given 'TopConfig'.
-func (cfg *TopConfig) createCmd() error {
+// process updates with '*exec.Cmd' for the given 'Config'.
+func (cfg *Config) createCmd() error {
 	if cfg == nil {
-		return fmt.Errorf("TopConfig is nil")
+		return fmt.Errorf("Config is nil")
 	}
 	if !fileutil.Exist(cfg.Exec) {
 		return fmt.Errorf("%q does not exist", cfg.Exec)
@@ -84,18 +86,21 @@ func (cfg *TopConfig) createCmd() error {
 	return nil
 }
 
-// GetTop returns all entries in 'top' command.
+// Get returns all entries in 'top' command.
 // If pid<1, it reads all processes in 'top' command.
 // This is one-time command.
-func GetTop(topPath string, pid int64) ([]TopCommandRow, error) {
+func Get(topPath string, pid int64) ([]Row, error) {
 	buf := new(bytes.Buffer)
-	cfg := &TopConfig{
+	cfg := &Config{
 		Exec:           topPath,
 		Limit:          1,
 		IntervalSecond: 1,
 		PID:            pid,
 		Writer:         buf,
 		cmd:            nil,
+	}
+	if cfg.Exec == "" {
+		cfg.Exec = topPath
 	}
 	if err := cfg.createCmd(); err != nil {
 		return nil, err
@@ -105,5 +110,5 @@ func GetTop(topPath string, pid int64) ([]TopCommandRow, error) {
 	if err := cfg.cmd.Run(); err != nil {
 		return nil, err
 	}
-	return ParseTopOutput(buf.String())
+	return Parse(buf.String())
 }

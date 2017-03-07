@@ -1,9 +1,9 @@
 package top
 
-// updated at 2017-03-06 16:02:53.643235985 -0800 PST
+// updated at 2017-03-07 05:19:21.390252774 -0800 PST
 
-// TopCommandRow represents a row in 'top' command output.
-type TopCommandRow struct {
+// Row represents a row in 'top' command output.
+type Row struct {
 	// PID is pid of the process.
 	PID int64 `column:"pid"`
 	// USER is user name.

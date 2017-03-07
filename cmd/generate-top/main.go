@@ -1,4 +1,4 @@
-// generate-psn-schema generates psn struct based on the schema.
+// generate-top generates 'top' struct based on the schema.
 package main
 
 import (
@@ -11,7 +11,7 @@ import (
 	"github.com/gyuho/linux-inspect/pkg/fileutil"
 	"github.com/gyuho/linux-inspect/pkg/schemautil"
 	"github.com/gyuho/linux-inspect/pkg/timeutil"
-	"github.com/gyuho/linux-inspect/top/schema"
+	"github.com/gyuho/linux-inspect/top"
 )
 
 func main() {
@@ -32,10 +32,10 @@ func main() {
 `)
 
 	// 'top'
-	buf.WriteString(`// TopCommandRow represents a row in 'top' command output.
-type TopCommandRow struct {
+	buf.WriteString(`// Row represents a row in 'top' command output.
+type Row struct {
 `)
-	buf.WriteString(schemautil.Generate(schema.TopCommandRow))
+	buf.WriteString(schemautil.Generate(top.RowSchema))
 	buf.WriteString("}\n\n")
 
 	txt := buf.String()

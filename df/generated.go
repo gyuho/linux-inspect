@@ -1,6 +1,6 @@
 package df
 
-// updated at 2017-03-06 16:03:12.050061162 -0800 PST
+// updated at 2017-03-07 05:17:49.580116603 -0800 PST
 
 // DfCommandRow is 'df' command output row in Linux.
 type DfCommandRow struct {

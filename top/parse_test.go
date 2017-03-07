@@ -2,8 +2,8 @@ package top
 
 import "testing"
 
-func TestTop_parseTopCommandKiB(t *testing.T) {
-	bts, bs, err := parseTopCommandKiB("50.883g")
+func TestTop_parseKiB(t *testing.T) {
+	bts, bs, err := parseKiB("50.883g")
 	if err != nil {
 		t.Fatal(err)
 	}

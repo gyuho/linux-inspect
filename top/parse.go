@@ -18,7 +18,7 @@ import (
 //  PiB = pebibyte = 1024 TiB = 1,125,899,906,842,624 bytes
 //  EiB = exbibyte = 1024 PiB = 1,152,921,504,606,846,976 bytes
 //
-func parseTopCommandKiB(s string) (bts uint64, hs string, err error) {
+func parseKiB(s string) (bts uint64, hs string, err error) {
 	s = strings.TrimSpace(s)
 	switch {
 	// suffix 'm' means megabytes
@@ -54,8 +54,8 @@ func parseTopCommandKiB(s string) (bts uint64, hs string, err error) {
 	return
 }
 
-// TopRowHeaders is the headers in 'top' output.
-var TopRowHeaders = []string{
+// Headers is the headers in 'top' output.
+var Headers = []string{
 	"PID",
 	"USER",
 	"PR",
@@ -108,8 +108,8 @@ func topRowToSkip(data []byte) bool {
 	return false
 }
 
-// ParseTopOutput parses 'top' command output and returns the rows.
-func ParseTopOutput(s string) ([]TopCommandRow, error) {
+// Parse parses 'top' command output and returns the rows.
+func Parse(s string) ([]Row, error) {
 	lines := strings.Split(s, "\n")
 	rows := make([][]string, 0, len(lines))
 	for _, line := range lines {
@@ -122,25 +122,25 @@ func ParseTopOutput(s string) ([]TopCommandRow, error) {
 		}
 
 		row := strings.Fields(strings.TrimSpace(line))
-		if len(row) != len(TopRowHeaders) {
-			return nil, fmt.Errorf("unexpected row column number %v (expected %v)", row, TopRowHeaders)
+		if len(row) != len(Headers) {
+			return nil, fmt.Errorf("unexpected row column number %v (expected %v)", row, Headers)
 		}
 		rows = append(rows, row)
 	}
 
 	type result struct {
-		row TopCommandRow
+		row Row
 		err error
 	}
 	rc := make(chan result, len(rows))
 	for _, row := range rows {
 		go func(row []string) {
-			tr, err := parseTopRow(row)
+			tr, err := parseRow(row)
 			rc <- result{row: tr, err: err}
 		}(row)
 	}
 
-	tcRows := make([]TopCommandRow, 0, len(rows))
+	tcRows := make([]Row, 0, len(rows))
 	for len(tcRows) != len(rows) {
 		select {
 		case rs := <-rc:
@@ -153,39 +153,39 @@ func ParseTopOutput(s string) ([]TopCommandRow, error) {
 	return tcRows, nil
 }
 
-func parseTopRow(row []string) (TopCommandRow, error) {
-	trow := TopCommandRow{
+func parseRow(row []string) (Row, error) {
+	trow := Row{
 		USER: strings.TrimSpace(row[top_command_output_row_idx_user]),
 	}
 
 	pv, err := strconv.ParseInt(row[top_command_output_row_idx_pid], 10, 64)
 	if err != nil {
-		return TopCommandRow{}, fmt.Errorf("parse error %v (row %v)", err, row)
+		return Row{}, fmt.Errorf("parse error %v (row %v)", err, row)
 	}
 	trow.PID = pv
 
 	trow.PR = strings.TrimSpace(row[top_command_output_row_idx_pr])
 	trow.NI = strings.TrimSpace(row[top_command_output_row_idx_ni])
 
-	virt, virtTxt, err := parseTopCommandKiB(row[top_command_output_row_idx_virt])
+	virt, virtTxt, err := parseKiB(row[top_command_output_row_idx_virt])
 	if err != nil {
-		return TopCommandRow{}, fmt.Errorf("parse error %v (row %v)", err, row)
+		return Row{}, fmt.Errorf("parse error %v (row %v)", err, row)
 	}
 	trow.VIRT = row[top_command_output_row_idx_virt]
 	trow.VIRTBytesN = virt
 	trow.VIRTParsedBytes = virtTxt
 
-	res, resTxt, err := parseTopCommandKiB(row[top_command_output_row_idx_res])
+	res, resTxt, err := parseKiB(row[top_command_output_row_idx_res])
 	if err != nil {
-		return TopCommandRow{}, fmt.Errorf("parse error %v (row %v)", err, row)
+		return Row{}, fmt.Errorf("parse error %v (row %v)", err, row)
 	}
 	trow.RES = row[top_command_output_row_idx_res]
 	trow.RESBytesN = res
 	trow.RESParsedBytes = resTxt
 
-	shr, shrTxt, err := parseTopCommandKiB(row[top_command_output_row_idx_shr])
+	shr, shrTxt, err := parseKiB(row[top_command_output_row_idx_shr])
 	if err != nil {
-		return TopCommandRow{}, fmt.Errorf("parse error %v (row %v)", err, row)
+		return Row{}, fmt.Errorf("parse error %v (row %v)", err, row)
 	}
 	trow.SHR = row[top_command_output_row_idx_shr]
 	trow.SHRBytesN = shr
@@ -196,13 +196,13 @@ func parseTopRow(row []string) (TopCommandRow, error) {
 
 	cnum, err := strconv.ParseFloat(row[top_command_output_row_idx_cpu], 64)
 	if err != nil {
-		return TopCommandRow{}, fmt.Errorf("parse error %v (row %v)", err, row)
+		return Row{}, fmt.Errorf("parse error %v (row %v)", err, row)
 	}
 	trow.CPUPercent = cnum
 
 	mnum, err := strconv.ParseFloat(row[top_command_output_row_idx_mem], 64)
 	if err != nil {
-		return TopCommandRow{}, fmt.Errorf("parse error %v (row %v)", err, row)
+		return Row{}, fmt.Errorf("parse error %v (row %v)", err, row)
 	}
 	trow.MEMPercent = mnum
 

@@ -1,4 +1,4 @@
-// generate-psn-schema generates psn struct based on the schema.
+// generate-df generates 'df' struct based on the schema.
 package main
 
 import (
@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/gyuho/linux-inspect/df/schema"
+	"github.com/gyuho/linux-inspect/df"
 	"github.com/gyuho/linux-inspect/pkg/fileutil"
 	"github.com/gyuho/linux-inspect/pkg/schemautil"
 	"github.com/gyuho/linux-inspect/pkg/timeutil"
@@ -35,7 +35,7 @@ func main() {
 	buf.WriteString(`// DfCommandRow is 'df' command output row in Linux.
 type DfCommandRow struct {
 `)
-	buf.WriteString(schemautil.Generate(schema.DfCommandRow))
+	buf.WriteString(schemautil.Generate(df.DfCommandRowSchema))
 	buf.WriteString("}\n\n")
 
 	txt := buf.String()

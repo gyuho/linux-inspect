@@ -1,4 +1,4 @@
-// generate-psn-schema generates psn struct based on the schema.
+// generate-etc generates 'etc' struct based on the schema.
 package main
 
 import (
@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/gyuho/linux-inspect/etc/schema"
+	"github.com/gyuho/linux-inspect/etc"
 	"github.com/gyuho/linux-inspect/pkg/fileutil"
 	"github.com/gyuho/linux-inspect/pkg/schemautil"
 	"github.com/gyuho/linux-inspect/pkg/timeutil"
@@ -35,7 +35,7 @@ func main() {
 	buf.WriteString(`// Mtab is '/etc/mtab' in Linux.
 type Mtab struct {
 `)
-	buf.WriteString(schemautil.Generate(schema.Mtab))
+	buf.WriteString(schemautil.Generate(etc.MtabSchema))
 	buf.WriteString("}\n\n")
 
 	txt := buf.String()

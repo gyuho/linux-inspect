@@ -11,7 +11,7 @@ import (
 	"github.com/gyuho/linux-inspect/pkg/fileutil"
 	"github.com/gyuho/linux-inspect/pkg/schemautil"
 	"github.com/gyuho/linux-inspect/pkg/timeutil"
-	"github.com/gyuho/linux-inspect/proc/schema"
+	"github.com/gyuho/linux-inspect/proc"
 )
 
 func main() {
@@ -36,7 +36,7 @@ func main() {
 // The dev pseudo-file contains network device status information.
 type NetDev struct {
 `)
-	buf.WriteString(schemautil.Generate(schema.NetDev))
+	buf.WriteString(schemautil.Generate(proc.NetDevSchema))
 	buf.WriteString("}\n\n")
 
 	// '/proc/net/tcp', '/proc/net/tcp6'
@@ -47,49 +47,49 @@ type NetTCP struct {
 	for _, line := range additionalFieldsNetTCP {
 		buf.WriteString(fmt.Sprintf("\t%s\n", line))
 	}
-	buf.WriteString(schemautil.Generate(schema.NetTCP))
+	buf.WriteString(schemautil.Generate(proc.NetTCPSchema))
 	buf.WriteString("}\n\n")
 
 	// '/proc/loadavg'
 	buf.WriteString(`// LoadAvg is '/proc/loadavg' in Linux.
 type LoadAvg struct {
 `)
-	buf.WriteString(schemautil.Generate(schema.LoadAvg))
+	buf.WriteString(schemautil.Generate(proc.LoadAvgSchema))
 	buf.WriteString("}\n\n")
 
 	// '/proc/uptime'
 	buf.WriteString(`// Uptime is '/proc/uptime' in Linux.
 type Uptime struct {
 `)
-	buf.WriteString(schemautil.Generate(schema.Uptime))
+	buf.WriteString(schemautil.Generate(proc.UptimeSchema))
 	buf.WriteString("}\n\n")
 
 	// '/proc/diskstats'
 	buf.WriteString(`// DiskStat is '/proc/diskstats' in Linux.
 type DiskStat struct {
 `)
-	buf.WriteString(schemautil.Generate(schema.DiskStat))
+	buf.WriteString(schemautil.Generate(proc.DiskStatSchema))
 	buf.WriteString("}\n\n")
 
 	// '/proc/$PID/io'
 	buf.WriteString(`// IO is '/proc/$PID/io' in Linux.
 type IO struct {
 `)
-	buf.WriteString(schemautil.Generate(schema.IO))
+	buf.WriteString(schemautil.Generate(proc.IOSchema))
 	buf.WriteString("}\n\n")
 
 	// '/proc/$PID/stat'
 	buf.WriteString(`// Stat is '/proc/$PID/stat' in Linux.
 type Stat struct {
 `)
-	buf.WriteString(schemautil.Generate(schema.Stat))
+	buf.WriteString(schemautil.Generate(proc.StatSchema))
 	buf.WriteString("}\n\n")
 
 	// '/proc/$PID/status'
 	buf.WriteString(`// Status is '/proc/$PID/status' in Linux.
 type Status struct {
 `)
-	buf.WriteString(schemautil.Generate(schema.Status))
+	buf.WriteString(schemautil.Generate(proc.StatusSchema))
 	buf.WriteString("}\n\n")
 
 	txt := buf.String()
