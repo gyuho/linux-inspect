@@ -1,3 +1,4 @@
+// Package timeutil implements time utilities.
 package timeutil
 
 import "time"

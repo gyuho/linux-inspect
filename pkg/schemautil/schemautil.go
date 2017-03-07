@@ -1,3 +1,4 @@
+// Package schemautil implements schema utilities.
 package schemautil
 
 import (
