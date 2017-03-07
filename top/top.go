@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
+
+	"github.com/gyuho/linux-inspect/pkg/fileutil"
 )
 
 // DefaultTopPath is the default 'top' command path.
@@ -69,7 +71,7 @@ func (cfg *TopConfig) createCmd() error {
 	if cfg == nil {
 		return fmt.Errorf("TopConfig is nil")
 	}
-	if !exist(cfg.Exec) {
+	if !fileutil.Exist(cfg.Exec) {
 		return fmt.Errorf("%q does not exist", cfg.Exec)
 	}
 	flags := cfg.Flags()
