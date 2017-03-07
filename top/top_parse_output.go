@@ -192,7 +192,7 @@ func parseTopRow(row []string) (TopCommandRow, error) {
 	trow.SHRParsedBytes = shrTxt
 
 	trow.S = row[top_command_output_row_idx_s]
-	trow.SParsedStatus = convertProcStatus(row[top_command_output_row_idx_s])
+	trow.SParsedStatus = parseStatus(row[top_command_output_row_idx_s])
 
 	cnum, err := strconv.ParseFloat(row[top_command_output_row_idx_cpu], 64)
 	if err != nil {
@@ -209,4 +209,27 @@ func parseTopRow(row []string) (TopCommandRow, error) {
 	trow.TIME = row[top_command_output_row_idx_time]
 
 	return trow, nil
+}
+
+func parseStatus(s string) string {
+	ns := strings.TrimSpace(s)
+	if len(s) > 1 {
+		ns = ns[:1]
+	}
+	switch ns {
+	case "D":
+		return "D (uninterruptible sleep)"
+	case "R":
+		return "R (running)"
+	case "S":
+		return "S (sleeping)"
+	case "T":
+		return "T (stopped by job control signal)"
+	case "t":
+		return "t (stopped by debugger during trace)"
+	case "Z":
+		return "Z (zombie)"
+	default:
+		return fmt.Sprintf("unknown process %q", s)
+	}
 }
