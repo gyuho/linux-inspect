@@ -69,8 +69,8 @@ func read(dfPath string, target string, w io.Writer) error {
 	return cmd.Run()
 }
 
-// DfRowHeaders is the headers in 'df' output.
-var DfRowHeaders = []string{
+// Headers is the headers in 'df' output.
+var Headers = []string{
 	"Filesystem",
 
 	// Mounted on
@@ -118,8 +118,8 @@ func Parse(s string) ([]Row, error) {
 
 		ds := strings.Fields(strings.TrimSpace(line))
 		if ds[0] == "Filesystem" { // header line
-			if !reflect.DeepEqual(ds, DfRowHeaders) {
-				return nil, fmt.Errorf("unexpected 'df' command header order (%v, expected %v, output: %q)", ds, DfRowHeaders, s)
+			if !reflect.DeepEqual(ds, Headers) {
+				return nil, fmt.Errorf("unexpected 'df' command header order (%v, expected %v, output: %q)", ds, Headers, s)
 			}
 			headerFound = true
 			continue
@@ -130,8 +130,8 @@ func Parse(s string) ([]Row, error) {
 		}
 
 		row := strings.Fields(strings.TrimSpace(line))
-		if len(row) != len(DfRowHeaders)-1 {
-			return nil, fmt.Errorf("unexpected row column number %v (expected %v)", row, DfRowHeaders)
+		if len(row) != len(Headers)-1 {
+			return nil, fmt.Errorf("unexpected row column number %v (expected %v)", row, Headers)
 		}
 		rows = append(rows, row)
 	}
