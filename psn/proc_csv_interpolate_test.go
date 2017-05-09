@@ -35,7 +35,7 @@ func TestCombine(t *testing.T) {
 	epath := filepath.Join(homeDir(), "etcd-client-num")
 	defer os.RemoveAll(epath)
 
-	if err := toFile([]byte("10"), epath); err != nil {
+	if err = toFile([]byte("10"), epath); err != nil {
 		t.Fatal(err)
 	}
 	c, err := NewCSV(fpath, 1, dn, nt, epath, nil)

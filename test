@@ -9,29 +9,16 @@ if [ -n "${fmtRes}" ]; then
 	echo -e "gofmt checking failed:\n${fmtRes}"
 	exit 255
 fi
+
 echo "Checking govet..."
 vetRes=$(go vet $TEST)
 if [ -n "${vetRes}" ]; then
 	echo -e "govet checking failed:\n${vetRes}"
 	exit 255
 fi
+
 echo "Checking govet -shadow..."
-vetRes=$(go tool vet -shadow ./*.go)
-if [ -n "${vetRes}" ]; then
-	echo -e "govet -shadow checking failed:\n${vetRes}"
-	exit 255
-fi
-vetRes=$(go tool vet -shadow ./schema/*.go)
-if [ -n "${vetRes}" ]; then
-	echo -e "govet -shadow checking failed:\n${vetRes}"
-	exit 255
-fi
-vetRes=$(go tool vet -shadow ./cmd/generate/*.go)
-if [ -n "${vetRes}" ]; then
-	echo -e "govet -shadow checking failed:\n${vetRes}"
-	exit 255
-fi
-vetRes=$(go tool vet -shadow ./cmd/psn/*.go)
+vetRes=$(go tool vet -shadow .)
 if [ -n "${vetRes}" ]; then
 	echo -e "govet -shadow checking failed:\n${vetRes}"
 	exit 255
