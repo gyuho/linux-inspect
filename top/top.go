@@ -9,8 +9,8 @@ import (
 	"github.com/gyuho/linux-inspect/pkg/fileutil"
 )
 
-// topPath is the default 'top' command path.
-const topPath = "/usr/bin/top"
+// DefaultTopPath is the default 'top' command path.
+var DefaultTopPath = "/usr/bin/top"
 
 // Config configures 'top' command runs.
 type Config struct {
