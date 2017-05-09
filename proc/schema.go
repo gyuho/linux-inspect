@@ -3,7 +3,7 @@ package proc
 import (
 	"reflect"
 
-	"github.com/gyuho/linux-inspect/pkg/schema"
+	"github.com/gyuho/linux-inspect/schema"
 )
 
 // NetDevSchema represents '/proc/net/dev'.
