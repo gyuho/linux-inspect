@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/fatih/color"
-	"github.com/gyuho/linux-inspect/psn"
 	"github.com/spf13/cobra"
 )
 
@@ -37,21 +36,21 @@ func ssCommandFunc(cmd *cobra.Command, args []string) error {
 	fmt.Fprintf(os.Stdout, "\n'ss' to inspect '/proc/net/tcp,tcp6'\n\n")
 	color.Unset()
 
-	opts := []psn.FilterFunc{psn.WithTCP()}
-	if ssCmdFlag.protocol == "tcp6" {
-		opts[0] = psn.WithTCP6()
-	} else if ssCmdFlag.protocol != "tcp" {
-		fmt.Fprintf(os.Stderr, "unknown protocol %q\n", ssCmdFlag.protocol)
-		os.Exit(233)
-	}
-	opts = append(opts, psn.WithProgram(ssCmdFlag.program), psn.WithLocalPort(ssCmdFlag.localPort), psn.WithTopLimit(ssCmdFlag.top))
-	sss, err := psn.GetSS(opts...)
-	if err != nil {
-		return err
-	}
-	hd, rows := psn.ConvertSS(sss...)
-	txt := psn.StringSS(hd, rows, -1)
-	fmt.Print(txt)
+	// opts := []psn.FilterFunc{psn.WithTCP()}
+	// if ssCmdFlag.protocol == "tcp6" {
+	// 	opts[0] = psn.WithTCP6()
+	// } else if ssCmdFlag.protocol != "tcp" {
+	// 	fmt.Fprintf(os.Stderr, "unknown protocol %q\n", ssCmdFlag.protocol)
+	// 	os.Exit(233)
+	// }
+	// opts = append(opts, psn.WithProgram(ssCmdFlag.program), psn.WithLocalPort(ssCmdFlag.localPort), psn.WithTopLimit(ssCmdFlag.top))
+	// sss, err := psn.GetSS(opts...)
+	// if err != nil {
+	// 	return err
+	// }
+	// hd, rows := psn.ConvertSS(sss...)
+	// txt := psn.StringSS(hd, rows, -1)
+	// fmt.Print(txt)
 
 	color.Set(color.FgGreen)
 	fmt.Fprintf(os.Stdout, "\nDONE!\n")

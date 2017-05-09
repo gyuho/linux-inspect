@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 
 	"github.com/gyuho/linux-inspect/pkg/fileutil"
-	"github.com/gyuho/linux-inspect/pkg/schema"
 	"github.com/gyuho/linux-inspect/pkg/timeutil"
 	"github.com/gyuho/linux-inspect/proc"
+	"github.com/gyuho/linux-inspect/schema"
 )
 
 func main() {
