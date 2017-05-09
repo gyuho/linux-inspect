@@ -3,7 +3,7 @@ package etc
 import (
 	"reflect"
 
-	"github.com/gyuho/linux-inspect/pkg/schema"
+	"github.com/gyuho/linux-inspect/schema"
 )
 
 // MtabSchema represents '/etc/mtab'.
