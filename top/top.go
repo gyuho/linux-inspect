@@ -50,7 +50,13 @@ type Config struct {
 
 // Flags returns the 'top' command flags.
 func (cfg *Config) Flags() (fs []string) {
-	// batch mode by default
+	// start 'top' in batch mode, which could be useful
+	// for sending output from 'top' to other programs or to a file.
+	// In this mode, 'top' will not accept input and runs until the interations
+	// limit ('-n' flag) or until killed.
+	//
+	// MAKE THIS TRUE BY DEFAULT
+	// OTHERWISE PARSER HAS TO DEAL WITH HIGHLIGHTED TEXTS
 	fs = append(fs, "-b")
 
 	if cfg.Limit > 0 { // if 1, command just exists after one output

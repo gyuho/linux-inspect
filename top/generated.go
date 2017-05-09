@@ -1,6 +1,6 @@
 package top
 
-// updated at 2017-03-07 05:19:21.390252774 -0800 PST
+// updated at 2017-05-09 15:51:40.794906479 -0700 PDT
 
 // Row represents a row in 'top' command output.
 type Row struct {
