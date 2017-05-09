@@ -3,15 +3,15 @@ package proc
 import (
 	"reflect"
 
-	"github.com/gyuho/linux-inspect/pkg/schemautil"
+	"github.com/gyuho/linux-inspect/pkg/schema"
 )
 
 // NetDevSchema represents '/proc/net/dev'.
 // Reference http://man7.org/linux/man-pages/man5/proc.5.html
 // and http://www.onlamp.com/pub/a/linux/2000/11/16/LinuxAdmin.html.
-var NetDevSchema = schemautil.RawData{
+var NetDevSchema = schema.RawData{
 	IsYAML: false,
-	Columns: []schemautil.Column{
+	Columns: []schema.Column{
 		{Name: "interface", Godoc: "network interface", Kind: reflect.String},
 
 		{Name: "receive_bytes", Godoc: "total number of bytes of data received by the interface", Kind: reflect.Uint64},
@@ -31,18 +31,18 @@ var NetDevSchema = schemautil.RawData{
 		{Name: "transmit_colls", Godoc: "number of collisions detected on the interface", Kind: reflect.Uint64},
 		{Name: "transmit_carrier", Godoc: "number of carrier losses detected by the device driver", Kind: reflect.Uint64},
 	},
-	ColumnsToParse: map[string]schemautil.RawDataType{
-		"receive_bytes":  schemautil.TypeBytes,
-		"transmit_bytes": schemautil.TypeBytes,
+	ColumnsToParse: map[string]schema.RawDataType{
+		"receive_bytes":  schema.TypeBytes,
+		"transmit_bytes": schema.TypeBytes,
 	},
 }
 
 // NetTCPSchema represents '/proc/net/tcp' and '/proc/net/tcp6'.
 // Reference http://man7.org/linux/man-pages/man5/proc.5.html
 // and http://www.onlamp.com/pub/a/linux/2000/11/16/LinuxAdmin.html.
-var NetTCPSchema = schemautil.RawData{
+var NetTCPSchema = schema.RawData{
 	IsYAML: false,
-	Columns: []schemautil.Column{
+	Columns: []schema.Column{
 		{Name: "sl", Godoc: "kernel hash slot", Kind: reflect.Uint64},
 		{Name: "local_address", Godoc: "local-address:port", Kind: reflect.String},
 		{Name: "rem_address", Godoc: "remote-address:port", Kind: reflect.String},
@@ -56,18 +56,18 @@ var NetTCPSchema = schemautil.RawData{
 		{Name: "timeout", Godoc: "timeout", Kind: reflect.Uint64},
 		{Name: "inode", Godoc: "inode raw data", Kind: reflect.String},
 	},
-	ColumnsToParse: map[string]schemautil.RawDataType{
-		"local_address": schemautil.TypeIPAddress,
-		"rem_address":   schemautil.TypeIPAddress,
-		"st":            schemautil.TypeStatus,
+	ColumnsToParse: map[string]schema.RawDataType{
+		"local_address": schema.TypeIPAddress,
+		"rem_address":   schema.TypeIPAddress,
+		"st":            schema.TypeStatus,
 	},
 }
 
 // LoadAvgSchema represents '/proc/loadavg'.
 // Reference http://man7.org/linux/man-pages/man5/proc.5.html.
-var LoadAvgSchema = schemautil.RawData{
+var LoadAvgSchema = schema.RawData{
 	IsYAML: false,
-	Columns: []schemautil.Column{
+	Columns: []schema.Column{
 		{Name: "load-avg-1-minute", Godoc: "total uptime in seconds", Kind: reflect.Float64},
 		{Name: "load-avg-5-minute", Godoc: "total uptime in seconds", Kind: reflect.Float64},
 		{Name: "load-avg-15-minute", Godoc: "total uptime in seconds", Kind: reflect.Float64},
@@ -75,29 +75,29 @@ var LoadAvgSchema = schemautil.RawData{
 		{Name: "current-kernel-scheduling-entities", Godoc: "number of kernel scheduling entities that currently exist on the system", Kind: reflect.Int64},
 		{Name: "pid", Godoc: "PID of the process that was most recently created on the system", Kind: reflect.Int64},
 	},
-	ColumnsToParse: map[string]schemautil.RawDataType{},
+	ColumnsToParse: map[string]schema.RawDataType{},
 }
 
 // UptimeSchema represents '/proc/uptime'.
 // Reference http://man7.org/linux/man-pages/man5/proc.5.html.
-var UptimeSchema = schemautil.RawData{
+var UptimeSchema = schema.RawData{
 	IsYAML: false,
-	Columns: []schemautil.Column{
+	Columns: []schema.Column{
 		{Name: "uptime-total", Godoc: "total uptime in seconds", Kind: reflect.Float64},
 		{Name: "uptime-idle", Godoc: "total amount of time in seconds spent in idle process", Kind: reflect.Float64},
 	},
-	ColumnsToParse: map[string]schemautil.RawDataType{
-		"uptime-total": schemautil.TypeTimeSeconds,
-		"uptime-idle":  schemautil.TypeTimeSeconds,
+	ColumnsToParse: map[string]schema.RawDataType{
+		"uptime-total": schema.TypeTimeSeconds,
+		"uptime-idle":  schema.TypeTimeSeconds,
 	},
 }
 
 // DiskStatSchema represents '/proc/diskstats'.
 // Reference https://www.kernel.org/doc/Documentation/ABI/testing/procfs-diskstats
 // and https://www.kernel.org/doc/Documentation/iostats.txt.
-var DiskStatSchema = schemautil.RawData{
+var DiskStatSchema = schema.RawData{
 	IsYAML: false,
-	Columns: []schemautil.Column{
+	Columns: []schema.Column{
 		{Name: "major-number", Godoc: "major device number", Kind: reflect.Uint64},
 		{Name: "minor-number", Godoc: "minor device number", Kind: reflect.Uint64},
 		{Name: "device-name", Godoc: "device name", Kind: reflect.String},
@@ -116,19 +116,19 @@ var DiskStatSchema = schemautil.RawData{
 		{Name: "time-spent-on-I/Os-ms", Godoc: "milliseconds spent doing I/Os", Kind: reflect.Uint64},
 		{Name: "weighted-time-spent-on-I/Os-ms", Godoc: "weighted milliseconds spent doing I/Os (incremented at each I/O start, I/O completion, I/O merge)", Kind: reflect.Uint64},
 	},
-	ColumnsToParse: map[string]schemautil.RawDataType{
-		"time-spent-on-reading-ms":       schemautil.TypeTimeMicroseconds,
-		"time-spent-on-writing-ms":       schemautil.TypeTimeMicroseconds,
-		"time-spent-on-I/Os-ms":          schemautil.TypeTimeMicroseconds,
-		"weighted-time-spent-on-I/Os-ms": schemautil.TypeTimeMicroseconds,
+	ColumnsToParse: map[string]schema.RawDataType{
+		"time-spent-on-reading-ms":       schema.TypeTimeMicroseconds,
+		"time-spent-on-writing-ms":       schema.TypeTimeMicroseconds,
+		"time-spent-on-I/Os-ms":          schema.TypeTimeMicroseconds,
+		"weighted-time-spent-on-I/Os-ms": schema.TypeTimeMicroseconds,
 	},
 }
 
 // IOSchema represents 'proc/$PID/io'.
 // Reference http://man7.org/linux/man-pages/man5/proc.5.html.
-var IOSchema = schemautil.RawData{
+var IOSchema = schema.RawData{
 	IsYAML: true,
-	Columns: []schemautil.Column{
+	Columns: []schema.Column{
 		{Name: "rchar", Godoc: "number of bytes which this task has caused to be read from storage (sum of bytes which this process passed to read)", Kind: reflect.Uint64},
 		{Name: "wchar", Godoc: "number of bytes which this task has caused, or shall cause to be written to disk", Kind: reflect.Uint64},
 		{Name: "syscr", Godoc: "number of read I/O operations", Kind: reflect.Uint64},
@@ -137,20 +137,20 @@ var IOSchema = schemautil.RawData{
 		{Name: "write_bytes", Godoc: "number of bytes which this process caused to be sent to the storage layer", Kind: reflect.Uint64},
 		{Name: "cancelled_write_bytes", Godoc: "number of bytes which this process caused to not happen by truncating pagecache", Kind: reflect.Uint64},
 	},
-	ColumnsToParse: map[string]schemautil.RawDataType{
-		"rchar":                 schemautil.TypeBytes,
-		"wchar":                 schemautil.TypeBytes,
-		"read_bytes":            schemautil.TypeBytes,
-		"write_bytes":           schemautil.TypeBytes,
-		"cancelled_write_bytes": schemautil.TypeBytes,
+	ColumnsToParse: map[string]schema.RawDataType{
+		"rchar":                 schema.TypeBytes,
+		"wchar":                 schema.TypeBytes,
+		"read_bytes":            schema.TypeBytes,
+		"write_bytes":           schema.TypeBytes,
+		"cancelled_write_bytes": schema.TypeBytes,
 	},
 }
 
 // StatSchema represents '/proc/$PID/stat'.
 // Reference http://man7.org/linux/man-pages/man5/proc.5.html.
-var StatSchema = schemautil.RawData{
+var StatSchema = schema.RawData{
 	IsYAML: false,
-	Columns: []schemautil.Column{
+	Columns: []schema.Column{
 		{Name: "pid", Godoc: "process ID", Kind: reflect.Int64},
 		{Name: "comm", Godoc: "filename of the executable (originally in parentheses, automatically removed by this package)", Kind: reflect.String},
 		{Name: "state", Godoc: "one character that represents the state of the process", Kind: reflect.String},
@@ -204,19 +204,19 @@ var StatSchema = schemautil.RawData{
 		{Name: "env_end", Godoc: "address below which program environment is placed", Kind: reflect.Uint64},
 		{Name: "exit_code", Godoc: "thread's exit status in the form reported by waitpid(2)", Kind: reflect.Int64},
 	},
-	ColumnsToParse: map[string]schemautil.RawDataType{
-		"state":  schemautil.TypeStatus,
-		"vsize":  schemautil.TypeBytes,
-		"rss":    schemautil.TypeBytes,
-		"rsslim": schemautil.TypeBytes,
+	ColumnsToParse: map[string]schema.RawDataType{
+		"state":  schema.TypeStatus,
+		"vsize":  schema.TypeBytes,
+		"rss":    schema.TypeBytes,
+		"rsslim": schema.TypeBytes,
 	},
 }
 
 // StatusSchema represents 'proc/$PID/status'.
 // Reference http://man7.org/linux/man-pages/man5/proc.5.html.
-var StatusSchema = schemautil.RawData{
+var StatusSchema = schema.RawData{
 	IsYAML: true,
-	Columns: []schemautil.Column{
+	Columns: []schema.Column{
 		{Name: "Name", Godoc: "command run by this process", Kind: reflect.String},
 		{Name: "Umask", Godoc: "process umask, expressed in octal with a leading", Kind: reflect.String},
 		{Name: "State", Godoc: "current state of the process: R (running), S (sleeping), D (disk sleep), T (stopped), T (tracing stop), Z (zombie), or X (dead)", Kind: reflect.String},
@@ -279,21 +279,21 @@ var StatusSchema = schemautil.RawData{
 		{Name: "voluntary_ctxt_switches", Godoc: "number of voluntary context switches", Kind: reflect.Uint64},
 		{Name: "nonvoluntary_ctxt_switches", Godoc: "number of involuntary context switches", Kind: reflect.Uint64},
 	},
-	ColumnsToParse: map[string]schemautil.RawDataType{
-		"State":        schemautil.TypeStatus,
-		"VmPeak":       schemautil.TypeBytes,
-		"VmSize":       schemautil.TypeBytes,
-		"VmLck":        schemautil.TypeBytes,
-		"VmPin":        schemautil.TypeBytes,
-		"VmHWM":        schemautil.TypeBytes,
-		"VmRSS":        schemautil.TypeBytes,
-		"VmData":       schemautil.TypeBytes,
-		"VmStk":        schemautil.TypeBytes,
-		"VmExe":        schemautil.TypeBytes,
-		"VmLib":        schemautil.TypeBytes,
-		"VmPTE":        schemautil.TypeBytes,
-		"VmPMD":        schemautil.TypeBytes,
-		"VmSwap":       schemautil.TypeBytes,
-		"HugetlbPages": schemautil.TypeBytes,
+	ColumnsToParse: map[string]schema.RawDataType{
+		"State":        schema.TypeStatus,
+		"VmPeak":       schema.TypeBytes,
+		"VmSize":       schema.TypeBytes,
+		"VmLck":        schema.TypeBytes,
+		"VmPin":        schema.TypeBytes,
+		"VmHWM":        schema.TypeBytes,
+		"VmRSS":        schema.TypeBytes,
+		"VmData":       schema.TypeBytes,
+		"VmStk":        schema.TypeBytes,
+		"VmExe":        schema.TypeBytes,
+		"VmLib":        schema.TypeBytes,
+		"VmPTE":        schema.TypeBytes,
+		"VmPMD":        schema.TypeBytes,
+		"VmSwap":       schema.TypeBytes,
+		"HugetlbPages": schema.TypeBytes,
 	},
 }

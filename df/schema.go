@@ -3,7 +3,7 @@ package df
 import (
 	"reflect"
 
-	"github.com/gyuho/linux-inspect/pkg/schemautil"
+	"github.com/gyuho/linux-inspect/pkg/schema"
 )
 
 // RowSchema represents 'df' command output row
@@ -11,9 +11,9 @@ import (
 // and https://www.gnu.org/software/coreutils/manual/html_node/df-invocation.html
 // and 'df --all --sync --block-size=1024 --output=source,target,fstype,file,itotal,iavail,iused,ipcent,size,avail,used,pcent'
 // and the output unit is kilobytes).
-var RowSchema = schemautil.RawData{
+var RowSchema = schema.RawData{
 	IsYAML: false,
-	Columns: []schemautil.Column{
+	Columns: []schema.Column{
 		{Name: "file-system", Godoc: "file system ('source')", Kind: reflect.String},
 		{Name: "device", Godoc: "device name", Kind: reflect.String},
 		{Name: "mounted-on", Godoc: "'mounted on' ('target')", Kind: reflect.String},
@@ -30,9 +30,9 @@ var RowSchema = schemautil.RawData{
 		{Name: "used-blocks", Godoc: "number of used 1K-blocks ('used')", Kind: reflect.Int64},
 		{Name: "used-blocks-percent", Godoc: "percentage of used-blocks divided by total-blocks ('pcent')", Kind: reflect.String},
 	},
-	ColumnsToParse: map[string]schemautil.RawDataType{
-		"total-blocks":     schemautil.TypeBytes,
-		"available-blocks": schemautil.TypeBytes,
-		"used-blocks":      schemautil.TypeBytes,
+	ColumnsToParse: map[string]schema.RawDataType{
+		"total-blocks":     schema.TypeBytes,
+		"available-blocks": schema.TypeBytes,
+		"used-blocks":      schema.TypeBytes,
 	},
 }

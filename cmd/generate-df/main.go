@@ -10,7 +10,7 @@ import (
 
 	"github.com/gyuho/linux-inspect/df"
 	"github.com/gyuho/linux-inspect/pkg/fileutil"
-	"github.com/gyuho/linux-inspect/pkg/schemautil"
+	"github.com/gyuho/linux-inspect/pkg/schema"
 	"github.com/gyuho/linux-inspect/pkg/timeutil"
 )
 
@@ -35,7 +35,7 @@ func main() {
 	buf.WriteString(`// Row is 'df' command output row in Linux.
 type Row struct {
 `)
-	buf.WriteString(schemautil.Generate(df.RowSchema))
+	buf.WriteString(schema.Generate(df.RowSchema))
 	buf.WriteString("}\n\n")
 
 	txt := buf.String()

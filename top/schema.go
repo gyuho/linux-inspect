@@ -3,14 +3,14 @@ package top
 import (
 	"reflect"
 
-	"github.com/gyuho/linux-inspect/pkg/schemautil"
+	"github.com/gyuho/linux-inspect/pkg/schema"
 )
 
 // RowSchema represents a row in 'top' command output.
 // Reference http://man7.org/linux/man-pages/man1/top.1.html.
-var RowSchema = schemautil.RawData{
+var RowSchema = schema.RawData{
 	IsYAML: false,
-	Columns: []schemautil.Column{
+	Columns: []schema.Column{
 		{Name: "PID", Godoc: "pid of the process", Kind: reflect.Int64},
 		{Name: "USER", Godoc: "user name", Kind: reflect.String},
 		{Name: "PR", Godoc: "priority", Kind: reflect.String},
@@ -24,10 +24,10 @@ var RowSchema = schemautil.RawData{
 		{Name: "TIME", Godoc: "CPU time (TIME+)", Kind: reflect.String},
 		{Name: "COMMAND", Godoc: "command", Kind: reflect.String},
 	},
-	ColumnsToParse: map[string]schemautil.RawDataType{
-		"S":    schemautil.TypeStatus,
-		"VIRT": schemautil.TypeBytes,
-		"RES":  schemautil.TypeBytes,
-		"SHR":  schemautil.TypeBytes,
+	ColumnsToParse: map[string]schema.RawDataType{
+		"S":    schema.TypeStatus,
+		"VIRT": schema.TypeBytes,
+		"RES":  schema.TypeBytes,
+		"SHR":  schema.TypeBytes,
 	},
 }
