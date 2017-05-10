@@ -34,7 +34,7 @@ func init() {
 
 	ssCommand.PersistentFlags().StringVarP(&ssCmdFlag.protocol, "protocol", "c", "tcp", "Specify the protocol ('tcp' or 'tcp6').")
 	ssCommand.PersistentFlags().StringVarP(&ssCmdFlag.program, "program", "s", "", "Specify the program name.")
-	ssCommand.PersistentFlags().Int64VarP(&ssCmdFlag.localPort, "local-port", "l", -1, "Specify the local port.")
+	ssCommand.PersistentFlags().Int64VarP(&ssCmdFlag.localPort, "local-port", "p", -1, "Specify the local port.")
 }
 
 func ssCommandFunc(cmd *cobra.Command, args []string) error {
