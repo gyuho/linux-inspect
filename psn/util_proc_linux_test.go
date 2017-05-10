@@ -16,7 +16,7 @@ func TestListPIDs(t *testing.T) {
 func TestGetProgram(t *testing.T) {
 	fds, err := ListProcFds()
 	if err != nil {
-		t.Fatal(err)
+		t.Skip(err)
 	}
 
 	fd := fds[len(fds)/2]
