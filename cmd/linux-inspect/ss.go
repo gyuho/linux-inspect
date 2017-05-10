@@ -11,10 +11,12 @@ import (
 )
 
 type ssFlags struct {
-	protocol  string
+	topExecPath string
+	limit       int
+
 	program   string
+	protocol  string
 	localPort int64
-	top       int
 }
 
 var (
@@ -27,10 +29,12 @@ var (
 )
 
 func init() {
+	ssCommand.PersistentFlags().StringVarP(&ssCmdFlag.topExecPath, "top-exec", "t", "", "Specify the top command path.")
+	ssCommand.PersistentFlags().IntVarP(&ssCmdFlag.limit, "limit", "l", 5, "Limit the number results to return.")
+
 	ssCommand.PersistentFlags().StringVarP(&ssCmdFlag.protocol, "protocol", "c", "tcp", "Specify the protocol ('tcp' or 'tcp6').")
 	ssCommand.PersistentFlags().StringVarP(&ssCmdFlag.program, "program", "s", "", "Specify the program name.")
 	ssCommand.PersistentFlags().Int64VarP(&ssCmdFlag.localPort, "local-port", "l", -1, "Specify the local port.")
-	ssCommand.PersistentFlags().IntVarP(&ssCmdFlag.top, "top", "t", 5, "Limit the number results to return.")
 }
 
 func ssCommandFunc(cmd *cobra.Command, args []string) error {
@@ -38,15 +42,20 @@ func ssCommandFunc(cmd *cobra.Command, args []string) error {
 	fmt.Fprintf(os.Stdout, "\n'ss' to inspect '/proc/net/tcp,tcp6'\n\n")
 	color.Unset()
 
-	opts := []inspect.FilterFunc{inspect.WithTCP()}
+	topt := inspect.WithTCP()
 	if ssCmdFlag.protocol == "tcp6" {
-		opts[0] = inspect.WithTCP6()
+		topt = inspect.WithTCP6()
 	} else if ssCmdFlag.protocol != "tcp" {
 		fmt.Fprintf(os.Stderr, "unknown protocol %q\n", ssCmdFlag.protocol)
 		os.Exit(233)
 	}
-	opts = append(opts, inspect.WithProgram(ssCmdFlag.program), inspect.WithLocalPort(ssCmdFlag.localPort), inspect.WithTopLimit(ssCmdFlag.top))
-	sss, err := inspect.GetSS(opts...)
+	sss, err := inspect.GetSS(
+		topt,
+		inspect.WithTopExecPath(ssCmdFlag.topExecPath),
+		inspect.WithTopLimit(ssCmdFlag.limit),
+		inspect.WithProgram(ssCmdFlag.program),
+		inspect.WithLocalPort(ssCmdFlag.localPort),
+	)
 	if err != nil {
 		return err
 	}
