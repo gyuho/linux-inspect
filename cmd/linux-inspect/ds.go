@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/fatih/color"
-	"github.com/gyuho/linux-inspect/psn"
 	"github.com/spf13/cobra"
 )
 
@@ -22,13 +21,13 @@ func dsCommandFunc(cmd *cobra.Command, args []string) error {
 	fmt.Fprintf(os.Stdout, "\n'ds' to inspect '/proc/diskstats'\n\n")
 	color.Unset()
 
-	ds, err := psn.GetDS()
-	if err != nil {
-		return err
-	}
-	hd, rows := psn.ConvertDS(ds...)
-	txt := psn.StringDS(hd, rows, -1)
-	fmt.Print(txt)
+	// ds, err := psn.GetDS()
+	// if err != nil {
+	// 	return err
+	// }
+	// hd, rows := psn.ConvertDS(ds...)
+	// txt := psn.StringDS(hd, rows, -1)
+	// fmt.Print(txt)
 
 	color.Set(color.FgGreen)
 	fmt.Fprintf(os.Stdout, "\nDONE!\n")

@@ -1,6 +1,6 @@
 package df
 
-// updated at 2017-03-07 05:28:07.748217427 -0800 PST
+// updated at 2017-05-09 15:51:39.458012515 -0700 PDT
 
 // Row is 'df' command output row in Linux.
 type Row struct {

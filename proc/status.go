@@ -16,81 +16,80 @@ import (
 
 // GetStatusByPID reads '/proc/$PID/status' data.
 func GetStatusByPID(pid int64) (s Status, err error) {
-	return parseStatusByPID(pid)
+	d, derr := readStatus(pid)
+	if derr != nil {
+		return Status{}, derr
+	}
+	s, err = parseStatus(d)
+	if err != nil {
+		return s, err
+	}
+
+	s.StateParsedStatus = strings.TrimSpace(s.State)
+
+	u, _ := humanize.ParseBytes(s.VmPeak)
+	s.VmPeakBytesN = u
+	s.VmPeakParsedBytes = humanize.Bytes(u)
+	u, _ = humanize.ParseBytes(s.VmSize)
+	s.VmSizeBytesN = u
+	s.VmSizeParsedBytes = humanize.Bytes(u)
+	u, _ = humanize.ParseBytes(s.VmLck)
+	s.VmLckBytesN = u
+	s.VmLckParsedBytes = humanize.Bytes(u)
+	u, _ = humanize.ParseBytes(s.VmPin)
+	s.VmPinBytesN = u
+	s.VmPinParsedBytes = humanize.Bytes(u)
+	u, _ = humanize.ParseBytes(s.VmHWM)
+	s.VmHWMBytesN = u
+	s.VmHWMParsedBytes = humanize.Bytes(u)
+	u, _ = humanize.ParseBytes(s.VmRSS)
+	s.VmRSSBytesN = u
+	s.VmRSSParsedBytes = humanize.Bytes(u)
+	u, _ = humanize.ParseBytes(s.VmData)
+	s.VmDataBytesN = u
+	s.VmDataParsedBytes = humanize.Bytes(u)
+	u, _ = humanize.ParseBytes(s.VmStk)
+	s.VmStkBytesN = u
+	s.VmStkParsedBytes = humanize.Bytes(u)
+	u, _ = humanize.ParseBytes(s.VmExe)
+	s.VmExeBytesN = u
+	s.VmExeParsedBytes = humanize.Bytes(u)
+	u, _ = humanize.ParseBytes(s.VmLib)
+	s.VmLibBytesN = u
+	s.VmLibParsedBytes = humanize.Bytes(u)
+	u, _ = humanize.ParseBytes(s.VmPTE)
+	s.VmPTEBytesN = u
+	s.VmPTEParsedBytes = humanize.Bytes(u)
+	u, _ = humanize.ParseBytes(s.VmPMD)
+	s.VmPMDBytesN = u
+	s.VmPMDParsedBytes = humanize.Bytes(u)
+	u, _ = humanize.ParseBytes(s.VmSwap)
+	s.VmSwapBytesN = u
+	s.VmSwapParsedBytes = humanize.Bytes(u)
+	u, _ = humanize.ParseBytes(s.HugetlbPages)
+	s.HugetlbPagesBytesN = u
+	s.HugetlbPagesParsedBytes = humanize.Bytes(u)
+
+	return s, nil
 }
 
-func _parseStatus(pid int64) (Status, error) {
+func readStatus(pid int64) ([]byte, error) {
 	fpath := fmt.Sprintf("/proc/%d/status", pid)
 	f, err := fileutil.OpenToRead(fpath)
 	if err != nil {
-		return Status{}, err
+		return nil, err
 	}
-	defer f.Close()
-
-	b, err := ioutil.ReadAll(f)
+	err = f.Close()
+	b, berr := ioutil.ReadAll(f)
 	if err != nil {
-		return Status{}, err
+		berr = fmt.Errorf("%v; %v", err, berr)
 	}
-
-	rs := Status{}
-	if err := yaml.Unmarshal(b, &rs); err != nil {
-		return rs, err
-	}
-	return rs, nil
+	return b, berr
 }
 
-func parseStatusByPID(pid int64) (Status, error) {
-	rs, err := _parseStatus(pid)
-	if err != nil {
-		return rs, err
-	}
-
-	rs.StateParsedStatus = strings.TrimSpace(rs.State)
-
-	u, _ := humanize.ParseBytes(rs.VmPeak)
-	rs.VmPeakBytesN = u
-	rs.VmPeakParsedBytes = humanize.Bytes(u)
-	u, _ = humanize.ParseBytes(rs.VmSize)
-	rs.VmSizeBytesN = u
-	rs.VmSizeParsedBytes = humanize.Bytes(u)
-	u, _ = humanize.ParseBytes(rs.VmLck)
-	rs.VmLckBytesN = u
-	rs.VmLckParsedBytes = humanize.Bytes(u)
-	u, _ = humanize.ParseBytes(rs.VmPin)
-	rs.VmPinBytesN = u
-	rs.VmPinParsedBytes = humanize.Bytes(u)
-	u, _ = humanize.ParseBytes(rs.VmHWM)
-	rs.VmHWMBytesN = u
-	rs.VmHWMParsedBytes = humanize.Bytes(u)
-	u, _ = humanize.ParseBytes(rs.VmRSS)
-	rs.VmRSSBytesN = u
-	rs.VmRSSParsedBytes = humanize.Bytes(u)
-	u, _ = humanize.ParseBytes(rs.VmData)
-	rs.VmDataBytesN = u
-	rs.VmDataParsedBytes = humanize.Bytes(u)
-	u, _ = humanize.ParseBytes(rs.VmStk)
-	rs.VmStkBytesN = u
-	rs.VmStkParsedBytes = humanize.Bytes(u)
-	u, _ = humanize.ParseBytes(rs.VmExe)
-	rs.VmExeBytesN = u
-	rs.VmExeParsedBytes = humanize.Bytes(u)
-	u, _ = humanize.ParseBytes(rs.VmLib)
-	rs.VmLibBytesN = u
-	rs.VmLibParsedBytes = humanize.Bytes(u)
-	u, _ = humanize.ParseBytes(rs.VmPTE)
-	rs.VmPTEBytesN = u
-	rs.VmPTEParsedBytes = humanize.Bytes(u)
-	u, _ = humanize.ParseBytes(rs.VmPMD)
-	rs.VmPMDBytesN = u
-	rs.VmPMDParsedBytes = humanize.Bytes(u)
-	u, _ = humanize.ParseBytes(rs.VmSwap)
-	rs.VmSwapBytesN = u
-	rs.VmSwapParsedBytes = humanize.Bytes(u)
-	u, _ = humanize.ParseBytes(rs.HugetlbPages)
-	rs.HugetlbPagesBytesN = u
-	rs.HugetlbPagesParsedBytes = humanize.Bytes(u)
-
-	return rs, nil
+func parseStatus(d []byte) (s Status, err error) {
+	err = yaml.Unmarshal(d, &s)
+	return s, err
 }
 
 const statusTmpl = `
@@ -164,4 +163,12 @@ func (s Status) String() string {
 		log.Fatal(err)
 	}
 	return buf.String()
+}
+
+// GetProgram returns the program name.
+func GetProgram(pid int64) (string, error) {
+	// Readlink needs root permission
+	// return os.Readlink(fmt.Sprintf("/proc/%d/exe", pid))
+	s, err := GetStatusByPID(pid)
+	return s.Name, err
 }

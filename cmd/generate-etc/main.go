@@ -10,8 +10,8 @@ import (
 
 	"github.com/gyuho/linux-inspect/etc"
 	"github.com/gyuho/linux-inspect/pkg/fileutil"
-	"github.com/gyuho/linux-inspect/pkg/schemautil"
 	"github.com/gyuho/linux-inspect/pkg/timeutil"
+	"github.com/gyuho/linux-inspect/schema"
 )
 
 func main() {
@@ -35,7 +35,7 @@ func main() {
 	buf.WriteString(`// Mtab is '/etc/mtab' in Linux.
 type Mtab struct {
 `)
-	buf.WriteString(schemautil.Generate(etc.MtabSchema))
+	buf.WriteString(schema.Generate(etc.MtabSchema))
 	buf.WriteString("}\n\n")
 
 	txt := buf.String()

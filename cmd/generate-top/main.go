@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 
 	"github.com/gyuho/linux-inspect/pkg/fileutil"
-	"github.com/gyuho/linux-inspect/pkg/schemautil"
 	"github.com/gyuho/linux-inspect/pkg/timeutil"
+	"github.com/gyuho/linux-inspect/schema"
 	"github.com/gyuho/linux-inspect/top"
 )
 
@@ -35,7 +35,7 @@ func main() {
 	buf.WriteString(`// Row represents a row in 'top' command output.
 type Row struct {
 `)
-	buf.WriteString(schemautil.Generate(top.RowSchema))
+	buf.WriteString(schema.Generate(top.RowSchema))
 	buf.WriteString("}\n\n")
 
 	txt := buf.String()

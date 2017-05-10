@@ -7,8 +7,3 @@ go:
 
 script:
 - ./test
-- go get -v github.com/gyuho/linux-inspect/cmd/psn
-- psn ds
-- psn ns
-- psn ps --top 10
-- psn ss --top 10

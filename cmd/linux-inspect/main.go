@@ -20,9 +20,9 @@ import (
 
 var (
 	command = &cobra.Command{
-		Use:        "psn",
-		Short:      "psn inspects Linux processes, sockets (ps, ss, netstat).",
-		SuggestFor: []string{"pssn", "psns", "snp"},
+		Use:        "linux-inspect",
+		Short:      "linux-inspect inspects Linux processes, sockets (ps, ss, netstat).",
+		SuggestFor: []string{"linux-inspects", "linuxinspect", "linux-inspec"},
 	}
 )
 

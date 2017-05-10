@@ -1,5 +1,5 @@
-// Package schemautil implements schema utilities.
-package schemautil
+// Package schema represents linux-inspect schema.
+package schema
 
 import (
 	"bytes"
