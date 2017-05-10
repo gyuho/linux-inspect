@@ -1,7 +1,7 @@
-// psn inspects Linux processes, sockets (ps, ss, netstat).
+// linux-inspect inspects Linux processes, sockets (ps, ss, netstat).
 //
 //	Usage:
-//	psn [command]
+//	linux-inspect [command]
 //
 //	Available Commands:
 //	ds          Inspects '/proc/diskstats'
