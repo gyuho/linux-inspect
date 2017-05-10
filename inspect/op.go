@@ -108,8 +108,8 @@ func WithExtraPath(path string) OpFunc {
 
 // applyOpts panics when op.Program != "" && op.PID > 0.
 func (op *EntryOp) applyOpts(opts []OpFunc) {
-	for _, opt := range opts {
-		opt(ft)
+	for _, of := range opts {
+		of(op)
 	}
 
 	if op.DiskDevice != "" || op.NetworkInterface != "" || op.ExtraPath != "" {
