@@ -5,15 +5,17 @@ import (
 	"os"
 
 	"github.com/gyuho/linux-inspect/inspect"
+	"github.com/gyuho/linux-inspect/top"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
 type psFlags struct {
-	program string
-	pid     int64
-	top     int
+	program     string
+	topExecPath string
+	pid         int64
+	limit       int
 }
 
 var (
@@ -27,8 +29,9 @@ var (
 
 func init() {
 	psCommand.PersistentFlags().StringVarP(&psCmdFlag.program, "program", "s", "", "Specify the program name.")
+	psCommand.PersistentFlags().StringVarP(&psCmdFlag.topExecPath, "top-exec", "t", "", "Specify the top command path.")
 	psCommand.PersistentFlags().Int64VarP(&psCmdFlag.pid, "pid", "p", -1, "Specify the PID.")
-	psCommand.PersistentFlags().IntVarP(&psCmdFlag.top, "top", "t", 5, "Limit the number results to return.")
+	psCommand.PersistentFlags().IntVarP(&psCmdFlag.limit, "limit", "l", 5, "Limit the number results to return.")
 }
 
 func psCommandFunc(cmd *cobra.Command, args []string) error {
@@ -36,7 +39,15 @@ func psCommandFunc(cmd *cobra.Command, args []string) error {
 	fmt.Fprintf(os.Stdout, "\n'ps' to inspect '/proc/$PID/status', 'top' command outpu\n\n")
 	color.Unset()
 
-	pss, err := inspect.GetPS(inspect.WithProgram(psCmdFlag.program), inspect.WithPID(psCmdFlag.pid), inspect.WithTopLimit(psCmdFlag.top))
+	if psCmdFlag.topExecPath == "" {
+		psCmdFlag.topExecPath = top.DefaultExecPath
+	}
+	pss, err := inspect.GetPS(
+		inspect.WithProgram(psCmdFlag.program),
+		inspect.WithPID(psCmdFlag.pid),
+		inspect.WithTopExecPath(psCmdFlag.topExecPath),
+		inspect.WithTopLimit(psCmdFlag.limit),
+	)
 	if err != nil {
 		return err
 	}
