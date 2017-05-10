@@ -8,7 +8,7 @@ import (
 func TestGetStatByPID(t *testing.T) {
 	s, err := GetStatByPID(1)
 	if err != nil {
-		t.Fatal(err)
+		t.Skip(err)
 	}
 	if s.Rss != s.RssBytesN {
 		t.Fatalf("got different Rss; %d != %d", s.Rss, s.RssBytesN)
