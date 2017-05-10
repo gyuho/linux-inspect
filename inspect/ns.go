@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/gyuho/dataframe"
 	"github.com/gyuho/linux-inspect/proc"
+
+	"github.com/gyuho/dataframe"
 	"github.com/olekukonko/tablewriter"
 )
 

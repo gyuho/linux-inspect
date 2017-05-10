@@ -6,9 +6,10 @@ import (
 	"log"
 	"sync"
 
-	"github.com/gyuho/dataframe"
 	"github.com/gyuho/linux-inspect/proc"
 	"github.com/gyuho/linux-inspect/top"
+
+	"github.com/gyuho/dataframe"
 	"github.com/olekukonko/tablewriter"
 )
 
