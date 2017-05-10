@@ -89,21 +89,21 @@ var Headers = []string{
 	"Use%",
 }
 
-type dfCommandOutpudrowIdx int
+type commandOutpudrowIdx int
 
 const (
-	df_command_output_row_idx_file_system dfCommandOutpudrowIdx = iota
-	df_command_output_row_idx_mounted_on
-	df_command_output_row_idx_file_system_type
-	df_command_output_row_idx_file
-	df_command_output_row_idx_inodes
-	df_command_output_row_idx_ifree
-	df_command_output_row_idx_iused
-	df_command_output_row_idx_iused_percent
-	df_command_output_row_idx_total_blocks
-	df_command_output_row_idx_available_blocks
-	df_command_output_row_idx_used_blocks
-	df_command_output_row_idx_used_blocks_percentage
+	command_output_row_idx_file_system commandOutpudrowIdx = iota
+	command_output_row_idx_mounted_on
+	command_output_row_idx_file_system_type
+	command_output_row_idx_file
+	command_output_row_idx_inodes
+	command_output_row_idx_ifree
+	command_output_row_idx_iused
+	command_output_row_idx_iused_percent
+	command_output_row_idx_total_blocks
+	command_output_row_idx_available_blocks
+	command_output_row_idx_used_blocks
+	command_output_row_idx_used_blocks_percentage
 )
 
 // Parse parses 'df' command output and returns the rows.
@@ -171,16 +171,16 @@ func Parse(s string) ([]Row, error) {
 
 func parseRow(row []string) (Row, error) {
 	drow := Row{
-		FileSystem:        strings.TrimSpace(row[df_command_output_row_idx_file_system]),
-		MountedOn:         strings.TrimSpace(row[df_command_output_row_idx_mounted_on]),
-		FileSystemType:    strings.TrimSpace(row[df_command_output_row_idx_file_system_type]),
-		File:              strings.TrimSpace(row[df_command_output_row_idx_file]),
-		IusedPercent:      strings.TrimSpace(strings.Replace(row[df_command_output_row_idx_iused_percent], "%", " %", -1)),
-		UsedBlocksPercent: strings.TrimSpace(strings.Replace(row[df_command_output_row_idx_used_blocks_percentage], "%", " %", -1)),
+		FileSystem:        strings.TrimSpace(row[command_output_row_idx_file_system]),
+		MountedOn:         strings.TrimSpace(row[command_output_row_idx_mounted_on]),
+		FileSystemType:    strings.TrimSpace(row[command_output_row_idx_file_system_type]),
+		File:              strings.TrimSpace(row[command_output_row_idx_file]),
+		IusedPercent:      strings.TrimSpace(strings.Replace(row[command_output_row_idx_iused_percent], "%", " %", -1)),
+		UsedBlocksPercent: strings.TrimSpace(strings.Replace(row[command_output_row_idx_used_blocks_percentage], "%", " %", -1)),
 	}
 	drow.Device = filepath.Base(drow.FileSystem)
 
-	ptxt := strings.TrimSpace(row[df_command_output_row_idx_inodes])
+	ptxt := strings.TrimSpace(row[command_output_row_idx_inodes])
 	if ptxt == "-" {
 		ptxt = "0"
 	}
@@ -190,7 +190,7 @@ func parseRow(row []string) (Row, error) {
 	}
 	drow.Inodes = iv
 
-	ptxt = strings.TrimSpace(row[df_command_output_row_idx_ifree])
+	ptxt = strings.TrimSpace(row[command_output_row_idx_ifree])
 	if ptxt == "-" {
 		ptxt = "0"
 	}
@@ -200,7 +200,7 @@ func parseRow(row []string) (Row, error) {
 	}
 	drow.Ifree = iv
 
-	ptxt = strings.TrimSpace(row[df_command_output_row_idx_iused])
+	ptxt = strings.TrimSpace(row[command_output_row_idx_iused])
 	if ptxt == "-" {
 		ptxt = "0"
 	}
@@ -210,7 +210,7 @@ func parseRow(row []string) (Row, error) {
 	}
 	drow.Iused = iv
 
-	ptxt = strings.TrimSpace(row[df_command_output_row_idx_total_blocks])
+	ptxt = strings.TrimSpace(row[command_output_row_idx_total_blocks])
 	if ptxt == "-" {
 		ptxt = "0"
 	}
@@ -222,7 +222,7 @@ func parseRow(row []string) (Row, error) {
 	drow.TotalBlocksBytesN = iv * 1024
 	drow.TotalBlocksParsedBytes = humanize.Bytes(uint64(drow.TotalBlocksBytesN))
 
-	ptxt = strings.TrimSpace(row[df_command_output_row_idx_available_blocks])
+	ptxt = strings.TrimSpace(row[command_output_row_idx_available_blocks])
 	if ptxt == "-" {
 		ptxt = "0"
 	}
@@ -234,7 +234,7 @@ func parseRow(row []string) (Row, error) {
 	drow.AvailableBlocksBytesN = iv * 1024
 	drow.AvailableBlocksParsedBytes = humanize.Bytes(uint64(drow.AvailableBlocksBytesN))
 
-	ptxt = strings.TrimSpace(row[df_command_output_row_idx_used_blocks])
+	ptxt = strings.TrimSpace(row[command_output_row_idx_used_blocks])
 	if ptxt == "-" {
 		ptxt = "0"
 	}

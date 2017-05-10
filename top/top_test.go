@@ -8,7 +8,7 @@ import (
 
 func TestGet(t *testing.T) {
 	now := time.Now()
-	rows, err := Get(topPath, 0)
+	rows, err := Get(DefaultExecPath, 0)
 	if err != nil {
 		t.Skip(err)
 	}

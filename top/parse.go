@@ -70,21 +70,21 @@ var Headers = []string{
 	"COMMAND",
 }
 
-type topCommandOutputRowIdx int
+type commandOutputRowIdx int
 
 const (
-	top_command_output_row_idx_pid topCommandOutputRowIdx = iota
-	top_command_output_row_idx_user
-	top_command_output_row_idx_pr
-	top_command_output_row_idx_ni
-	top_command_output_row_idx_virt
-	top_command_output_row_idx_res
-	top_command_output_row_idx_shr
-	top_command_output_row_idx_s
-	top_command_output_row_idx_cpu
-	top_command_output_row_idx_mem
-	top_command_output_row_idx_time
-	top_command_output_row_idx_command
+	command_output_row_idx_pid commandOutputRowIdx = iota
+	command_output_row_idx_user
+	command_output_row_idx_pr
+	command_output_row_idx_ni
+	command_output_row_idx_virt
+	command_output_row_idx_res
+	command_output_row_idx_shr
+	command_output_row_idx_s
+	command_output_row_idx_cpu
+	command_output_row_idx_mem
+	command_output_row_idx_time
+	command_output_row_idx_command
 )
 
 var bytesToSkip = [][]byte{
@@ -155,58 +155,58 @@ func Parse(s string) ([]Row, error) {
 
 func parseRow(row []string) (Row, error) {
 	trow := Row{
-		USER: strings.TrimSpace(row[top_command_output_row_idx_user]),
+		USER: strings.TrimSpace(row[command_output_row_idx_user]),
 	}
 
-	pv, err := strconv.ParseInt(row[top_command_output_row_idx_pid], 10, 64)
+	pv, err := strconv.ParseInt(row[command_output_row_idx_pid], 10, 64)
 	if err != nil {
 		return Row{}, fmt.Errorf("parse error %v (row %v)", err, row)
 	}
 	trow.PID = pv
 
-	trow.PR = strings.TrimSpace(row[top_command_output_row_idx_pr])
-	trow.NI = strings.TrimSpace(row[top_command_output_row_idx_ni])
+	trow.PR = strings.TrimSpace(row[command_output_row_idx_pr])
+	trow.NI = strings.TrimSpace(row[command_output_row_idx_ni])
 
-	virt, virtTxt, err := parseKiB(row[top_command_output_row_idx_virt])
+	virt, virtTxt, err := parseKiB(row[command_output_row_idx_virt])
 	if err != nil {
 		return Row{}, fmt.Errorf("parse error %v (row %v)", err, row)
 	}
-	trow.VIRT = row[top_command_output_row_idx_virt]
+	trow.VIRT = row[command_output_row_idx_virt]
 	trow.VIRTBytesN = virt
 	trow.VIRTParsedBytes = virtTxt
 
-	res, resTxt, err := parseKiB(row[top_command_output_row_idx_res])
+	res, resTxt, err := parseKiB(row[command_output_row_idx_res])
 	if err != nil {
 		return Row{}, fmt.Errorf("parse error %v (row %v)", err, row)
 	}
-	trow.RES = row[top_command_output_row_idx_res]
+	trow.RES = row[command_output_row_idx_res]
 	trow.RESBytesN = res
 	trow.RESParsedBytes = resTxt
 
-	shr, shrTxt, err := parseKiB(row[top_command_output_row_idx_shr])
+	shr, shrTxt, err := parseKiB(row[command_output_row_idx_shr])
 	if err != nil {
 		return Row{}, fmt.Errorf("parse error %v (row %v)", err, row)
 	}
-	trow.SHR = row[top_command_output_row_idx_shr]
+	trow.SHR = row[command_output_row_idx_shr]
 	trow.SHRBytesN = shr
 	trow.SHRParsedBytes = shrTxt
 
-	trow.S = row[top_command_output_row_idx_s]
-	trow.SParsedStatus = parseStatus(row[top_command_output_row_idx_s])
+	trow.S = row[command_output_row_idx_s]
+	trow.SParsedStatus = parseStatus(row[command_output_row_idx_s])
 
-	cnum, err := strconv.ParseFloat(row[top_command_output_row_idx_cpu], 64)
+	cnum, err := strconv.ParseFloat(row[command_output_row_idx_cpu], 64)
 	if err != nil {
 		return Row{}, fmt.Errorf("parse error %v (row %v)", err, row)
 	}
 	trow.CPUPercent = cnum
 
-	mnum, err := strconv.ParseFloat(row[top_command_output_row_idx_mem], 64)
+	mnum, err := strconv.ParseFloat(row[command_output_row_idx_mem], 64)
 	if err != nil {
 		return Row{}, fmt.Errorf("parse error %v (row %v)", err, row)
 	}
 	trow.MEMPercent = mnum
 
-	trow.TIME = row[top_command_output_row_idx_time]
+	trow.TIME = row[command_output_row_idx_time]
 
 	return trow, nil
 }
