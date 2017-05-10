@@ -7,8 +7,3 @@ go:
 
 script:
 - ./test
-- go get -v github.com/gyuho/linux-inspect/cmd/linux-inspect
-- linux-inspect ds
-- linux-inspect ns
-- linux-inspect ps --limit 10
-- linux-inspect ss --limit 10
