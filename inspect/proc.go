@@ -72,12 +72,12 @@ func nanoToUnix(unixNano int64) (unixSec int64) {
 // GetProc returns current 'Proc' data.
 // PID is required.
 // Disk device, network interface, extra path are optional.
-func GetProc(opts ...FilterFunc) (Proc, error) {
-	ft := &EntryFilter{}
-	ft.applyOpts(opts)
+func GetProc(opts ...OpFunc) (Proc, error) {
+	op := &EntryOp{}
+	op.applyOpts(opts)
 
-	if ft.PID == 0 {
-		return Proc{}, fmt.Errorf("unknown PID %d", ft.PID)
+	if op.PID == 0 {
+		return Proc{}, fmt.Errorf("unknown PID %d", op.PID)
 	}
 	ts := time.Now().UnixNano()
 	pc := Proc{UnixNanosecond: ts, UnixSecond: nanoToUnix(ts)}
@@ -88,13 +88,13 @@ func GetProc(opts ...FilterFunc) (Proc, error) {
 	toFinish++
 	go func() {
 		// get process stats
-		ets, err := GetPS(WithPID(ft.PID), WithTopStream(ft.TopStream))
+		ets, err := GetPS(WithPID(op.PID), WithTopStream(op.TopStream))
 		if err != nil {
 			errc <- err
 			return
 		}
 		if len(ets) != 1 {
-			errc <- fmt.Errorf("len(PID=%d entries) != 1 (got %d)", ft.PID, len(ets))
+			errc <- fmt.Errorf("len(PID=%d entries) != 1 (got %d)", op.PID, len(ets))
 			return
 		}
 		pc.PSEntry = ets[0]
@@ -112,7 +112,7 @@ func GetProc(opts ...FilterFunc) (Proc, error) {
 		errc <- nil
 	}()
 
-	if ft.DiskDevice != "" {
+	if op.DiskDevice != "" {
 		toFinish++
 		go func() {
 			// get diskstats
@@ -122,7 +122,7 @@ func GetProc(opts ...FilterFunc) (Proc, error) {
 				return
 			}
 			for _, elem := range ds {
-				if elem.Device == ft.DiskDevice {
+				if elem.Device == op.DiskDevice {
 					pc.DSEntry = elem
 					break
 				}
@@ -131,7 +131,7 @@ func GetProc(opts ...FilterFunc) (Proc, error) {
 		}()
 	}
 
-	if ft.NetworkInterface != "" {
+	if op.NetworkInterface != "" {
 		toFinish++
 		go func() {
 			// get network I/O stats
@@ -141,7 +141,7 @@ func GetProc(opts ...FilterFunc) (Proc, error) {
 				return
 			}
 			for _, elem := range ns {
-				if elem.Interface == ft.NetworkInterface {
+				if elem.Interface == op.NetworkInterface {
 					pc.NSEntry = elem
 					break
 				}
@@ -150,10 +150,10 @@ func GetProc(opts ...FilterFunc) (Proc, error) {
 		}()
 	}
 
-	if ft.ExtraPath != "" {
+	if op.ExtraPath != "" {
 		toFinish++
 		go func() {
-			f, err := fileutil.OpenToRead(ft.ExtraPath)
+			f, err := fileutil.OpenToRead(op.ExtraPath)
 			if err != nil {
 				errc <- err
 				return
@@ -178,14 +178,14 @@ func GetProc(opts ...FilterFunc) (Proc, error) {
 		cnt++
 	}
 
-	if ft.DiskDevice != "" {
+	if op.DiskDevice != "" {
 		if pc.DSEntry.Device == "" {
-			return Proc{}, fmt.Errorf("disk device %q was not found (%+v)", ft.DiskDevice, pc.DSEntry)
+			return Proc{}, fmt.Errorf("disk device %q was not found (%+v)", op.DiskDevice, pc.DSEntry)
 		}
 	}
-	if ft.NetworkInterface != "" {
+	if op.NetworkInterface != "" {
 		if pc.NSEntry.Interface == "" {
-			return Proc{}, fmt.Errorf("network interface %q was not found", ft.NetworkInterface)
+			return Proc{}, fmt.Errorf("network interface %q was not found", op.NetworkInterface)
 		}
 	}
 	return pc, nil

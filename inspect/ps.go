@@ -39,28 +39,28 @@ type PSEntry struct {
 const maxConcurrentProcFDLimit = 32
 
 // GetPS finds all PSEntry by given filter.
-func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
-	ft := &EntryFilter{}
-	ft.applyOpts(opts)
+func GetPS(opts ...OpFunc) (pss []PSEntry, err error) {
+	op := &EntryOp{}
+	op.applyOpts(opts)
 
 	var pids []int64
 	switch {
-	case ft.ProgramMatchFunc == nil && ft.PID < 1:
+	case op.ProgramMatchFunc == nil && op.PID < 1:
 		// get all PIDs
 		pids, err = proc.ListPIDs()
 		if err != nil {
 			return
 		}
 
-	case ft.PID > 0:
-		pids = []int64{ft.PID}
+	case op.PID > 0:
+		pids = []int64{op.PID}
 
-	case ft.ProgramMatchFunc != nil:
+	case op.ProgramMatchFunc != nil:
 		// later to find PIDs by Program
 		pids = nil
 
 	default:
-		// applyOpts already panic when ft.ProgramMatchFunc != nil && ft.PID > 0
+		// applyOpts already panic when op.ProgramMatchFunc != nil && op.PID > 0
 	}
 
 	// can't filter both by program and by PID
@@ -70,19 +70,19 @@ func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
 			return
 		}
 	} else {
-		ft.ProgramMatchFunc = func(string) bool { return true }
+		op.ProgramMatchFunc = func(string) bool { return true }
 	}
 
 	var topM map[int64]top.Row
-	if ft.TopStream == nil {
+	if op.TopStream == nil {
 		var topRows []top.Row
 		if len(pids) == 1 {
-			topRows, err = top.Get(ft.TopExecPath, pids[0])
+			topRows, err = top.Get(op.TopExecPath, pids[0])
 			if err != nil {
 				return
 			}
 		} else {
-			topRows, err = top.Get(ft.TopExecPath, 0)
+			topRows, err = top.Get(op.TopExecPath, 0)
 			if err != nil {
 				return
 			}
@@ -98,7 +98,7 @@ func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
 			}
 		}
 	} else {
-		topM = ft.TopStream.Latest()
+		topM = op.TopStream.Latest()
 	}
 
 	var pmu sync.RWMutex
@@ -115,12 +115,12 @@ func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
 			limitc <- struct{}{}
 
 			topRow := topM[pid]
-			if !ft.ProgramMatchFunc(topRow.COMMAND) {
+			if !op.ProgramMatchFunc(topRow.COMMAND) {
 				return
 			}
 
 			pmu.RLock()
-			done := ft.TopLimit > 0 && len(pss) >= ft.TopLimit
+			done := op.TopLimit > 0 && len(pss) >= op.TopLimit
 			pmu.RUnlock()
 			if done {
 				return
@@ -139,8 +139,8 @@ func GetPS(opts ...FilterFunc) (pss []PSEntry, err error) {
 	}
 	wg.Wait()
 
-	if ft.TopLimit > 0 && len(pss) > ft.TopLimit {
-		pss = pss[:ft.TopLimit:ft.TopLimit]
+	if op.TopLimit > 0 && len(pss) > op.TopLimit {
+		pss = pss[:op.TopLimit:op.TopLimit]
 	}
 	return
 }

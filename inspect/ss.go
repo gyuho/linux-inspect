@@ -32,8 +32,8 @@ type SSEntry struct {
 }
 
 // GetSS finds all SSEntry by given filter.
-func GetSS(opts ...FilterFunc) (sss []SSEntry, err error) {
-	ft := &EntryFilter{}
+func GetSS(opts ...OpFunc) (sss []SSEntry, err error) {
+	ft := &EntryOp{}
 	ft.applyOpts(opts)
 
 	var pids []int64
