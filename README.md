@@ -9,12 +9,12 @@ DO NOT USE THIS. EXPERIMENTAL!
 linux-inspect implements various Linux inspecting utilities.
 
 ```
-go get -v github.com/gyuho/linux-inspect/cmd/psn
+go get -v github.com/gyuho/linux-inspect/cmd/linux-inspect
 ```
 
 ```
 Usage:
-  psn [command]
+  linux-inspect [command]
 
 Available Commands:
   ds          Inspects '/proc/diskstats'
