@@ -5,15 +5,15 @@ import (
 	"testing"
 )
 
-func TestGetProcStatusByPID(t *testing.T) {
-	rs, err := GetProcStatusByPID(1)
+func TestGetStatusByPID(t *testing.T) {
+	rs, err := GetStatusByPID(1)
 	if err != nil {
 		t.Error(err)
 	}
 	fmt.Println(rs.VmRSS)
 	fmt.Println(rs.VmRSSBytesN)
 	fmt.Println(rs.VmRSSParsedBytes)
-	fmt.Printf("GetProcStatusByPID: %+v\n", rs)
+	fmt.Printf("GetStatusByPID: %+v\n", rs)
 }
 
 func TestGetProgram(t *testing.T) {
