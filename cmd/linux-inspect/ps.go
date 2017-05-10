@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/gyuho/linux-inspect/inspect"
+
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
@@ -34,13 +36,13 @@ func psCommandFunc(cmd *cobra.Command, args []string) error {
 	fmt.Fprintf(os.Stdout, "\n'ps' to inspect '/proc/$PID/status', 'top' command outpu\n\n")
 	color.Unset()
 
-	// pss, err := psn.GetPS(psn.WithProgram(psCmdFlag.program), psn.WithPID(psCmdFlag.pid), psn.WithTopLimit(psCmdFlag.top))
-	// if err != nil {
-	// 	return err
-	// }
-	// hd, rows := psn.ConvertPS(pss...)
-	// txt := psn.StringPS(hd, rows, -1)
-	// fmt.Print(txt)
+	pss, err := inspect.GetPS(inspect.WithProgram(psCmdFlag.program), inspect.WithPID(psCmdFlag.pid), inspect.WithTopLimit(psCmdFlag.top))
+	if err != nil {
+		return err
+	}
+	hd, rows := inspect.ConvertPS(pss...)
+	txt := inspect.StringPS(hd, rows, -1)
+	fmt.Print(txt)
 
 	color.Set(color.FgGreen)
 	fmt.Fprintf(os.Stdout, "\nDONE!\n")

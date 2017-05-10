@@ -7,3 +7,8 @@ go:
 
 script:
 - ./test
+- go get -v github.com/gyuho/linux-inspect/cmd/linux-inspect
+- linux-inspect ds
+- linux-inspect ns
+- linux-inspect ps --top 10
+- linux-inspect ss --top 10
