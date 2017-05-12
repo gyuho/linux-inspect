@@ -9,7 +9,8 @@ import (
 	humanize "github.com/dustin/go-humanize"
 )
 
-// parses KiB strings, returns bytes in int64, and humanized bytes.
+// parses memory bytes in top command,
+// returns bytes in int64, and humanized bytes.
 //
 //  KiB = kibibyte = 1024 bytes
 //  MiB = mebibyte = 1024 KiB = 1,048,576 bytes
@@ -18,11 +19,11 @@ import (
 //  PiB = pebibyte = 1024 TiB = 1,125,899,906,842,624 bytes
 //  EiB = exbibyte = 1024 PiB = 1,152,921,504,606,846,976 bytes
 //
-func parseKiB(s string) (bts uint64, hs string, err error) {
+func parseMemoryTxt(s string) (bts uint64, hs string, err error) {
 	s = strings.TrimSpace(s)
+
 	switch {
-	// suffix 'm' means megabytes
-	case strings.HasSuffix(s, "m"):
+	case strings.HasSuffix(s, "m"): // suffix 'm' means megabytes
 		ns := s[:len(s)-1]
 		var mib float64
 		mib, err = strconv.ParseFloat(ns, 64)
@@ -31,8 +32,7 @@ func parseKiB(s string) (bts uint64, hs string, err error) {
 		}
 		bts = uint64(mib) * 1024 * 1024
 
-	// suffix 'g' means gigabytes
-	case strings.HasSuffix(s, "g"):
+	case strings.HasSuffix(s, "g"): // gigabytes
 		ns := s[:len(s)-1]
 		var gib float64
 		gib, err = strconv.ParseFloat(ns, 64)
@@ -40,6 +40,15 @@ func parseKiB(s string) (bts uint64, hs string, err error) {
 			return 0, "", err
 		}
 		bts = uint64(gib) * 1024 * 1024 * 1024
+
+	case strings.HasSuffix(s, "t"): // terabytes
+		ns := s[:len(s)-1]
+		var tib float64
+		tib, err = strconv.ParseFloat(ns, 64)
+		if err != nil {
+			return 0, "", err
+		}
+		bts = uint64(tib) * 1024 * 1024 * 1024 * 1024
 
 	default:
 		var kib float64
@@ -167,7 +176,7 @@ func parseRow(row []string) (Row, error) {
 	trow.PR = strings.TrimSpace(row[command_output_row_idx_pr])
 	trow.NI = strings.TrimSpace(row[command_output_row_idx_ni])
 
-	virt, virtTxt, err := parseKiB(row[command_output_row_idx_virt])
+	virt, virtTxt, err := parseMemoryTxt(row[command_output_row_idx_virt])
 	if err != nil {
 		return Row{}, fmt.Errorf("parse error %v (row %v)", err, row)
 	}
@@ -175,7 +184,7 @@ func parseRow(row []string) (Row, error) {
 	trow.VIRTBytesN = virt
 	trow.VIRTParsedBytes = virtTxt
 
-	res, resTxt, err := parseKiB(row[command_output_row_idx_res])
+	res, resTxt, err := parseMemoryTxt(row[command_output_row_idx_res])
 	if err != nil {
 		return Row{}, fmt.Errorf("parse error %v (row %v)", err, row)
 	}
@@ -183,7 +192,7 @@ func parseRow(row []string) (Row, error) {
 	trow.RESBytesN = res
 	trow.RESParsedBytes = resTxt
 
-	shr, shrTxt, err := parseKiB(row[command_output_row_idx_shr])
+	shr, shrTxt, err := parseMemoryTxt(row[command_output_row_idx_shr])
 	if err != nil {
 		return Row{}, fmt.Errorf("parse error %v (row %v)", err, row)
 	}

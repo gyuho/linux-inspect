@@ -2,8 +2,8 @@ package top
 
 import "testing"
 
-func TestTop_parseKiB(t *testing.T) {
-	bts, bs, err := parseKiB("50.883g")
+func TestTop_parseMemoryTxt(t *testing.T) {
+	bts, bs, err := parseMemoryTxt("50.883g")
 	if err != nil {
 		t.Fatal(err)
 	}
