@@ -11,7 +11,7 @@ import (
 func TestGetPS(t *testing.T) {
 	ns, err := GetPS(WithTopLimit(3))
 	if err != nil {
-		t.Fatal(err)
+		t.Skip(err)
 	}
 	hd, rows := ConvertPS(ns...)
 	txt := StringPS(hd, rows, -1)
@@ -23,7 +23,7 @@ func TestGetPSWithFilter(t *testing.T) {
 
 	ns, err := GetPS(WithPID(pid))
 	if err != nil {
-		t.Fatal(err)
+		t.Skip(err)
 	}
 	hd, rows := ConvertPS(ns...)
 	txt := StringPS(hd, rows, -1)
@@ -40,12 +40,12 @@ func TestGetPSWithTopStream(t *testing.T) {
 	}
 	str, err := cfg.StartStream()
 	if err != nil {
-		t.Fatal(err)
+		t.Skip(err)
 	}
 
 	ns, err := GetPS(WithPID(pid), WithTopStream(str))
 	if err != nil {
-		t.Fatal(err)
+		t.Skip(err)
 	}
 	hd, rows := ConvertPS(ns...)
 	txt := StringPS(hd, rows, -1)
