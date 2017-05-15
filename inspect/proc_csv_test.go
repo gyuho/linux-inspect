@@ -65,7 +65,7 @@ func testProcCSV(t *testing.T, pid int64, tcfg *top.Config) {
 
 	for i := 0; i < 3; i++ {
 		if i > 0 {
-			if err = toFile([]byte(fmt.Sprintf("%d", 100*i)), epath); err != nil {
+			if err = fileutil.ToFile(fmt.Sprintf("%d", 100*i), epath); err != nil {
 				t.Fatal(err)
 			}
 		}
