@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"testing"
+
+	"github.com/gyuho/linux-inspect/top"
 )
 
 func TestGetPS(t *testing.T) {
@@ -31,8 +33,8 @@ func TestGetPSWithFilter(t *testing.T) {
 func TestGetPSWithTopStream(t *testing.T) {
 	pid := int64(os.Getpid())
 
-	cfg := &TopConfig{
-		Exec:           DefaultTopPath,
+	cfg := &top.Config{
+		Exec:           top.DefaultExecPath,
 		IntervalSecond: 1,
 		PID:            pid,
 	}
