@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -e
+
+docker build --no-cache --tag gyuho/linux-inspect:latest --file ./Dockerfile .
+
+<<COMMENT
+docker build --tag gyuho/linux-inspect:latest --file ./Dockerfile .
+docker run gyuho/linux-inspect:latest ./test
+
+docker run gyuho/linux-inspect:latest pwd
+docker run gyuho/linux-inspect:latest ls /
+docker run gyuho/linux-inspect:latest cat /version-git.json
+docker run gyuho/linux-inspect:latest cat /version-container.txt
+COMMENT
