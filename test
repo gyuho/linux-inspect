@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
+set -e
 
+FORMATTABLE=`find . -name \*.go | while read a; do echo $(dirname $a)/"*.go"; done | sort | uniq | sed "s|\./||g"`
 TEST="./...";
-FMT="./*.go";
 
 echo "Checking gofmt..."
-fmtRes=$(gofmt -l -s -d $FMT)
+fmtRes=$(gofmt -l -s -d $FORMATTABLE)
 if [ -n "${fmtRes}" ]; then
 	echo -e "gofmt checking failed:\n${fmtRes}"
 	exit 255
