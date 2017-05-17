@@ -33,12 +33,8 @@ func readStat(pid int64) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = f.Close()
-	b, berr := ioutil.ReadAll(f)
-	if err != nil {
-		berr = fmt.Errorf("%v; %v", err, berr)
-	}
-	return b, berr
+	defer f.Close()
+	return ioutil.ReadAll(f)
 }
 
 func parseStat(d []byte) (s Stat, err error) {
