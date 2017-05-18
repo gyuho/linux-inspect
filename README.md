@@ -1,5 +1,3 @@
-DO NOT USE THIS. EXPERIMENTAL!
-
 ## linux-inspect
 
 [![Build Status](https://img.shields.io/travis/gyuho/linux-inspect.svg?style=flat-square)](https://travis-ci.org/gyuho/linux-inspect)
