@@ -1,6 +1,6 @@
 package etc
 
-// updated at 2017-05-09 15:51:39.840738515 -0700 PDT
+// updated at 2017-11-23 20:37:49.328968 -0800 PST
 
 // Mtab is '/etc/mtab' in Linux.
 type Mtab struct {

@@ -48,6 +48,9 @@ func testProcCSV(t *testing.T, pid int64, tcfg *top.Config) {
 		break
 	}
 	fmt.Println("running with network interface", nt, "and disk device", dn)
+	if dn == "overlay" {
+		t.Skipf("TODO: overlay is not supported yet")
+	}
 
 	fpath := filepath.Join(os.TempDir(), fmt.Sprintf("test-%010d.csv", time.Now().UnixNano()))
 	defer os.RemoveAll(fpath)

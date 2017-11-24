@@ -1,9 +1,13 @@
-language: go
+language: shell
 
-sudo: false
+sudo: required
 
-go:
-- go1.8.2
+services:
+- docker
+
+before_install:
+- make build-docker-test
+- make compile-with-docker-test
 
 script:
-- ./test
+- make docker-test
