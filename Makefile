@@ -44,7 +44,7 @@ compile-with-docker-test:
 	  gyuho/linux-inspect:go$(_GO_VERSION) \
 	  /bin/bash -c "cd /go/src/github.com/gyuho/linux-inspect && \
 	    go build -o ./bin/linux-inspect -v ./cmd/linux-inspect && \
-		./bin/linux-inspect -h"
+	    ./bin/linux-inspect -h"
 
 TEST_SUFFIX = $(shell date +%s | base64 | head -c 15)
 
@@ -64,5 +64,5 @@ docker-test:
 	  gyuho/linux-inspect:go$(_GO_VERSION) \
 	  /bin/bash -c "cd /go/src/github.com/gyuho/linux-inspect && \
 	    go build -o ./bin/linux-inspect -v ./cmd/linux-inspect && \
-		./tests.sh 2>&1 | tee test-$(TEST_SUFFIX).log"
+	    ./tests.sh 2>&1 | tee test-$(TEST_SUFFIX).log"
 	! egrep "(--- FAIL:|panic: test timed out|appears to have leaked|Too many goroutines)" -B50 -A10 test-$(TEST_SUFFIX).log
