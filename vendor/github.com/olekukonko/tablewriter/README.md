@@ -1,7 +1,9 @@
 ASCII Table Writer
 =========
 
-[![Build Status](https://travis-ci.org/olekukonko/tablewriter.png?branch=master)](https://travis-ci.org/olekukonko/tablewriter) [![Total views](https://img.shields.io/sourcegraph/rrc/github.com/olekukonko/tablewriter.svg)](https://sourcegraph.com/github.com/olekukonko/tablewriter)
+[![Build Status](https://travis-ci.org/olekukonko/tablewriter.png?branch=master)](https://travis-ci.org/olekukonko/tablewriter) 
+[![Total views](https://img.shields.io/sourcegraph/rrc/github.com/olekukonko/tablewriter.svg)](https://sourcegraph.com/github.com/olekukonko/tablewriter)
+[![Godoc](https://godoc.org/github.com/olekukonko/tablewriter?status.svg)](https://godoc.org/github.com/olekukonko/tablewriter)
 
 Generate ASCII table on the fly ...  Installation is simple as
 
@@ -199,10 +201,10 @@ table.Render()
 #### Table with color
 ```go
 data := [][]string{
-    []string{"1/1/2014", "Domain name", "2233", "$10.98"},
-    []string{"1/1/2014", "January Hosting", "2233", "$54.95"},
-    []string{"1/4/2014", "February Hosting", "2233", "$51.00"},
-    []string{"1/4/2014", "February Extra Bandwidth", "2233", "$30.00"},
+	[]string{"1/1/2014", "Domain name", "2233", "$10.98"},
+	[]string{"1/1/2014", "January Hosting", "2233", "$54.95"},
+	[]string{"1/4/2014", "February Hosting", "2233", "$51.00"},
+	[]string{"1/4/2014", "February Extra Bandwidth", "2233", "$30.00"},
 }
 
 table := tablewriter.NewWriter(os.Stdout)
@@ -210,19 +212,19 @@ table.SetHeader([]string{"Date", "Description", "CV2", "Amount"})
 table.SetFooter([]string{"", "", "Total", "$146.93"}) // Add Footer
 table.SetBorder(false)                                // Set Border to false
 
-table.SetHeaderAttributes(tablewriter.Add(tablewriter.Bold, tablewriter.BgGreenColor),
-			  tablewriter.Add(tablewriter.FgHiRedColor, tablewriter.Bold, tablewriter.BgBlackColor),
-			  tablewriter.Add(tablewriter.BgRedColor, tablewriter.FgWhiteColor),
-			  tablewriter.Add(tablewriter.BgCyanColor, tablewriter.FgWhiteColor))
+table.SetHeaderColor(tablewriter.Colors{tablewriter.Bold, tablewriter.BgGreenColor},
+	tablewriter.Colors{tablewriter.FgHiRedColor, tablewriter.Bold, tablewriter.BgBlackColor},
+	tablewriter.Colors{tablewriter.BgRedColor, tablewriter.FgWhiteColor},
+	tablewriter.Colors{tablewriter.BgCyanColor, tablewriter.FgWhiteColor})
 
-table.SetColumnAttributes(tablewriter.Add(tablewriter.Bold, tablewriter.FgHiBlackColor),
-			  tablewriter.Add(tablewriter.Bold, tablewriter.FgHiRedColor),
-			  tablewriter.Add(tablewriter.Bold, tablewriter.FgHiBlackColor),
-			  tablewriter.Add(tablewriter.Bold, tablewriter.FgBlackColor))
+table.SetColumnColor(tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiBlackColor},
+	tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiRedColor},
+	tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiBlackColor},
+	tablewriter.Colors{tablewriter.Bold, tablewriter.FgBlackColor})
 
-table.SetFooterAttributes(tablewriter.Add(), tablewriter.Add(),
-                          tablewriter.Add(tablewriter.Bold),
-                          tablewriter.Add(tablewriter.FgHiRedColor))
+table.SetFooterColor(tablewriter.Colors{}, tablewriter.Colors{},
+	tablewriter.Colors{tablewriter.Bold},
+	tablewriter.Colors{tablewriter.FgHiRedColor})
 
 table.AppendBulk(data)
 table.Render()

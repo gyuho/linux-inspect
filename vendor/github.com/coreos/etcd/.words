@@ -1,9 +1,15 @@
+DefaultMaxRequestBytes
 ErrCodeEnhanceYourCalm
 ErrTimeout
 GoAway
+KeepAlive
+Keepalive
+MiB
+ResourceExhausted
 RPC
 RPCs
 TODO
+WithRequireLeader
 backoff
 blackhole
 blackholed
@@ -29,7 +35,9 @@ prefetching
 protobuf
 prometheus
 repin
+rpc
 serializable
+statusError
 teardown
 too_many_pings
 uncontended

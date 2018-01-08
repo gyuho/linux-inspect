@@ -1,7 +1,10 @@
+################################
+# Direct dependencies
+
 # https://github.com/coreos/etcd
 [[constraint]]
   name = "github.com/coreos/etcd"
-  revision = "15bfc1b36162805e8a90ae747d955667870c2f95"
+  revision = "a1d34566411da15cdcf8c3f46e0d58176d75a054"
 
 # https://github.com/dustin/go-humanize
 [[constraint]]
@@ -21,19 +24,25 @@
 # https://github.com/kr/pty
 [[constraint]]
   name = "github.com/kr/pty"
-  revision = "95d05c1eef33a45bd58676b6ce28d105839b8d0b"
+  revision = "1278f20d9cf7455f0465f3bf74a73d1eeb555c0f"
 
 # https://github.com/olekukonko/tablewriter
 [[constraint]]
   name = "github.com/olekukonko/tablewriter"
-  revision = "a7a4c189eb47ed33ce7b35f2880070a0c82a67d4"
+  revision = "96aac992fc8b1a4c83841a6c3e7178d20d989625"
 
 # https://github.com/spf13/cobra
 [[constraint]]
   name = "github.com/spf13/cobra"
-  revision = "1be1d2841c773c01bee8289f55f7463b6e2c2539"
+  revision = "b95ab734e27d33e0d8fbabf71ca990568d4e2020"
 
 # https://gopkg.in/yaml.v2
 [[constraint]]
   name = "gopkg.in/yaml.v2"
   revision = "287cf08546ab5e7e37d55a84f7ed3fd1db036de5"
+################################
+
+################################
+# Transitive dependencies, but to override
+# None
+################################

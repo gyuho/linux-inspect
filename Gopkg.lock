@@ -3,8 +3,12 @@
 
 [[projects]]
   name = "github.com/coreos/etcd"
-  packages = ["pkg/cpuutil","pkg/netutil","pkg/types"]
-  revision = "15bfc1b36162805e8a90ae747d955667870c2f95"
+  packages = [
+    "pkg/cpuutil",
+    "pkg/netutil",
+    "pkg/types"
+  ]
+  revision = "a1d34566411da15cdcf8c3f46e0d58176d75a054"
 
 [[projects]]
   name = "github.com/coreos/go-systemd"
@@ -42,7 +46,7 @@
 [[projects]]
   name = "github.com/kr/pty"
   packages = ["."]
-  revision = "95d05c1eef33a45bd58676b6ce28d105839b8d0b"
+  revision = "1278f20d9cf7455f0465f3bf74a73d1eeb555c0f"
 
 [[projects]]
   name = "github.com/mattn/go-colorable"
@@ -65,12 +69,12 @@
 [[projects]]
   name = "github.com/olekukonko/tablewriter"
   packages = ["."]
-  revision = "a7a4c189eb47ed33ce7b35f2880070a0c82a67d4"
+  revision = "96aac992fc8b1a4c83841a6c3e7178d20d989625"
 
 [[projects]]
   name = "github.com/spf13/cobra"
   packages = ["."]
-  revision = "1be1d2841c773c01bee8289f55f7463b6e2c2539"
+  revision = "b95ab734e27d33e0d8fbabf71ca990568d4e2020"
 
 [[projects]]
   name = "github.com/spf13/pflag"
@@ -92,6 +96,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e57920880e15bdf5812c4dff6ae5cc1e9542f95a9b1dad358ef5fc006e31b860"
+  inputs-digest = "1cfda8c6026336667fd81748da4f39aee26b932a62767e466bc4ef0ec1e9da78"
   solver-name = "gps-cdcl"
   solver-version = 1

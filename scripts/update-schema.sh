@@ -3,8 +3,8 @@
 set -e
 
 if ! [[ "$0" =~ "scripts/update-schema.sh" ]]; then
-	echo "must be run from repository root"
-	exit 255
+  echo "must be run from repository root"
+  exit 255
 fi
 
 go run ./cmd/generate-df/main.go
