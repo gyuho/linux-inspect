@@ -1,48 +1,57 @@
 ################################
 # Direct dependencies
 
-# https://github.com/coreos/etcd
+
+# master branch
 [[constraint]]
   name = "github.com/coreos/etcd"
-  revision = "a1d34566411da15cdcf8c3f46e0d58176d75a054"
+  source = "https://github.com/coreos/etcd"
+  revision = "9bd9d2041f796da58d4479b58247cbb725386278"
 
-# https://github.com/dustin/go-humanize
-[[constraint]]
-  name = "github.com/dustin/go-humanize"
-  revision = "bb3d318650d48840a39aa21a027c6630e198e626"
-
-# https://github.com/fatih/color
-[[constraint]]
-  name = "github.com/fatih/color"
-  revision = "5df930a27be2502f99b292b7cc09ebad4d0891f4"
-
-# https://github.com/gyuho/dataframe
 [[constraint]]
   name = "github.com/gyuho/dataframe"
+  source = "https://github.com/gyuho/dataframe"
   revision = "008fc241adc41d4bd5c54b9f6564ef16407c030e"
 
-# https://github.com/kr/pty
+[[constraint]]
+  name = "github.com/dustin/go-humanize"
+  source = "https://github.com/dustin/go-humanize"
+  revision = "bb3d318650d48840a39aa21a027c6630e198e626"
+
+[[constraint]]
+  name = "github.com/fatih/color"
+  source = "https://github.com/fatih/color"
+  revision = "5df930a27be2502f99b292b7cc09ebad4d0891f4"
+
 [[constraint]]
   name = "github.com/kr/pty"
+  source = "https://github.com/kr/pty"
   revision = "1278f20d9cf7455f0465f3bf74a73d1eeb555c0f"
 
-# https://github.com/olekukonko/tablewriter
 [[constraint]]
   name = "github.com/olekukonko/tablewriter"
+  source = "https://github.com/olekukonko/tablewriter"
   revision = "96aac992fc8b1a4c83841a6c3e7178d20d989625"
 
-# https://github.com/spf13/cobra
 [[constraint]]
   name = "github.com/spf13/cobra"
+  source = "https://github.com/spf13/cobra"
   revision = "b95ab734e27d33e0d8fbabf71ca990568d4e2020"
 
-# https://gopkg.in/yaml.v2
 [[constraint]]
   name = "gopkg.in/yaml.v2"
-  revision = "287cf08546ab5e7e37d55a84f7ed3fd1db036de5"
+  source = "https://github.com/go-yaml/yaml"
+  revision = "d670f9405373e636a5a2765eea47fac0c9bc91a4"
+
+
 ################################
+
 
 ################################
 # Transitive dependencies, but to override
+
+
 # None
+
+
 ################################
