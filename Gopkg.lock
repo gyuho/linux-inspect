@@ -9,13 +9,12 @@
     "pkg/types"
   ]
   revision = "9bd9d2041f796da58d4479b58247cbb725386278"
-  source = "https://github.com/coreos/etcd"
 
 [[projects]]
   name = "github.com/coreos/go-systemd"
   packages = ["journal"]
-  revision = "d2196463941895ee908e13531a23a39feb9e1243"
-  version = "v15"
+  revision = "40e2722dffead74698ca12a750f64ef313ddce05"
+  version = "v16"
 
 [[projects]]
   name = "github.com/coreos/pkg"
@@ -24,22 +23,20 @@
   version = "v3"
 
 [[projects]]
+  branch = "master"
   name = "github.com/dustin/go-humanize"
   packages = ["."]
-  revision = "bb3d318650d48840a39aa21a027c6630e198e626"
-  source = "https://github.com/dustin/go-humanize"
+  revision = "02af3965c54e8cacf948b97fef38925c4120652c"
 
 [[projects]]
   name = "github.com/fatih/color"
   packages = ["."]
   revision = "5df930a27be2502f99b292b7cc09ebad4d0891f4"
-  source = "https://github.com/fatih/color"
 
 [[projects]]
   name = "github.com/gyuho/dataframe"
   packages = ["."]
   revision = "008fc241adc41d4bd5c54b9f6564ef16407c030e"
-  source = "https://github.com/gyuho/dataframe"
 
 [[projects]]
   name = "github.com/inconshreveable/mousetrap"
@@ -50,8 +47,8 @@
 [[projects]]
   name = "github.com/kr/pty"
   packages = ["."]
-  revision = "1278f20d9cf7455f0465f3bf74a73d1eeb555c0f"
-  source = "https://github.com/kr/pty"
+  revision = "282ce0e5322c82529687d609ee670fac7c7d917c"
+  version = "v1.1.1"
 
 [[projects]]
   name = "github.com/mattn/go-colorable"
@@ -72,16 +69,15 @@
   version = "v0.0.2"
 
 [[projects]]
+  branch = "master"
   name = "github.com/olekukonko/tablewriter"
   packages = ["."]
-  revision = "96aac992fc8b1a4c83841a6c3e7178d20d989625"
-  source = "https://github.com/olekukonko/tablewriter"
+  revision = "d4647c9c7a84d847478d890b816b7d8b62b0b279"
 
 [[projects]]
   name = "github.com/spf13/cobra"
   packages = ["."]
   revision = "b95ab734e27d33e0d8fbabf71ca990568d4e2020"
-  source = "https://github.com/spf13/cobra"
 
 [[projects]]
   name = "github.com/spf13/pflag"
@@ -99,11 +95,10 @@
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   revision = "d670f9405373e636a5a2765eea47fac0c9bc91a4"
-  source = "https://github.com/go-yaml/yaml"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e61cf9d401fa1b39bbec1745f48ec36a882ee97264a06496e308bcdd4fe1bbad"
+  inputs-digest = "a116335436678941583db2b354fbf1cbeb167e822a19f90681815d78b5563eaf"
   solver-name = "gps-cdcl"
   solver-version = 1
