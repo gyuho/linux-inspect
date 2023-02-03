@@ -38,9 +38,6 @@ func GetDefault(target string) ([]Row, error) {
 // dfPath is the default 'df' command path.
 const dfPath = "/bin/df"
 
-// dfFlags is 'df --all --sync --block-size=1024 --output=source,target,fstype,file,itotal,iavail,iused,ipcent,size,avail,used,pcent'.
-var dfFlags = []string{"--all", "--sync", "--block-size=1024", "--output=source,target,fstype,file,itotal,iavail,iused,ipcent,size,avail,used,pcent"}
-
 // ReadDefault reads Linux 'df' command output.
 // Pass '' target to list all information.
 func ReadDefault(target string) (string, error) {
@@ -57,6 +54,8 @@ func Read(dfPath string, target string) (string, error) {
 }
 
 func read(dfPath string, target string, w io.Writer) error {
+	// dfFlags is 'df --all --sync --block-size=1024 --output=source,target,fstype,file,itotal,iavail,iused,ipcent,size,avail,used,pcent'.
+	var dfFlags = []string{"--all", "--sync", "--block-size=1024", "--output=source,target,fstype,file,itotal,iavail,iused,ipcent,size,avail,used,pcent"}
 	if !fileutil.Exist(dfPath) {
 		return fmt.Errorf("%q does not exist", dfPath)
 	}
